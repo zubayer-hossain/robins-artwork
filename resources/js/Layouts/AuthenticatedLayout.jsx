@@ -32,7 +32,7 @@ export default function AuthenticatedLayout({ header, children }) {
                                     Dashboard
                                 </NavLink>
                                 
-                                {user.hasRole('admin') && (
+                                {user.roles && user.roles.includes('admin') && (
                                     <>
                                         <NavLink
                                             href={route('admin.artworks.index')}
@@ -160,7 +160,7 @@ export default function AuthenticatedLayout({ header, children }) {
                             Dashboard
                         </ResponsiveNavLink>
                         
-                        {user.hasRole('admin') && (
+                        {user.roles && user.roles.includes('admin') && (
                             <>
                                 <ResponsiveNavLink
                                     href={route('admin.artworks.index')}

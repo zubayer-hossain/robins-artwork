@@ -25,7 +25,7 @@ A modern, production-ready artist portfolio and online store built with Laravel 
 
 ## 🛠 Tech Stack
 
-- **Backend**: Laravel 11 (PHP 8.2+)
+- **Backend**: Laravel 12 (PHP 8.2+)
 - **Database**: MySQL 8.0+
 - **Frontend**: Inertia.js + React 18
 - **Styling**: Tailwind CSS + shadcn/ui

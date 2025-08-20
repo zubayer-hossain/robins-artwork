@@ -16,9 +16,12 @@ export default forwardRef(function TextInput(
         }
     }, [isFocused]);
 
+    // Destructure isFocused to prevent it from being passed to DOM
+    const { isFocused: _, ...inputProps } = props;
+
     return (
         <input
-            {...props}
+            {...inputProps}
             type={type}
             className={
                 'rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 ' +
