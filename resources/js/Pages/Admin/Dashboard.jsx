@@ -16,7 +16,7 @@ export default function AdminDashboard({ stats }) {
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                             <CardTitle className="text-sm font-medium">Total Artworks</CardTitle>
                             <span className="text-2xl">🎨</span>
-                        </CardTitle>
+                        </CardHeader>
                         <CardContent>
                             <div className="text-2xl font-bold">{stats.totalArtworks || 0}</div>
                             <p className="text-xs text-muted-foreground">
@@ -29,7 +29,7 @@ export default function AdminDashboard({ stats }) {
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                             <CardTitle className="text-sm font-medium">Total Orders</CardTitle>
                             <span className="text-2xl">📦</span>
-                        </CardTitle>
+                        </CardHeader>
                         <CardContent>
                             <div className="text-2xl font-bold">{stats.totalOrders || 0}</div>
                             <p className="text-xs text-muted-foreground">
@@ -42,7 +42,7 @@ export default function AdminDashboard({ stats }) {
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                             <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
                             <span className="text-2xl">💰</span>
-                        </CardTitle>
+                        </CardHeader>
                         <CardContent>
                             <div className="text-2xl font-bold">£{stats.totalRevenue || 0}</div>
                             <p className="text-xs text-muted-foreground">
@@ -55,7 +55,7 @@ export default function AdminDashboard({ stats }) {
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                             <CardTitle className="text-sm font-medium">Contact Messages</CardTitle>
                             <span className="text-2xl">💬</span>
-                        </CardTitle>
+                        </CardHeader>
                         <CardContent>
                             <div className="text-2xl font-bold">{stats.unreadMessages || 0}</div>
                             <p className="text-xs text-muted-foreground">
