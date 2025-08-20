@@ -90,6 +90,8 @@ class ArtworkController extends Controller
             ->firstOrFail();
 
         $this->authorize('view', $artwork);
+        
+
 
         return Inertia::render('Gallery/Show', [
             'artwork' => [
@@ -106,15 +108,30 @@ class ArtworkController extends Controller
                 'is_original' => $artwork->is_original,
                 'is_print_available' => $artwork->is_print_available,
                 'images' => $artwork->images->count() > 0 ? $artwork->images->map(function ($image) {
-                    return [
-                        'id' => $image->id,
-                        'is_primary' => $image->custom_properties['is_primary'] ?? false,
-                        'thumb' => $image->getUrl('thumb'),
-                        'medium' => $image->getUrl('medium'),
-                        'xl' => $image->getUrl('xl'),
-                        'original' => $image->getUrl(),
-                    ];
-                }) : [
+                    try {
+                        // For now, use original image URLs since conversions aren't working
+                        $originalUrl = $image->getUrl();
+                        
+                        return [
+                            'id' => $image->id,
+                            'is_primary' => $image->custom_properties['is_primary'] ?? false,
+                            'thumb' => $originalUrl,
+                            'medium' => $originalUrl,
+                            'xl' => $originalUrl,
+                            'original' => $originalUrl,
+                        ];
+                    } catch (\Exception $e) {
+                        // If there's an issue with the media file, return placeholder
+                        return [
+                            'id' => $image->id,
+                            'is_primary' => $image->custom_properties['is_primary'] ?? false,
+                            'thumb' => 'https://picsum.photos/400/400?random=' . $artwork->id,
+                            'medium' => 'https://picsum.photos/1000/1000?random=' . $artwork->id,
+                            'xl' => 'https://picsum.photos/2000/2000?random=' . $artwork->id,
+                            'original' => 'https://picsum.photos/2000/2000?random=' . $artwork->id,
+                        ];
+                    }
+                })->values()->toArray() : [
                     [
                         'id' => 0,
                         'is_primary' => true,

@@ -65,17 +65,20 @@ class Artwork extends Model implements HasMedia
             ->registerMediaConversions(function (Media $media) {
                 $this->addMediaConversion('thumb')
                     ->width(400)
-                    ->format('webp')
+                    ->height(400)
+                    ->fit('crop', 400, 400)
                     ->performOnCollections('artwork-images');
 
                 $this->addMediaConversion('medium')
                     ->width(1000)
-                    ->format('webp')
+                    ->height(1000)
+                    ->fit('crop', 1000, 1000)
                     ->performOnCollections('artwork-images');
 
                 $this->addMediaConversion('xl')
                     ->width(2000)
-                    ->format('webp')
+                    ->height(2000)
+                    ->fit('crop', 2000, 2000)
                     ->performOnCollections('artwork-images');
             });
     }

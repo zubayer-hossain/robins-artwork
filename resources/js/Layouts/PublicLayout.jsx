@@ -52,7 +52,7 @@ export default function PublicLayout({ children }) {
                                                 <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                                                     <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
                                                 </svg>
-                                                <span>{auth.user.name}</span>
+                                                <span className="hidden sm:inline">{auth.user.name}</span>
                                                 <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                                                     <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
                                                 </svg>
@@ -85,20 +85,111 @@ export default function PublicLayout({ children }) {
                                 <>
                                     {/* User is not logged in */}
                                     <Link href={route('login')}>
-                                        <Button variant="ghost" size="sm">
+                                        <Button variant="ghost" size="sm" className="hidden sm:inline-flex">
                                             Sign In
                                         </Button>
                                     </Link>
                                     <Link href={route('register')}>
-                                        <Button size="sm">
+                                        <Button size="sm" className="hidden sm:inline-flex">
                                             Sign Up
                                         </Button>
                                     </Link>
                                 </>
                             )}
+
+                            {/* Mobile menu button */}
+                            <div className="md:hidden">
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => setShowingNavigationDropdown(!showingNavigationDropdown)}
+                                    className="p-2"
+                                >
+                                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        {showingNavigationDropdown ? (
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                        ) : (
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                                        )}
+                                    </svg>
+                                </Button>
+                            </div>
                         </div>
                     </div>
                 </div>
+
+                {/* Mobile menu */}
+                {showingNavigationDropdown && (
+                    <div className="md:hidden">
+                        <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-white border-t border-gray-200">
+                            <MobileNavLink href={route('home')} active={route().current('home')}>
+                                Home
+                            </MobileNavLink>
+                            <MobileNavLink href={route('gallery')} active={route().current('gallery')}>
+                                Gallery
+                            </MobileNavLink>
+                            <MobileNavLink href={route('about')} active={route().current('about')}>
+                                About
+                            </MobileNavLink>
+                            <MobileNavLink href={route('contact')} active={route().current('contact')}>
+                                Contact
+                            </MobileNavLink>
+                            
+                            {/* Mobile auth links */}
+                            {!auth.user ? (
+                                <div className="pt-4 pb-3 border-t border-gray-200">
+                                    <div className="flex flex-col space-y-2">
+                                        <Link href={route('login')}>
+                                            <Button variant="ghost" className="w-full justify-start">
+                                                Sign In
+                                            </Button>
+                                        </Link>
+                                        <Link href={route('register')}>
+                                            <Button className="w-full justify-start">
+                                                Sign Up
+                                            </Button>
+                                        </Link>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="pt-4 pb-3 border-t border-gray-200">
+                                    <div className="px-4 py-2 text-sm text-gray-500">
+                                        Signed in as <span className="font-medium text-gray-900">{auth.user.name}</span>
+                                    </div>
+                                    <div className="flex flex-col space-y-2">
+                                        <Link href={route('dashboard')}>
+                                            <Button variant="ghost" className="w-full justify-start">
+                                                Dashboard
+                                            </Button>
+                                        </Link>
+                                        <Link href={route('orders')}>
+                                            <Button variant="ghost" className="w-full justify-start">
+                                                My Orders
+                                            </Button>
+                                        </Link>
+                                        <Link href={route('profile.edit')}>
+                                            <Button variant="ghost" className="w-full justify-start">
+                                                Profile
+                                            </Button>
+                                        </Link>
+                                        {auth.user.roles && auth.user.roles.some(role => role.name === 'admin') && (
+                                            <Link href={route('admin.dashboard')}>
+                                                <Button variant="ghost" className="w-full justify-start">
+                                                    Admin Panel
+                                                </Button>
+                                            </Link>
+                                        )}
+                                        <Link href={route('logout')} method="post" as="button">
+                                            <Button variant="ghost" className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50">
+                                                Log Out
+                                            </Button>
+                                        </Link>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                )}
             </nav>
 
             {/* Page Content */}
@@ -176,6 +267,21 @@ function NavLink({ href, active, children }) {
                 active
                     ? 'border-purple-500 text-gray-900'
                     : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
+            }`}
+        >
+            {children}
+        </Link>
+    );
+}
+
+function MobileNavLink({ href, active, children }) {
+    return (
+        <Link
+            href={href}
+            className={`block px-3 py-2 rounded-md text-base font-medium ${
+                active
+                    ? 'bg-purple-50 border-l-4 border-purple-500 text-purple-700'
+                    : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
             }`}
         >
             {children}

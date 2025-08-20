@@ -1,14 +1,18 @@
-﻿import { Head, router } from '@inertiajs/react';
+﻿import { Head, router, Link } from '@inertiajs/react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import PublicLayout from '@/Layouts/PublicLayout';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 export default function GalleryShow({ artwork }) {
     const [selectedImage, setSelectedImage] = useState(0);
     const [selectedEdition, setSelectedEdition] = useState(null);
+    
+
+
+
 
     const handlePurchase = () => {
         if (selectedEdition) {
@@ -19,175 +23,658 @@ export default function GalleryShow({ artwork }) {
     };
 
     const canPurchase = artwork.price || (artwork.editions && artwork.editions.length > 0);
+    
+    // Ensure images array exists and has at least one image
+    const images = Array.isArray(artwork.images) && artwork.images.length > 0 ? artwork.images : [
+        {
+            id: 0,
+            is_primary: true,
+            thumb: `https://picsum.photos/400/400?random=${artwork.id}`,
+            medium: `https://picsum.photos/1000/1000?random=${artwork.id}`,
+            xl: `https://picsum.photos/2000/2000?random=${artwork.id}`,
+            original: `https://picsum.photos/2000/2000?random=${artwork.id}`,
+        }
+    ];
+    const currentImage = images[selectedImage] || images[0] || null;
+
+    // If no artwork data, show loading or error
+    if (!artwork) {
+        return (
+            <PublicLayout>
+                <Head title="Artwork Not Found" />
+                <div className="max-w-7xl mx-auto px-4 py-16 text-center">
+                    <div className="text-6xl mb-4">❌</div>
+                    <h1 className="text-3xl font-bold text-gray-800 mb-4">Artwork Not Found</h1>
+                    <p className="text-gray-600 mb-8">The artwork you're looking for doesn't exist or has been removed.</p>
+                    <a href={route('gallery')} className="text-purple-600 hover:text-purple-700 font-medium">
+                        ← Back to Gallery
+                    </a>
+                </div>
+            </PublicLayout>
+        );
+    }
 
     return (
         <PublicLayout>
             <Head title={artwork.title} />
             
-            <div className="max-w-7xl mx-auto px-4 py-8">
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-                    {/* Image Gallery */}
-                    <div className="space-y-4">
-                        <div className="aspect-square overflow-hidden rounded-lg border">
-                            <img
-                                src={artwork.images[selectedImage]?.xl || artwork.images[selectedImage]?.medium}
-                                alt={artwork.title}
-                                className="w-full h-full object-cover"
-                            />
+            {/* Hero Section with Breadcrumb */}
+            <div className="bg-gradient-to-br from-purple-50 via-white to-blue-50 border-b border-purple-100">
+                <div className="max-w-7xl mx-auto px-4 py-8">
+                    {/* Breadcrumb */}
+                    <nav className="flex items-center space-x-2 text-sm text-gray-600">
+                        <Link href={route('home')} className="hover:text-purple-600 transition-colors">
+                            Home
+                        </Link>
+                        <svg className="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                        </svg>
+                        <Link href={route('gallery')} className="hover:text-purple-600 transition-colors">
+                            Gallery
+                        </Link>
+                        <svg className="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                        </svg>
+                        <span className="text-gray-900 font-medium">{artwork.title}</span>
+                    </nav>
+                </div>
+            </div>
+            
+            <div className="max-w-7xl mx-auto px-4 py-12">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
+                    {/* Enhanced Image Gallery */}
+                    <div className="space-y-6">
+                        {/* Main Image */}
+                        <div className="relative group">
+                            <div className="aspect-square overflow-hidden rounded-2xl shadow-2xl bg-gradient-to-br from-purple-100 to-blue-100 border border-purple-200">
+                                {currentImage ? (
+                                    <img
+                                        src={currentImage.xl || currentImage.medium || currentImage.thumb}
+                                        alt={artwork.title}
+                                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                                        onError={(e) => {
+                                            e.target.style.display = 'none';
+                                            e.target.nextSibling.style.display = 'flex';
+                                        }}
+                                    />
+                                ) : null}
+                                
+                                {/* Fallback when no image or image fails to load */}
+                                <div className={`w-full h-full flex items-center justify-center ${currentImage ? 'hidden' : 'flex'}`}>
+                                    <div className="text-center p-8">
+                                        <div className="text-8xl mb-6 opacity-60">🎨</div>
+                                        <div className="text-2xl font-bold text-gray-700 mb-2">{artwork.title}</div>
+                                        <div className="text-gray-500">{artwork.medium} • {artwork.year}</div>
+                                    </div>
+                                </div>
+                                
+                                {/* Image Controls Overlay */}
+                                {images.length > 1 && (
+                                    <div className="absolute inset-0 flex items-center justify-between p-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                        <button
+                                            onClick={() => setSelectedImage(selectedImage > 0 ? selectedImage - 1 : images.length - 1)}
+                                            className="w-12 h-12 bg-black/50 backdrop-blur-sm text-white rounded-full flex items-center justify-center hover:bg-black/70 transition-colors"
+                                        >
+                                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                                            </svg>
+                                        </button>
+                                        <button
+                                            onClick={() => setSelectedImage(selectedImage < images.length - 1 ? selectedImage + 1 : 0)}
+                                            className="w-12 h-12 bg-black/50 backdrop-blur-sm text-white rounded-full flex items-center justify-center hover:bg-black/70 transition-colors"
+                                        >
+                                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                )}
+                                
+                                {/* Image Counter */}
+                                {images.length > 1 && (
+                                    <div className="absolute bottom-4 right-4 bg-black/50 backdrop-blur-sm text-white px-3 py-1 rounded-full text-sm font-medium">
+                                        {selectedImage + 1} / {images.length}
+                                    </div>
+                                )}
+                            </div>
                         </div>
                         
-                        {artwork.images.length > 1 && (
-                            <div className="grid grid-cols-4 gap-2">
-                                {artwork.images.map((image, index) => (
-                                    <button
-                                        key={image.id}
-                                        onClick={() => setSelectedImage(index)}
-                                        className={`aspect-square overflow-hidden rounded border-2 transition-colors ${
-                                            selectedImage === index ? 'border-blue-500' : 'border-gray-200'
-                                        }`}
-                                    >
-                                        <img
-                                            src={image.thumb}
-                                            alt={`${artwork.title} - Image ${index + 1}`}
-                                            className="w-full h-full object-cover"
-                                        />
-                                    </button>
-                                ))}
+                        {/* Thumbnail Gallery */}
+                        {images.length > 1 && (
+                            <div className="space-y-3">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-1 h-6 bg-gradient-to-b from-purple-500 to-blue-500 rounded-full"></div>
+                                    <h3 className="text-lg font-semibold text-gray-800">Gallery</h3>
+                                    <span className="text-sm text-gray-500">({images.length} images)</span>
+                                </div>
+                                <div className="grid grid-cols-4 gap-3">
+                                    {images.map((image, index) => (
+                                        <button
+                                            key={image.id}
+                                            onClick={() => setSelectedImage(index)}
+                                            className={`group aspect-square overflow-hidden rounded-xl border-2 transition-all duration-300 ${
+                                                selectedImage === index 
+                                                    ? 'border-purple-500 shadow-lg scale-105' 
+                                                    : 'border-gray-200 hover:border-purple-300 hover:shadow-md'
+                                            }`}
+                                        >
+                                            <img
+                                                src={image.thumb}
+                                                alt={`${artwork.title} - Image ${index + 1}`}
+                                                className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+                                                onError={(e) => {
+                                                    e.target.style.display = 'none';
+                                                    e.target.nextSibling.style.display = 'flex';
+                                                }}
+                                            />
+                                            {/* Fallback for thumbnails */}
+                                            <div className={`w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 ${image.thumb ? 'hidden' : 'flex'}`}>
+                                                <div className="text-center p-2">
+                                                    <div className="text-2xl mb-1">🎨</div>
+                                                    <div className="text-xs text-gray-500 font-medium">{index + 1}</div>
+                                                </div>
+                                            </div>
+                                        </button>
+                                    ))}
+                                </div>
                             </div>
                         )}
                     </div>
 
-                    {/* Artwork Details */}
+                    {/* Enhanced Artwork Details */}
                     <div className="space-y-6">
-                        <div>
-                            <h1 className="text-4xl font-bold mb-2">{artwork.title}</h1>
-                            <div className="flex items-center gap-4 text-gray-600 mb-4">
-                                <span>{artwork.medium}</span>
-                                {artwork.year && <span>â€¢ {artwork.year}</span>}
-                                {artwork.size_text && <span>â€¢ {artwork.size_text}</span>}
+                        {/* Title and Basic Info */}
+                        <div className="space-y-6">
+                            <div>
+                                <h1 className="text-5xl font-bold text-gray-900 mb-4 leading-tight">{artwork.title}</h1>
+                                <p className="text-lg text-gray-600 leading-relaxed">
+                                    A stunning {artwork.medium.toLowerCase()} artwork that captures the essence of {artwork.title.toLowerCase()}, 
+                                    created with meticulous attention to detail and artistic passion.
+                                </p>
                             </div>
                             
-                            <div className="flex gap-2 mb-4">
-                                {artwork.tags?.map((tag) => (
-                                    <Badge key={tag} variant="secondary">
-                                        {tag}
-                                    </Badge>
-                                ))}
-                            </div>
+                            {/* Tags */}
+                            {artwork.tags && artwork.tags.length > 0 && (
+                                <div className="flex flex-wrap gap-3">
+                                    {artwork.tags.map((tag) => (
+                                        <Badge 
+                                            key={tag} 
+                                            className="px-4 py-2 text-sm font-medium bg-gradient-to-r from-purple-100 to-blue-100 text-purple-700 border border-purple-200 hover:from-purple-200 hover:to-blue-200 transition-colors"
+                                        >
+                                            #{tag}
+                                        </Badge>
+                                    ))}
+                                </div>
+                            )}
 
+                            {/* Price Display */}
                             {artwork.price && (
-                                <div className="text-3xl font-bold text-green-600 mb-4">
-                                    ${artwork.price.toLocaleString()}
+                                <div className="p-6 bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl border border-green-200">
+                                    <div className="flex items-center justify-between">
+                                        <div>
+                                            <div className="text-sm font-medium text-green-700 mb-1">Starting Price</div>
+                                            <div className="text-4xl font-bold text-green-600">
+                                                ${artwork.price.toLocaleString()}
+                                                <span className="text-lg font-normal text-green-500 ml-2">USD</span>
+                                            </div>
+                                        </div>
+                                        <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center">
+                                            <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fillRule="evenodd" d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                                            </svg>
+                                        </div>
+                                    </div>
                                 </div>
                             )}
                         </div>
 
                         {/* Purchase Options */}
                         {canPurchase && (
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle>Purchase Options</CardTitle>
+                            <Card className="border-0 shadow-lg bg-gradient-to-br from-white to-purple-50/30">
+                                <CardHeader className="pb-4">
+                                    <CardTitle className="text-2xl font-bold text-gray-800 flex items-center">
+                                        <span className="mr-3">💳</span>
+                                        Purchase Options
+                                    </CardTitle>
+                                    <p className="text-gray-600 text-sm">Choose your preferred artwork format</p>
                                 </CardHeader>
-                                <CardContent className="space-y-4">
+                                <CardContent className="space-y-6">
                                     {artwork.price && (
-                                        <div className="flex items-center justify-between p-3 border rounded-lg">
-                                            <div>
-                                                <div className="font-medium">Original Artwork</div>
-                                                <div className="text-sm text-gray-600">
-                                                    {artwork.is_original ? 'Original piece' : 'Print'}
+                                        <div className="group relative overflow-hidden rounded-2xl border-2 border-purple-200 bg-white p-6 shadow-md hover:shadow-xl transition-all duration-300 hover:border-purple-300">
+                                            {/* Decorative background */}
+                                            <div className="absolute inset-0 bg-gradient-to-br from-purple-50/50 to-blue-50/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                                            
+                                            <div className="relative z-10">
+                                                <div className="flex items-start justify-between mb-4">
+                                                    <div className="flex-1">
+                                                        <div className="flex items-center gap-3 mb-2">
+                                                            <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full flex items-center justify-center">
+                                                                <span className="text-white text-sm font-bold">★</span>
+                                                            </div>
+                                                            <div>
+                                                                <div className="text-lg font-bold text-gray-800">Original Artwork</div>
+                                                                <div className="text-sm text-gray-600 flex items-center gap-2">
+                                                                    <span className="px-2 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-medium">
+                                                                        {artwork.is_original ? 'Original Piece' : 'Print'}
+                                                                    </span>
+                                                                    <span className="text-gray-400">•</span>
+                                                                    <span>One of a kind</span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        
+                                                        {/* Enhanced Features */}
+                                                        <div className="mt-6 p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border border-green-200">
+                                                            <div className="flex items-center gap-2 mb-3">
+                                                                <div className="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
+                                                                    <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                                                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                                                    </svg>
+                                                                </div>
+                                                                <span className="text-sm font-semibold text-green-700">What's Included</span>
+                                                            </div>
+                                                            <div className="space-y-2">
+                                                                <div className="flex items-center gap-3 p-2 bg-white/60 rounded-lg">
+                                                                    <div className="w-6 h-6 bg-purple-100 rounded-full flex items-center justify-center">
+                                                                        <svg className="w-3 h-3 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
+                                                                            <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                                                        </svg>
+                                                                    </div>
+                                                                    <span className="text-sm text-gray-700 font-medium">Certificate of Authenticity</span>
+                                                                </div>
+                                                                <div className="flex items-center gap-3 p-2 bg-white/60 rounded-lg">
+                                                                    <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center">
+                                                                        <svg className="w-3 h-3 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                                                                            <path fillRule="evenodd" d="M3 4a1 1 0 011-1h4a1 1 0 010 2H6.414l2.293 2.293a1 1 0 01-1.414 1.414L5 6.414V8a1 1 0 01-2 0V4zm9 1a1 1 0 010-2h4a1 1 0 011 1v4a1 1 0 01-2 0V6.414l-2.293 2.293a1 1 0 11-1.414-1.414L13.586 5H12zm-9 7a1 1 0 012 0v1.586l2.293-2.293a1 1 0 111.414 1.414L6.414 15H8a1 1 0 010 2H4a1 1 0 01-1-1v-4zm13-1a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 010-2h1.586l-2.293-2.293a1 1 0 111.414-1.414L15 13.586V12a1 1 0 011-1z" clipRule="evenodd" />
+                                                                        </svg>
+                                                                    </div>
+                                                                    <span className="text-sm text-gray-700 font-medium">Professional Packaging</span>
+                                                                </div>
+                                                                <div className="flex items-center gap-3 p-2 bg-white/60 rounded-lg">
+                                                                    <div className="w-6 h-6 bg-indigo-100 rounded-full flex items-center justify-center">
+                                                                        <svg className="w-3 h-3 text-indigo-600" fill="currentColor" viewBox="0 0 20 20">
+                                                                            <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z" />
+                                                                        </svg>
+                                                                    </div>
+                                                                    <span className="text-sm text-gray-700 font-medium">Worldwide Shipping</span>
+                                                                </div>
+                                                                <div className="flex items-center gap-3 p-2 bg-white/60 rounded-lg">
+                                                                    <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center">
+                                                                        <svg className="w-3 h-3 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                                                                            <path fillRule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clipRule="evenodd" />
+                                                                        </svg>
+                                                                    </div>
+                                                                    <span className="text-sm text-gray-700 font-medium">30-Day Returns</span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <div className="text-right ml-6">
+                                                        <div className="mb-3">
+                                                            <div className="text-3xl font-bold text-green-600">
+                                                                ${artwork.price.toLocaleString()}
+                                                            </div>
+                                                            <div className="text-sm text-gray-500">USD</div>
+                                                        </div>
+                                                        <Button 
+                                                            onClick={handlePurchase}
+                                                            disabled={selectedEdition !== null}
+                                                            className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-8 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                                                        >
+                                                            <span className="mr-2">🛒</span>
+                                                            Buy Original
+                                                        </Button>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                            <div className="text-right">
-                                                <div className="text-xl font-bold">${artwork.price.toLocaleString()}</div>
-                                                <Button 
-                                                    onClick={handlePurchase}
-                                                    disabled={selectedEdition !== null}
-                                                >
-                                                    Buy Original
-                                                </Button>
                                             </div>
                                         </div>
                                     )}
 
                                     {artwork.editions && artwork.editions.length > 0 && (
-                                        <div className="space-y-3">
-                                            <h4 className="font-medium">Available Editions</h4>
+                                        <div className="space-y-4">
+                                            <div className="flex items-center gap-3 mb-4">
+                                                <div className="w-6 h-6 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full flex items-center justify-center">
+                                                    <span className="text-white text-xs font-bold">📦</span>
+                                                </div>
+                                                <h4 className="text-lg font-semibold text-gray-800">Available Editions</h4>
+                                                <span className="text-sm text-gray-500">Multiple options available</span>
+                                            </div>
+                                            
                                             {artwork.editions.map((edition) => (
                                                 <div
                                                     key={edition.id}
-                                                    className={`flex items-center justify-between p-3 border rounded-lg cursor-pointer transition-colors ${
+                                                    className={`group relative overflow-hidden rounded-xl border-2 cursor-pointer transition-all duration-300 ${
                                                         selectedEdition?.id === edition.id
-                                                            ? 'border-blue-500 bg-blue-50'
-                                                            : 'border-gray-200 hover:border-gray-300'
+                                                            ? 'border-blue-500 bg-blue-50 shadow-lg'
+                                                            : 'border-gray-200 hover:border-blue-300 hover:shadow-md bg-white'
                                                     }`}
                                                     onClick={() => setSelectedEdition(edition)}
                                                 >
-                                                    <div>
-                                                        <div className="font-medium">
-                                                            {edition.is_limited ? 'Limited Edition' : 'Open Edition'}
+                                                    <div className="p-5">
+                                                        <div className="flex items-start justify-between">
+                                                            <div className="flex-1">
+                                                                <div className="flex items-center gap-3 mb-2">
+                                                                    <div className={`w-6 h-6 rounded-full flex items-center justify-center ${
+                                                                        edition.is_limited 
+                                                                            ? 'bg-orange-500' 
+                                                                            : 'bg-green-500'
+                                                                    }`}>
+                                                                        <span className="text-white text-xs font-bold">
+                                                                            {edition.is_limited ? 'L' : 'O'}
+                                                                        </span>
+                                                                    </div>
+                                                                    <div>
+                                                                        <div className="font-semibold text-gray-800">
+                                                                            {edition.is_limited ? 'Limited Edition' : 'Open Edition'}
+                                                                        </div>
+                                                                        <div className="text-sm text-gray-600 flex items-center gap-2 mt-1">
+                                                                            <span className="px-2 py-1 bg-gray-100 text-gray-700 rounded-full text-xs">
+                                                                                SKU: {edition.sku}
+                                                                            </span>
+                                                                            {edition.is_limited && (
+                                                                                <>
+                                                                                    <span className="text-gray-400">•</span>
+                                                                                    <span className="px-2 py-1 bg-orange-100 text-orange-700 rounded-full text-xs">
+                                                                                        {edition.stock} available
+                                                                                    </span>
+                                                                                </>
+                                                                            )}
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                                
+                                                                {/* Edition features */}
+                                                                <div className="grid grid-cols-2 gap-2 mt-3">
+                                                                    <div className="flex items-center gap-2 text-xs text-gray-600">
+                                                                        <svg className="w-3 h-3 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
+                                                                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                                                        </svg>
+                                                                        <span>High quality print</span>
+                                                                    </div>
+                                                                    <div className="flex items-center gap-2 text-xs text-gray-600">
+                                                                        <svg className="w-3 h-3 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
+                                                                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                                                        </svg>
+                                                                        <span>Archival materials</span>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            
+                                                            <div className="text-right ml-6">
+                                                                <div className="mb-2">
+                                                                    <div className="text-2xl font-bold text-blue-600">
+                                                                        ${edition.price.toLocaleString()}
+                                                                    </div>
+                                                                    <div className="text-sm text-gray-500">USD</div>
+                                                                </div>
+                                                                <Button 
+                                                                    onClick={handlePurchase}
+                                                                    disabled={selectedEdition?.id !== edition.id}
+                                                                    className={`px-6 py-2 rounded-lg font-medium transition-all duration-300 ${
+                                                                        selectedEdition?.id === edition.id
+                                                                            ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-lg'
+                                                                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                                                    } disabled:opacity-50 disabled:cursor-not-allowed`}
+                                                                >
+                                                                    {selectedEdition?.id === edition.id ? 'Selected' : 'Select'}
+                                                                </Button>
+                                                            </div>
                                                         </div>
-                                                        <div className="text-sm text-gray-600">
-                                                            SKU: {edition.sku}
-                                                            {edition.is_limited && ` â€¢ ${edition.stock} available`}
-                                                        </div>
-                                                    </div>
-                                                    <div className="text-right">
-                                                        <div className="text-xl font-bold">${edition.price.toLocaleString()}</div>
-                                                        <Button 
-                                                            onClick={handlePurchase}
-                                                            disabled={selectedEdition?.id !== edition.id}
-                                                        >
-                                                            Buy Edition
-                                                        </Button>
                                                     </div>
                                                 </div>
                                             ))}
                                         </div>
                                     )}
+                                    
+                                    {/* Purchase Summary */}
+                                    {(artwork.price || selectedEdition) && (
+                                        <div className="mt-6 p-4 bg-gradient-to-r from-green-50 to-blue-50 rounded-xl border border-green-200">
+                                            <div className="flex items-center justify-between">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
+                                                        <span className="text-white text-sm">✓</span>
+                                                    </div>
+                                                    <div>
+                                                        <div className="font-semibold text-gray-800">Ready to Purchase</div>
+                                                        <div className="text-sm text-gray-600">
+                                                            {selectedEdition 
+                                                                ? `Selected: ${selectedEdition.is_limited ? 'Limited' : 'Open'} Edition`
+                                                                : 'Original artwork selected'
+                                                            }
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div className="text-right">
+                                                    <div className="text-2xl font-bold text-green-600">
+                                                        ${(selectedEdition?.price || artwork.price).toLocaleString()}
+                                                    </div>
+                                                    <div className="text-sm text-gray-500">Total price</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
                                 </CardContent>
                             </Card>
                         )}
 
-                        {/* Story */}
-                        {artwork.story && (
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle>Artist's Story</CardTitle>
-                                </CardHeader>
-                                <CardContent>
-                                    <div className="prose max-w-none">
-                                        {artwork.story.content}
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        )}
 
-                        {/* Additional Info */}
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Additional Information</CardTitle>
+                    </div>
+                </div>
+                
+                {/* Artist's Story and Artwork Details in a Row */}
+                <div className="mt-16 grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    {/* Enhanced Story Section */}
+                    {artwork.story && (
+                        <Card className="border-0 shadow-lg bg-gradient-to-br from-white to-blue-50/30">
+                            <CardHeader className="pb-4">
+                                <CardTitle className="text-2xl font-bold text-gray-800 flex items-center">
+                                    <span className="mr-3">📖</span>
+                                    Artist's Story
+                                </CardTitle>
+                                <p className="text-gray-600 text-sm">The inspiration behind this masterpiece</p>
                             </CardHeader>
                             <CardContent>
-                                <div className="grid grid-cols-2 gap-4 text-sm">
-                                    <div>
-                                        <span className="font-medium">Medium:</span> {artwork.medium}
-                                    </div>
-                                    {artwork.year && (
-                                        <div>
-                                            <span className="font-medium">Year:</span> {artwork.year}
+                                <div className="relative">
+                                    <div className="absolute left-0 top-0 w-1 h-full bg-gradient-to-b from-purple-500 to-blue-500 rounded-full"></div>
+                                    <div className="pl-6 prose prose-lg max-w-none text-gray-700 leading-relaxed">
+                                        <p className="text-lg font-medium text-gray-800 mb-4">
+                                            {artwork.story.content}
+                                        </p>
+                                        <div className="mt-6 p-4 bg-purple-50 rounded-xl border border-purple-100">
+                                            <div className="flex items-center gap-3 text-purple-700">
+                                                <div className="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center">
+                                                    <span className="text-white text-sm">✨</span>
+                                                </div>
+                                                <div>
+                                                    <div className="font-semibold">About the Artist</div>
+                                                    <div className="text-sm text-purple-600">Robin creates artwork inspired by the Scottish Highlands</div>
+                                                </div>
+                                            </div>
                                         </div>
-                                    )}
-                                    {artwork.size_text && (
-                                        <div>
-                                            <span className="font-medium">Dimensions:</span> {artwork.size_text}
-                                        </div>
-                                    )}
-                                    <div>
-                                        <span className="font-medium">Type:</span> {artwork.is_original ? 'Original' : 'Print'}
                                     </div>
                                 </div>
                             </CardContent>
                         </Card>
+                    )}
+
+                    {/* Enhanced Additional Information */}
+                    <Card className="border-0 shadow-lg bg-gradient-to-br from-white to-indigo-50/30">
+                        <CardHeader className="pb-4">
+                            <CardTitle className="text-2xl font-bold text-gray-800 flex items-center">
+                                <span className="mr-3">ℹ️</span>
+                                Artwork Details
+                            </CardTitle>
+                            <p className="text-gray-600 text-sm">Technical specifications and information</p>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="grid grid-cols-1 gap-4">
+                                <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-xl border border-gray-100">
+                                    <div className="w-10 h-10 bg-purple-500 rounded-full flex items-center justify-center">
+                                        <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clipRule="evenodd" />
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <div className="text-sm text-gray-600 font-medium">Medium</div>
+                                        <div className="text-lg font-semibold text-gray-800">{artwork.medium}</div>
+                                    </div>
+                                </div>
+                                
+                                {artwork.year && (
+                                    <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-xl border border-gray-100">
+                                        <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center">
+                                            <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <div className="text-sm text-gray-600 font-medium">Year Created</div>
+                                            <div className="text-lg font-semibold text-gray-800">{artwork.year}</div>
+                                        </div>
+                                    </div>
+                                )}
+                                
+                                {artwork.size_text && (
+                                    <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-xl border border-gray-100">
+                                        <div className="w-10 h-10 bg-indigo-500 rounded-full flex items-center justify-center">
+                                            <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fillRule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" />
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <div className="text-sm text-gray-600 font-medium">Dimensions</div>
+                                            <div className="text-lg font-semibold text-gray-800">{artwork.size_text}</div>
+                                        </div>
+                                    </div>
+                                )}
+                                
+                                <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-xl border border-gray-100">
+                                    <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center">
+                                        <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <div className="text-sm text-gray-600 font-medium">Type</div>
+                                        <div className="text-lg font-semibold text-gray-800">
+                                            {artwork.is_original ? 'Original Artwork' : 'High-Quality Print'}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            {/* Additional Features */}
+                            <div className="mt-6 p-4 bg-gradient-to-r from-purple-50 to-blue-50 rounded-xl border border-purple-100">
+                                <div className="flex items-center gap-3 mb-3">
+                                    <div className="w-6 h-6 bg-purple-500 rounded-full flex items-center justify-center">
+                                        <span className="text-white text-xs">★</span>
+                                    </div>
+                                    <h4 className="font-semibold text-gray-800">What's Included</h4>
+                                </div>
+                                <div className="grid grid-cols-2 gap-3 text-sm">
+                                    <div className="flex items-center gap-2 text-gray-600">
+                                        <svg className="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                        </svg>
+                                        <span>Certificate</span>
+                                    </div>
+                                    <div className="flex items-center gap-2 text-gray-600">
+                                        <svg className="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                        </svg>
+                                        <span>Secure Packaging</span>
+                                    </div>
+                                    <div className="flex items-center gap-2 text-gray-600">
+                                        <svg className="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                        </svg>
+                                        <span>Insured Shipping</span>
+                                    </div>
+                                    <div className="flex items-center gap-2 text-gray-600">
+                                        <svg className="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                        </svg>
+                                        <span>30-Day Returns</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </div>
+                
+                {/* Call to Action Section */}
+                <div className="mt-20 py-16 bg-gradient-to-br from-purple-50 via-indigo-50 to-blue-50 rounded-3xl border border-purple-100 shadow-lg">
+                    <div className="max-w-4xl mx-auto px-6 text-center">
+                        {/* Decorative Elements */}
+                        <div className="relative mb-8">
+                            <div className="absolute inset-0 flex items-center justify-center">
+                                <div className="w-32 h-32 bg-gradient-to-br from-purple-200 to-blue-200 rounded-full opacity-20"></div>
+                            </div>
+                            <div className="relative z-10">
+                                <div className="w-20 h-20 bg-gradient-to-br from-purple-400 to-blue-400 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
+                                    <span className="text-3xl">🎨</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        {/* Main Content */}
+                        <h3 className="text-3xl md:text-4xl font-bold text-gray-800 mb-6 leading-tight">
+                            Discover More Artworks
+                        </h3>
+                        <p className="text-lg text-gray-600 mb-8 max-w-3xl mx-auto leading-relaxed">
+                            Explore Robin's complete collection of stunning artworks inspired by the Scottish Highlands. 
+                            Each piece tells a unique story and brings natural beauty into your space.
+                        </p>
+                        
+                        {/* Action Buttons */}
+                        <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
+                            <Link href={route('gallery')}>
+                                <Button className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-8 py-4 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                                    <span className="mr-2">🖼️</span>
+                                    Browse Gallery
+                                </Button>
+                            </Link>
+                            <Link href={route('contact')}>
+                                <Button 
+                                    variant="outline" 
+                                    className="border-2 border-purple-300 text-purple-600 hover:bg-purple-50 hover:border-purple-400 px-8 py-4 rounded-xl font-semibold transition-all duration-300"
+                                >
+                                    <span className="mr-2">💬</span>
+                                    Commission Artwork
+                                </Button>
+                            </Link>
+                        </div>
+                        
+                        {/* Trust Indicators */}
+                        <div className="pt-8 border-t border-purple-200">
+                            <div className="flex flex-col sm:flex-row items-center justify-center gap-6 text-sm text-gray-500">
+                                <div className="flex items-center gap-2">
+                                    <svg className="w-4 h-4 text-purple-400" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                    </svg>
+                                    <span>Secure checkout</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <svg className="w-4 h-4 text-purple-400" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                    </svg>
+                                    <span>Worldwide shipping</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <svg className="w-4 h-4 text-purple-400" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                    </svg>
+                                    <span>30-day returns</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <svg className="w-4 h-4 text-purple-400" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                    </svg>
+                                    <span>Authenticity guaranteed</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
