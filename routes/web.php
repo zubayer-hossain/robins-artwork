@@ -5,6 +5,8 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ArtworkController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\WebhookController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\OrderController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\ArtworkController as AdminArtworkController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
@@ -38,9 +40,9 @@ Route::get('/checkout/cancel', [CheckoutController::class, 'cancel'])->name('che
 Route::post('/webhooks/stripe', [WebhookController::class, 'stripe'])->name('webhooks.stripe');
 
 // Customer dashboard
-Route::get('/dashboard', function () {
-    return Inertia::render('Dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+Route::get('/dashboard', [DashboardController::class, 'index'])
+    ->middleware(['auth', 'verified'])
+    ->name('dashboard');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -48,9 +50,8 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     
     // Customer orders
-    Route::get('/orders', function () {
-        return Inertia::render('Dashboard/Orders');
-    })->name('orders');
+    Route::get('/orders', [OrderController::class, 'index'])->name('orders');
+    Route::get('/orders/{order}', [OrderController::class, 'show'])->name('orders.show');
 });
 
 // Admin routes

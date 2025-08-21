@@ -1,11 +1,25 @@
 import { useState } from 'react';
 import { Link, usePage } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Badge } from '@/components/ui/badge';
+import { 
+    User, 
+    Settings, 
+    LogOut, 
+    Package, 
+    LayoutDashboard, 
+    Shield,
+    Menu,
+    X
+} from 'lucide-react';
 
 export default function PublicLayout({ children }) {
     const { auth } = usePage().props;
     const [showingNavigationDropdown, setShowingNavigationDropdown] = useState(false);
+    
+    const user = auth.user;
+    const isAdmin = user && user.roles && user.roles.includes('admin');
 
     return (
         <div className="min-h-screen bg-white">
@@ -45,41 +59,111 @@ export default function PublicLayout({ children }) {
                         <div className="flex items-center space-x-4">
                             {auth.user ? (
                                 <>
-                                    {/* User is logged in */}
-                                    <DropdownMenu>
+                                    {/* User is logged in - Modern Design - Hidden on mobile */}
+                                    <div className="hidden md:block">
+                                        <DropdownMenu>
                                         <DropdownMenuTrigger asChild>
-                                            <Button variant="ghost" className="flex items-center space-x-2">
-                                                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                                                    <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
-                                                </svg>
-                                                <span className="hidden sm:inline">{auth.user.name}</span>
-                                                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                            <Button variant="ghost" className="flex items-center space-x-3 hover:bg-gray-50 px-3 py-2 rounded-lg transition-colors">
+                                                {/* User Avatar */}
+                                                <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                                                    <span className="text-white text-sm font-semibold">
+                                                        {user.name.charAt(0).toUpperCase()}
+                                                    </span>
+                                                </div>
+                                                {/* User Info */}
+                                                <div className="hidden sm:block text-left">
+                                                    <div className="flex items-center space-x-2">
+                                                        <span className="text-sm font-medium text-gray-900">{user.name}</span>
+                                                        {isAdmin && (
+                                                            <Badge variant="outline" className="text-xs">
+                                                                Admin
+                                                            </Badge>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                                {/* Chevron */}
+                                                <svg className="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
                                                     <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
                                                 </svg>
                                             </Button>
                                         </DropdownMenuTrigger>
-                                        <DropdownMenuContent align="end" className="w-48">
-                                            <DropdownMenuItem asChild>
-                                                <Link href={route('dashboard')}>Dashboard</Link>
+                                        <DropdownMenuContent align="end" className="w-56">
+                                            {/* User Info Header */}
+                                            <div className="px-3 py-2 border-b">
+                                                <div className="flex items-center space-x-2">
+                                                    <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                                                        <span className="text-white text-sm font-semibold">
+                                                            {user.name.charAt(0).toUpperCase()}
+                                                        </span>
+                                                    </div>
+                                                    <div>
+                                                        <div className="text-sm font-medium text-gray-900">{user.name}</div>
+                                                        <div className="text-xs text-gray-500">{user.email}</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {/* Customer Menu Items */}
+                                            <DropdownMenuItem>
+                                                <Link href={route('dashboard')} className="flex items-center space-x-2 w-full">
+                                                    <LayoutDashboard className="w-4 h-4" />
+                                                    <span>Dashboard</span>
+                                                </Link>
                                             </DropdownMenuItem>
-                                            <DropdownMenuItem asChild>
-                                                <Link href={route('orders')}>My Orders</Link>
+                                            <DropdownMenuItem>
+                                                <Link href={route('orders')} className="flex items-center space-x-2 w-full">
+                                                    <Package className="w-4 h-4" />
+                                                    <span>My Orders</span>
+                                                </Link>
                                             </DropdownMenuItem>
-                                            <DropdownMenuItem asChild>
-                                                <Link href={route('profile.edit')}>Profile</Link>
+                                            <DropdownMenuItem>
+                                                <Link href={route('profile.edit')} className="flex items-center space-x-2 w-full">
+                                                    <User className="w-4 h-4" />
+                                                    <span>Profile Settings</span>
+                                                </Link>
                                             </DropdownMenuItem>
-                                            {auth.user.roles && auth.user.roles.some(role => role.name === 'admin') && (
-                                                <DropdownMenuItem asChild>
-                                                    <Link href={route('admin.dashboard')}>Admin Panel</Link>
-                                                </DropdownMenuItem>
+
+                                            {/* Admin Section */}
+                                            {isAdmin && (
+                                                <>
+                                                    <DropdownMenuSeparator />
+                                                    <div className="px-3 py-1">
+                                                        <div className="flex items-center space-x-2">
+                                                            <Shield className="w-3 h-3 text-gray-500" />
+                                                            <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">Admin Panel</span>
+                                                        </div>
+                                                    </div>
+                                                    <DropdownMenuItem>
+                                                        <Link href={route('admin.dashboard')} className="flex items-center space-x-2 w-full">
+                                                            <LayoutDashboard className="w-4 h-4" />
+                                                            <span>Admin Dashboard</span>
+                                                        </Link>
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuItem>
+                                                        <Link href={route('admin.artworks.index')} className="flex items-center space-x-2 w-full">
+                                                            <Settings className="w-4 h-4" />
+                                                            <span>Manage Artworks</span>
+                                                        </Link>
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuItem>
+                                                        <Link href={route('admin.orders.index')} className="flex items-center space-x-2 w-full">
+                                                            <Package className="w-4 h-4" />
+                                                            <span>Manage Orders</span>
+                                                        </Link>
+                                                    </DropdownMenuItem>
+                                                </>
                                             )}
-                                            <DropdownMenuItem asChild>
-                                                <Link href={route('logout')} method="post" as="button">
-                                                    Log Out
+
+                                            <DropdownMenuSeparator />
+                                            <DropdownMenuItem>
+                                                <Link href={route('logout')} method="post" as="button" className="flex items-center space-x-2 w-full text-red-600 hover:text-red-700 hover:bg-red-50">
+                                                    <LogOut className="w-4 h-4" />
+                                                    <span>Sign Out</span>
                                                 </Link>
                                             </DropdownMenuItem>
                                         </DropdownMenuContent>
-                                    </DropdownMenu>
+                                        </DropdownMenu>
+                                    </div>
                                 </>
                             ) : (
                                 <>
@@ -105,13 +189,11 @@ export default function PublicLayout({ children }) {
                                     onClick={() => setShowingNavigationDropdown(!showingNavigationDropdown)}
                                     className="p-2"
                                 >
-                                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        {showingNavigationDropdown ? (
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                        ) : (
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                                        )}
-                                    </svg>
+                                    {showingNavigationDropdown ? (
+                                        <X className="w-6 h-6" />
+                                    ) : (
+                                        <Menu className="w-6 h-6" />
+                                    )}
                                 </Button>
                             </div>
                         </div>
@@ -121,7 +203,7 @@ export default function PublicLayout({ children }) {
                 {/* Mobile menu */}
                 {showingNavigationDropdown && (
                     <div className="md:hidden">
-                        <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-white border-t border-gray-200">
+                        <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-white border-t border-gray-200 animate-in slide-in-from-top-2 duration-200">
                             <MobileNavLink href={route('home')} active={route().current('home')}>
                                 Home
                             </MobileNavLink>
@@ -153,35 +235,68 @@ export default function PublicLayout({ children }) {
                                 </div>
                             ) : (
                                 <div className="pt-4 pb-3 border-t border-gray-200">
-                                    <div className="px-4 py-2 text-sm text-gray-500">
-                                        Signed in as <span className="font-medium text-gray-900">{auth.user.name}</span>
+                                    <div className="px-4 py-2 text-sm text-gray-500 flex items-center space-x-2">
+                                        <div className="w-6 h-6 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                                            <span className="text-white text-xs font-semibold">
+                                                {user.name.charAt(0).toUpperCase()}
+                                            </span>
+                                        </div>
+                                        <span>Signed in as <span className="font-medium text-gray-900">{user.name}</span></span>
                                     </div>
                                     <div className="flex flex-col space-y-2">
                                         <Link href={route('dashboard')}>
                                             <Button variant="ghost" className="w-full justify-start">
+                                                <LayoutDashboard className="w-4 h-4 mr-2" />
                                                 Dashboard
                                             </Button>
                                         </Link>
                                         <Link href={route('orders')}>
                                             <Button variant="ghost" className="w-full justify-start">
+                                                <Package className="w-4 h-4 mr-2" />
                                                 My Orders
                                             </Button>
                                         </Link>
                                         <Link href={route('profile.edit')}>
                                             <Button variant="ghost" className="w-full justify-start">
+                                                <User className="w-4 h-4 mr-2" />
                                                 Profile
                                             </Button>
                                         </Link>
-                                        {auth.user.roles && auth.user.roles.some(role => role.name === 'admin') && (
-                                            <Link href={route('admin.dashboard')}>
-                                                <Button variant="ghost" className="w-full justify-start">
-                                                    Admin Panel
-                                                </Button>
-                                            </Link>
+                                        
+                                        {/* Admin Section for Mobile */}
+                                        {isAdmin && (
+                                            <>
+                                                <div className="px-3 py-2 border-t border-gray-100">
+                                                    <div className="flex items-center space-x-2">
+                                                        <Shield className="w-3 h-3 text-gray-500" />
+                                                        <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">Admin Panel</span>
+                                                    </div>
+                                                </div>
+                                                <Link href={route('admin.dashboard')}>
+                                                    <Button variant="ghost" className="w-full justify-start">
+                                                        <LayoutDashboard className="w-4 h-4 mr-2" />
+                                                        Admin Dashboard
+                                                    </Button>
+                                                </Link>
+                                                <Link href={route('admin.artworks.index')}>
+                                                    <Button variant="ghost" className="w-full justify-start">
+                                                        <Settings className="w-4 h-4 mr-2" />
+                                                        Manage Artworks
+                                                    </Button>
+                                                </Link>
+                                                <Link href={route('admin.orders.index')}>
+                                                    <Button variant="ghost" className="w-full justify-start">
+                                                        <Package className="w-4 h-4 mr-2" />
+                                                        Manage Orders
+                                                    </Button>
+                                                </Link>
+                                            </>
                                         )}
+                                        
                                         <Link href={route('logout')} method="post" as="button">
                                             <Button variant="ghost" className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50">
-                                                Log Out
+                                                <LogOut className="w-4 h-4 mr-2" />
+                                                Sign Out
                                             </Button>
                                         </Link>
                                     </div>
@@ -250,7 +365,7 @@ export default function PublicLayout({ children }) {
 
                     <div className="border-t border-gray-800 mt-8 pt-8 text-center">
                         <p className="text-gray-400 text-sm">
-                            © 2024 Robin's Artwork. All rights reserved. • Created with ❤️ by <a href="https://zubayerhs.com" target="_blank" rel="noopener noreferrer" className="text-purple-400 hover:text-purple-300 font-medium transition-colors">Zubayer Hossain</a>
+                            © 2024 Robin's Artwork. All rights reserved. • Created with ❤️ by <a href="https://www.linkedin.com/in/zubayerhs/" target="_blank" rel="noopener noreferrer" className="text-purple-400 hover:text-purple-300 font-medium transition-colors">Zubayer Hossain</a>
                         </p>
                     </div>
                 </div>

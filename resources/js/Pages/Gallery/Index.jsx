@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import PublicLayout from '@/Layouts/PublicLayout';
 import { useState, useEffect } from 'react';
 
-export default function GalleryIndex({ artworks, filters }) {
+export default function GalleryIndex({ artworks, filters, totalArtworks }) {
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedMedium, setSelectedMedium] = useState('all');
     const [selectedYear, setSelectedYear] = useState('all');
@@ -96,7 +96,7 @@ export default function GalleryIndex({ artworks, filters }) {
                     {/* Stats */}
                     <div className="flex flex-wrap justify-center gap-8 mt-8">
                         <div className="text-center">
-                            <div className="text-3xl font-bold text-purple-600">{artworks.total || 0}</div>
+                            <div className="text-3xl font-bold text-purple-600">{totalArtworks || 0}</div>
                             <div className="text-sm text-gray-600">Artworks</div>
                         </div>
                         <div className="text-center">

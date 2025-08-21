@@ -43,6 +43,9 @@ class ArtworkController extends Controller
             ->paginate(12)
             ->withQueryString();
 
+        // Get total count of all published artworks (unfiltered)
+        $totalArtworks = Artwork::where('status', 'published')->count();
+
         return Inertia::render('Gallery/Index', [
             'artworks' => $artworks->through(function ($artwork) {
                 return [
@@ -80,6 +83,7 @@ class ArtworkController extends Controller
                 'price_max' => '',
                 'tag' => '',
             ], request()->only(['status', 'title', 'medium', 'year', 'price_min', 'price_max', 'tag'])),
+            'totalArtworks' => $totalArtworks,
         ]);
     }
 
