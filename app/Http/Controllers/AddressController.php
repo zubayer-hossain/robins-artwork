@@ -20,10 +20,7 @@ class AddressController extends Controller
         ]);
     }
 
-    public function create()
-    {
-        return Inertia::render('Dashboard/Addresses/Create');
-    }
+
 
     public function store(Request $request): JsonResponse
     {
@@ -57,17 +54,7 @@ class AddressController extends Controller
         ]);
     }
 
-    public function edit(Address $address)
-    {
-        // Ensure user owns this address
-        if ($address->user_id !== Auth::id()) {
-            abort(403, 'Unauthorized access to address.');
-        }
 
-        return Inertia::render('Dashboard/Addresses/Edit', [
-            'address' => $address,
-        ]);
-    }
 
     public function update(Request $request, Address $address): JsonResponse
     {

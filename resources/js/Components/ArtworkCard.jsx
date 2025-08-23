@@ -1,9 +1,9 @@
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { Card, CardContent } from '@/Components/ui/card';
+import { Badge } from '@/Components/ui/badge';
 import { ArtworkCardActions } from '@/Components/ArtworkActions';
 import { Link } from '@inertiajs/react';
 
-export default function ArtworkCard({ artwork, className = "" }) {
+export default function ArtworkCard({ artwork, className = "", showFavoriteButton = true }) {
     return (
         <Card className={`group overflow-hidden hover:shadow-2xl transition-all duration-300 border-0 shadow-lg ${className}`}>
             {/* Image Section */}
@@ -48,10 +48,10 @@ export default function ArtworkCard({ artwork, className = "" }) {
                 <div className="flex items-center justify-between gap-3">
                     <div className="flex gap-1.5">
                         {artwork.tags && artwork.tags.length > 0 ? (
-                            // Show actual artwork tags, but filter out duplicates with medium/year
+                            // Show tags but filter out medium to avoid duplication with header
                             artwork.tags
-                                .filter(tag => tag !== artwork.medium && tag !== artwork.year?.toString())
-                                .slice(0, 2)
+                                .filter(tag => tag !== artwork.medium)
+                                .slice(0, 3) // Show up to 3 tags
                                 .map((tag) => (
                                     <Badge key={tag} variant="secondary" className="text-xs px-2 py-0.5 bg-gray-100 text-gray-600 border-0">
                                         {tag}
@@ -59,15 +59,19 @@ export default function ArtworkCard({ artwork, className = "" }) {
                                 ))
                         ) : null}
                         
-                        {/* Always show medium and year as base tags if no custom tags exist */}
+                        {/* Fallback: show medium and year as base tags if no custom tags exist */}
                         {(!artwork.tags || artwork.tags.length === 0) && (
                             <>
-                                <Badge variant="secondary" className="text-xs px-2 py-0.5 bg-gray-100 text-gray-600 border-0">
-                                    {artwork.medium}
-                                </Badge>
-                                <Badge variant="secondary" className="text-xs px-2 py-0.5 bg-gray-100 text-gray-600 border-0">
-                                    {artwork.year}
-                                </Badge>
+                                {artwork.medium && (
+                                    <Badge variant="secondary" className="text-xs px-2 py-0.5 bg-gray-100 text-gray-600 border-0">
+                                        {artwork.medium}
+                                    </Badge>
+                                )}
+                                {artwork.year && (
+                                    <Badge variant="secondary" className="text-xs px-2 py-0.5 bg-gray-100 text-gray-600 border-0">
+                                        {artwork.year}
+                                    </Badge>
+                                )}
                             </>
                         )}
                     </div>
@@ -77,6 +81,7 @@ export default function ArtworkCard({ artwork, className = "" }) {
                         <ArtworkCardActions 
                             artwork={artwork}
                             isFavorite={artwork.isFavorite}
+                            showFavoriteButton={showFavoriteButton}
                         />
                     </div>
                 </div>

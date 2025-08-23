@@ -127,35 +127,39 @@ export default function Dashboard({ stats, recentOrders }) {
                             </CardContent>
                         </Card>
 
-                        <Card className="hover:shadow-lg transition-shadow duration-200 cursor-pointer group" onClick={() => alert('Favorites feature coming soon! We\'ll notify you when it\'s ready.')}>
-                            <CardContent className="p-6">
-                                <div className="flex items-center justify-between">
-                                    <div>
-                                        <p className="text-sm font-medium text-gray-600">Favorites</p>
-                                        <p className="text-3xl font-bold text-gray-900">{stats.favoriteArtworks}</p>
-                                        <p className="text-xs text-purple-600 group-hover:text-purple-700 transition-colors">Click to explore</p>
+                        <Link href={route('favorites')}>
+                            <Card className="hover:shadow-lg transition-shadow duration-200 cursor-pointer group">
+                                <CardContent className="p-6">
+                                    <div className="flex items-center justify-between">
+                                        <div>
+                                            <p className="text-sm font-medium text-gray-600">Favorites</p>
+                                            <p className="text-3xl font-bold text-gray-900">{stats.favoriteArtworks}</p>
+                                            <p className="text-xs text-purple-600 group-hover:text-purple-700 transition-colors">Click to explore</p>
+                                        </div>
+                                        <div className="p-3 bg-red-100 rounded-full group-hover:bg-red-200 transition-colors">
+                                            <Heart className="w-6 h-6 text-red-600" />
+                                        </div>
                                     </div>
-                                    <div className="p-3 bg-red-100 rounded-full group-hover:bg-red-200 transition-colors">
-                                        <Heart className="w-6 h-6 text-red-600" />
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
+                                </CardContent>
+                            </Card>
+                        </Link>
 
-                        <Card className="hover:shadow-lg transition-shadow duration-200 cursor-pointer group" onClick={() => alert('Recent Views tracking coming soon! We\'ll show your browsing history here.')}>
-                            <CardContent className="p-6">
-                                <div className="flex items-center justify-between">
-                                    <div>
-                                        <p className="text-sm font-medium text-gray-600">Recent Views</p>
-                                        <p className="text-3xl font-bold text-gray-900">{stats.recentViews}</p>
-                                        <p className="text-xs text-purple-600 group-hover:text-purple-700 transition-colors">Click to explore</p>
+                        <Link href={route('recent-views')}>
+                            <Card className="hover:shadow-lg transition-shadow duration-200 cursor-pointer group">
+                                <CardContent className="p-6">
+                                    <div className="flex items-center justify-between">
+                                        <div>
+                                            <p className="text-sm font-medium text-gray-600">Recent Views</p>
+                                            <p className="text-3xl font-bold text-gray-900">{stats.recentViews}</p>
+                                            <p className="text-xs text-purple-600 group-hover:text-purple-700 transition-colors">Click to explore</p>
+                                        </div>
+                                        <div className="p-3 bg-purple-100 rounded-full group-hover:bg-purple-200 transition-colors">
+                                            <Eye className="w-6 h-6 text-purple-600" />
+                                        </div>
                                     </div>
-                                    <div className="p-3 bg-purple-100 rounded-full group-hover:bg-purple-200 transition-colors">
-                                        <Eye className="w-6 h-6 text-purple-600" />
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
+                                </CardContent>
+                            </Card>
+                        </Link>
                     </div>
 
                     {/* Quick Actions */}

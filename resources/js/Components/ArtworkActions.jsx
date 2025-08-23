@@ -3,7 +3,7 @@ import { router, Link } from '@inertiajs/react';
 import { useCart } from '@/Contexts/CartContext';
 
 // Complete artwork card actions - includes favorite, add to cart, and view details
-export function ArtworkCardActions({ artwork, edition = null, isFavorite = false }) {
+export function ArtworkCardActions({ artwork, edition = null, isFavorite = false, showFavoriteButton = true }) {
     const [isAddingToCart, setIsAddingToCart] = useState(false);
     const [isFavorited, setIsFavorited] = useState(isFavorite);
     const [isFavoriteLoading, setIsFavoriteLoading] = useState(false);
@@ -112,42 +112,44 @@ export function ArtworkCardActions({ artwork, edition = null, isFavorite = false
 
     return (
         <div className="flex items-center justify-between gap-2">
-            {/* Left side: Favorite button */}
-            <button
-                onClick={handleToggleFavorite}
-                disabled={isFavoriteLoading}
-                className={`
-                    w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0
-                    transition-all duration-200 ease-in-out transform hover:scale-110
-                    ${isFavorited 
-                        ? 'bg-red-500 text-white shadow-md hover:bg-red-600' 
-                        : 'bg-white text-gray-400 border border-gray-200 hover:text-red-500 hover:border-red-300 shadow-sm hover:shadow-md'
-                    }
-                    disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none
-                    focus:outline-none focus:ring-2 focus:ring-red-300 focus:ring-offset-1
-                `}
-                title={isFavorited ? "Remove from favorites" : "Add to favorites"}
-            >
-                {isFavoriteLoading ? (
-                    <svg className="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                    </svg>
-                ) : (
-                    <svg 
-                        className="w-4 h-4" 
-                        fill={isFavorited ? "currentColor" : "none"} 
-                        stroke="currentColor" 
-                        viewBox="0 0 24 24"
-                    >
-                        <path 
-                            strokeLinecap="round" 
-                            strokeLinejoin="round" 
-                            strokeWidth={2} 
-                            d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" 
+            {/* Left side: Favorite button - conditionally shown */}
+            {showFavoriteButton && (
+                <button
+                    onClick={handleToggleFavorite}
+                    disabled={isFavoriteLoading}
+                    className={`
+                        w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0
+                        transition-all duration-200 ease-in-out transform hover:scale-110
+                        ${isFavorited 
+                            ? 'bg-red-500 text-white shadow-md hover:bg-red-600' 
+                            : 'bg-white text-gray-400 border border-gray-200 hover:text-red-500 hover:border-red-300 shadow-sm hover:shadow-md'
+                        }
+                        disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none
+                        focus:outline-none focus:ring-2 focus:ring-red-300 focus:ring-offset-1
+                    `}
+                    title={isFavorited ? "Remove from favorites" : "Add to favorites"}
+                >
+                    {isFavoriteLoading ? (
+                        <svg className="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                        </svg>
+                    ) : (
+                        <svg 
+                            className="w-4 h-4" 
+                            fill={isFavorited ? "currentColor" : "none"} 
+                            stroke="currentColor" 
+                            viewBox="0 0 24 24"
+                        >
+                            <path 
+                                strokeLinecap="round" 
+                                strokeLinejoin="round" 
+                                strokeWidth={2} 
+                                d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" 
                         />
                     </svg>
-                )}
-            </button>
+                    )}
+                </button>
+            )}
 
             {/* Right side: Action buttons */}
             <div className="flex items-center gap-2">

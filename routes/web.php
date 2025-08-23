@@ -34,6 +34,7 @@ Route::get('/test', function () {
     return Inertia::render('Test', ['message' => 'Hello World']);
 })->name('test');
 
+
 // Checkout routes
 Route::post('/checkout', [CheckoutController::class, 'create'])->name('checkout.create');
 Route::get('/checkout/success', [CheckoutController::class, 'success'])->name('checkout.success');
@@ -56,6 +57,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/orders', [OrderController::class, 'index'])->name('orders');
     Route::post('/orders', [OrderController::class, 'store'])->name('orders.store');
     Route::get('/orders/{order}', [OrderController::class, 'show'])->name('orders.show');
+    Route::get('/orders/{order}/receipt', [OrderController::class, 'downloadReceipt'])->name('orders.receipt');
     
     // Customer addresses
     Route::resource('addresses', AddressController::class);

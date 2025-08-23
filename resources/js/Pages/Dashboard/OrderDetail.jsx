@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Head, Link } from '@inertiajs/react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -18,10 +19,37 @@ import {
     FileText,
     ShoppingBag,
     Truck,
-    Receipt
+    Receipt,
+    Loader2
 } from 'lucide-react';
 
 export default function OrderDetail({ order }) {
+    const [isDownloading, setIsDownloading] = useState(false);
+
+    const handleDownloadReceipt = async () => {
+        setIsDownloading(true);
+        try {
+            // Create a temporary link and trigger download directly
+            const link = document.createElement('a');
+            link.href = route('orders.receipt', order.id);
+            link.download = `receipt-order-${order.id}-${new Date().toISOString().split('T')[0]}.pdf`;
+            link.style.display = 'none';
+            
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            // Reset loading state after a short delay
+            setTimeout(() => {
+                setIsDownloading(false);
+            }, 1500);
+            
+        } catch (error) {
+            console.error('Download failed:', error);
+            setIsDownloading(false);
+        }
+    };
+
     const getStatusColor = (status) => {
         switch (status) {
             case 'paid':
@@ -375,10 +403,25 @@ export default function OrderDetail({ order }) {
                                     <CardContent className="pt-6 space-y-3">
                                         <Button 
                                             variant="outline" 
-                                            className="w-full h-11 border-blue-300 text-blue-700 hover:bg-blue-50 hover:border-blue-400"
+                                            className={`w-full h-11 transition-all duration-200 ${
+                                                isDownloading 
+                                                    ? 'bg-blue-50 border-blue-400 text-blue-800 cursor-not-allowed' 
+                                                    : 'border-blue-300 text-blue-700 hover:bg-blue-50 hover:border-blue-400'
+                                            }`}
+                                            onClick={handleDownloadReceipt}
+                                            disabled={isDownloading}
                                         >
-                                            <Download className="w-4 h-4 mr-2" />
-                                            Download Receipt
+                                            {isDownloading ? (
+                                                <>
+                                                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                                    Generating Receipt...
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <Download className="w-4 h-4 mr-2" />
+                                                    Download Receipt
+                                                </>
+                                            )}
                                         </Button>
                                         <Link href={route('contact')}>
                                             <Button 

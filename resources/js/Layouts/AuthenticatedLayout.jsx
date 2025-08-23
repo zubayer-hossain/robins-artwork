@@ -11,7 +11,10 @@ import {
     LayoutDashboard, 
     Shield,
     Menu,
-    X
+    X,
+    Heart,
+    Eye,
+    MapPin
 } from 'lucide-react';
 
 export default function AuthenticatedLayout({ header, children }) {
@@ -42,6 +45,9 @@ export default function AuthenticatedLayout({ header, children }) {
                             <div className="hidden md:ml-8 md:flex md:space-x-8">
                                 <NavLink href={route('dashboard')} active={route().current('dashboard')}>
                                     Dashboard
+                                </NavLink>
+                                <NavLink href={route('favorites')} active={route().current('favorites')}>
+                                    Favorites
                                 </NavLink>
                                 <NavLink href={route('orders')} active={route().current('orders')}>
                                     Orders
@@ -136,6 +142,18 @@ export default function AuthenticatedLayout({ header, children }) {
                                         </Link>
                                     </DropdownMenuItem>
                                     <DropdownMenuItem>
+                                        <Link href={route('favorites')} className="flex items-center space-x-2 w-full">
+                                            <Heart className="w-4 h-4" />
+                                            <span>Favorites</span>
+                                        </Link>
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem>
+                                        <Link href={route('recent-views')} className="flex items-center space-x-2 w-full">
+                                            <Eye className="w-4 h-4" />
+                                            <span>Recent Views</span>
+                                        </Link>
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem>
                                         <Link href={route('orders')} className="flex items-center space-x-2 w-full">
                                             <Package className="w-4 h-4" />
                                             <span>Orders</span>
@@ -143,7 +161,7 @@ export default function AuthenticatedLayout({ header, children }) {
                                     </DropdownMenuItem>
                                     <DropdownMenuItem>
                                         <Link href={route('addresses.index')} className="flex items-center space-x-2 w-full">
-                                            <User className="w-4 h-4" />
+                                            <MapPin className="w-4 h-4" />
                                             <span>Addresses</span>
                                         </Link>
                                     </DropdownMenuItem>
@@ -222,6 +240,9 @@ export default function AuthenticatedLayout({ header, children }) {
                             {/* Dashboard Navigation */}
                             <MobileNavLink href={route('dashboard')} active={route().current('dashboard')}>
                             Dashboard
+                            </MobileNavLink>
+                            <MobileNavLink href={route('favorites')} active={route().current('favorites')}>
+                                Favorites
                             </MobileNavLink>
                             <MobileNavLink href={route('orders')} active={route().current('orders')}>
                                 Orders

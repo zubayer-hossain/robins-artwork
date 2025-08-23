@@ -1,13 +1,17 @@
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, router } from '@inertiajs/react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import { Button } from '@/Components/ui/button';
 import { Badge } from '@/Components/ui/badge';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import AddressModal from '@/Components/AddressModal';
 import { useState } from 'react';
 import { Plus, Edit, Trash2, MapPin, Star, Home, Building } from 'lucide-react';
 
 export default function AddressesIndex({ addresses }) {
     const [deletingAddress, setDeletingAddress] = useState(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [editingAddress, setEditingAddress] = useState(null);
+    const [isEditing, setIsEditing] = useState(false);
 
     const handleDeleteAddress = async (addressId) => {
         if (!confirm('Are you sure you want to delete this address?')) return;
@@ -71,6 +75,24 @@ export default function AddressesIndex({ addresses }) {
         return type === 'shipping' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800';
     };
 
+    const handleAddAddress = () => {
+        setIsEditing(false);
+        setEditingAddress(null);
+        setIsModalOpen(true);
+    };
+
+    const handleEditAddress = (address) => {
+        setIsEditing(true);
+        setEditingAddress(address);
+        setIsModalOpen(true);
+    };
+
+    const handleCloseModal = () => {
+        setIsModalOpen(false);
+        setEditingAddress(null);
+        setIsEditing(false);
+    };
+
     return (
         <AuthenticatedLayout>
             <Head title="Addresses" />
@@ -83,12 +105,13 @@ export default function AddressesIndex({ addresses }) {
                             <h1 className="text-3xl font-bold text-gray-900">Addresses</h1>
                             <p className="text-gray-600 mt-1">Manage your shipping and billing addresses</p>
                         </div>
-                        <Link href={route('addresses.create')}>
-                            <Button className="bg-blue-600 hover:bg-blue-700">
-                                <Plus className="w-4 h-4 mr-2" />
-                                Add New Address
-                            </Button>
-                        </Link>
+                        <Button 
+                            onClick={handleAddAddress}
+                            className="bg-blue-600 hover:bg-blue-700"
+                        >
+                            <Plus className="w-4 h-4 mr-2" />
+                            Add New Address
+                        </Button>
                     </div>
 
                     {/* Addresses Grid */}
@@ -147,12 +170,15 @@ export default function AddressesIndex({ addresses }) {
                                                 </Button>
                                             )}
                                             
-                                            <Link href={route('addresses.edit', address.id)} className="flex-1">
-                                                <Button variant="outline" size="sm" className="w-full">
-                                                    <Edit className="w-3 h-3 mr-1" />
-                                                    Edit
-                                                </Button>
-                                            </Link>
+                                            <Button 
+                                                variant="outline" 
+                                                size="sm" 
+                                                className="w-full flex-1"
+                                                onClick={() => handleEditAddress(address)}
+                                            >
+                                                <Edit className="w-3 h-3 mr-1" />
+                                                Edit
+                                            </Button>
                                             
                                             <Button
                                                 variant="outline"
@@ -181,17 +207,26 @@ export default function AddressesIndex({ addresses }) {
                             <p className="text-gray-500 mb-6">
                                 Add your first address to make checkout faster and easier.
                             </p>
-                            <Link href={route('addresses.create')}>
-                                <Button className="bg-blue-600 hover:bg-blue-700">
-                                    <Plus className="w-4 h-4 mr-2" />
-                                    Add First Address
-                                </Button>
-                            </Link>
+                            <Button 
+                                onClick={handleAddAddress}
+                                className="bg-blue-600 hover:bg-blue-700"
+                            >
+                                <Plus className="w-4 h-4 mr-2" />
+                                Add First Address
+                            </Button>
                         </Card>
                     )}
                     
                 </div>
             </div>
+
+            {/* Address Modal */}
+            <AddressModal
+                isOpen={isModalOpen}
+                onClose={handleCloseModal}
+                address={editingAddress}
+                isEditing={isEditing}
+            />
         </AuthenticatedLayout>
     );
 }

@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Inertia\Inertia;
 
 class OrderController extends Controller
@@ -185,5 +186,45 @@ class OrderController extends Controller
                 'message' => 'Failed to create order: ' . $e->getMessage()
             ], 500);
         }
+    }
+
+
+    public function downloadReceipt(Order $order)
+    {
+        // Authz
+        if ($order->user_id !== Auth::id()) {
+            abort(403, 'Unauthorized');
+        }
+
+        // Eager load
+        $order->load(['items.artwork', 'items.edition.artwork', 'shippingAddress', 'billingAddress', 'user']);
+
+        // Optional: a remote or local absolute logo path (Dompdf needs absolute path or data URI)
+        $logoUrl = null;
+        if (config('app.logo_path')) {
+            // e.g., public/storage/logo.png
+            $path = public_path(config('app.logo_path'));
+            if (file_exists($path)) {
+                $logoUrl = $path; // local absolute path works when isRemoteEnabled=false
+            }
+        }
+        // Or if using Storage::url and remote:
+        // $logoUrl = url('storage/logo.png');
+
+        $pdf = Pdf::setOptions([
+            'isHtml5ParserEnabled' => true,
+            'isRemoteEnabled'      => true, // set true if you reference http(s) images/fonts
+            'dpi'                  => 96,
+            'defaultFont'          => 'DejaVu Sans',
+        ])->loadView('pdfs.order-receipt', [
+            'order'   => $order,
+            'logoUrl' => $logoUrl,
+        ]);
+
+        $pdf->setPaper('A4', 'portrait');
+
+        $filename = 'receipt-order-' . $order->id . '-' . now()->format('Y-m-d') . '.pdf';        
+
+        return $pdf->download($filename);
     }
 }

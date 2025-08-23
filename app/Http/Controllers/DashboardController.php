@@ -16,8 +16,8 @@ class DashboardController extends Controller
         $stats = [
             'totalOrders' => $user->orders()->count(),
             'totalSpent' => $user->orders()->where('status', 'paid')->sum('total'),
-            'favoriteArtworks' => 0, // TODO: Implement favorites functionality
-            'recentViews' => 0, // TODO: Implement recent views tracking
+            'favoriteArtworks' => $user->favorites()->count(),
+            'recentViews' => $user->recentViews()->count(),
         ];
 
         // Get recent orders (last 5)

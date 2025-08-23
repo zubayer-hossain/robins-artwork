@@ -41,6 +41,7 @@ class FavoriteController extends Controller implements HasMiddleware
                         'medium' => $favorite->artwork->medium,
                         'year' => $favorite->artwork->year,
                         'price' => $favorite->artwork->price,
+                        'tags' => $favorite->artwork->tags,
                         'primaryImage' => $favorite->artwork->primaryImage ? [
                             'thumb' => $favorite->artwork->primaryImage->getUrl('thumb'),
                             'medium' => $favorite->artwork->primaryImage->getUrl('medium'),
@@ -110,26 +111,40 @@ class FavoriteController extends Controller implements HasMiddleware
     /**
      * Get user's recent views
      */
-    public function recentViews(): JsonResponse
+    public function recentViews()
     {
+        $userId = Auth::id();
+        
         $recentViews = UserRecentView::with(['artwork.media'])
-            ->where('user_id', Auth::id())
+            ->where('user_id', $userId)
             ->orderBy('viewed_at', 'desc')
-            ->limit(10)
+            ->limit(20)
             ->get()
-            ->map(function ($view) {
+            ->map(function ($view) use ($userId) {
+                // Check if this artwork is in user's favorites
+                $isFavorite = UserFavorite::where('user_id', $userId)
+                    ->where('artwork_id', $view->artwork->id)
+                    ->exists();
+                
                 return [
                     'id' => $view->artwork->id,
                     'title' => $view->artwork->title,
                     'slug' => $view->artwork->slug,
                     'price' => $view->artwork->price,
-                    'image' => $view->artwork->primaryImage ? $view->artwork->primaryImage->getUrl('thumb') : null,
+                    'medium' => $view->artwork->medium,
+                    'year' => $view->artwork->year,
+                    'tags' => $view->artwork->tags,
+                    'primaryImage' => $view->artwork->primaryImage ? [
+                        'thumb' => $view->artwork->primaryImage->getUrl('thumb'),
+                        'medium' => $view->artwork->primaryImage->getUrl('medium'),
+                    ] : null,
+                    'isFavorite' => $isFavorite,
                     'viewed_at' => $view->viewed_at,
                 ];
             });
 
-        return response()->json([
-            'recent_views' => $recentViews,
+        return Inertia::render('RecentViews/Index', [
+            'recentViews' => $recentViews,
         ]);
     }
 
