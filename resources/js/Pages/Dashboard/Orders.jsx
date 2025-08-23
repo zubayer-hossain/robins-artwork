@@ -47,7 +47,7 @@ export default function CustomerOrders({ orders, stats }) {
 
     return (
         <AuthenticatedLayout>
-            <Head title="My Orders" />
+            <Head title="Orders" />
             
             <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
                 {/* Hero Section */}
@@ -55,7 +55,7 @@ export default function CustomerOrders({ orders, stats }) {
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                         <div className="flex items-center justify-between">
                             <div>
-                                <h1 className="text-3xl font-bold text-gray-900">My Orders</h1>
+                                <h1 className="text-3xl font-bold text-gray-900">Orders</h1>
                                 <p className="mt-2 text-gray-600">
                                     View your order history and track current orders
                                 </p>

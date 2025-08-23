@@ -12,12 +12,43 @@ import {
     Clock,
     TrendingUp,
     Heart,
-    Star
+    Star,
+    CheckCircle,
+    XCircle
 } from 'lucide-react';
 
 export default function Dashboard({ stats, recentOrders }) {
     const { auth } = usePage().props;
     const user = auth.user;
+
+    const getStatusColor = (status) => {
+        switch (status) {
+            case 'paid':
+                return 'bg-green-100 text-green-800 border-green-200';
+            case 'pending':
+                return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+            case 'refunded':
+                return 'bg-blue-100 text-blue-800 border-blue-200';
+            case 'cancelled':
+                return 'bg-red-100 text-red-800 border-red-200';
+            default:
+                return 'bg-gray-100 text-gray-800 border-gray-200';
+        }
+    };
+
+    const getStatusIcon = (status) => {
+        switch (status) {
+            case 'paid':
+                return <CheckCircle className="w-4 h-4" />;
+            case 'pending':
+                return <Clock className="w-4 h-4" />;
+            case 'refunded':
+            case 'cancelled':
+                return <XCircle className="w-4 h-4" />;
+            default:
+                return <Package className="w-4 h-4" />;
+        }
+    };
 
     const quickActions = [
         {
@@ -29,7 +60,7 @@ export default function Dashboard({ stats, recentOrders }) {
             iconColor: 'text-blue-500'
         },
         {
-            title: 'My Orders',
+            title: 'Orders',
             description: 'Track your purchases and order history',
             icon: Package,
             href: route('orders'),
@@ -37,13 +68,13 @@ export default function Dashboard({ stats, recentOrders }) {
             iconColor: 'text-green-500'
         },
         {
-            title: 'Profile Settings',
-            description: 'Update your account information',
+            title: 'Addresses',
+            description: 'Manage your shipping and billing addresses',
             icon: User,
-            href: route('profile.edit'),
+            href: route('addresses.index'),
             color: 'bg-purple-500 hover:bg-purple-600',
             iconColor: 'text-purple-500'
-        }
+        },
     ];
 
     return (
@@ -159,69 +190,106 @@ export default function Dashboard({ stats, recentOrders }) {
                     {/* Recent Activity & Getting Started */}
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                         {/* Recent Activity */}
-                        <Card>
-                            <CardHeader>
-                                <CardTitle className="flex items-center gap-2">
-                                    <Clock className="w-5 h-5" />
+                        <Card className="border-0 shadow-sm bg-white">
+                            <CardHeader className="pb-4 border-b border-gray-100">
+                                <CardTitle className="flex items-center gap-3 text-xl font-semibold text-gray-900">
+                                    <div className="p-2 bg-blue-50 rounded-lg">
+                                        <Clock className="w-5 h-5 text-blue-600" />
+                                    </div>
                                     Recent Activity
                                 </CardTitle>
                             </CardHeader>
-                            <CardContent>
-                                <div className="space-y-4">
-                                    {recentOrders && recentOrders.length > 0 ? (
-                                        <div className="space-y-3">
-                                            {recentOrders.map((order) => (
-                                                <div key={order.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                                                    <div className="flex-1">
-                                                        <div className="flex items-center gap-2">
-                                                            <h4 className="font-medium text-gray-900">
+                            <CardContent className="pt-6">
+                                {recentOrders && recentOrders.length > 0 ? (
+                                    <div className="space-y-4">
+                                        {recentOrders.map((order) => (
+                                            <Link 
+                                                key={order.id} 
+                                                href={route('orders.show', order.id)}
+                                                className="group block"
+                                            >
+                                                <div className="flex items-center gap-4 p-4 rounded-xl border border-gray-100 hover:border-blue-200 hover:bg-blue-50/30 transition-all duration-200">
+                                                    {/* Order Icon */}
+                                                    <div className="flex-shrink-0">
+                                                        <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center shadow-sm">
+                                                            <Package className="w-5 h-5 text-white" />
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    {/* Order Details */}
+                                                    <div className="flex-1 min-w-0">
+                                                        <div className="flex items-center gap-3 mb-1">
+                                                            <h4 className="font-semibold text-gray-900 group-hover:text-blue-700 transition-colors truncate">
                                                                 Order #{order.id}
                                                             </h4>
-                                                            <Badge variant={
-                                                                order.status === 'paid' ? 'default' :
-                                                                order.status === 'pending' ? 'secondary' :
-                                                                'outline'
-                                                            }>
-                                                                {order.status}
+                                                            <Badge className={`${getStatusColor(order.status)} flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full`}>
+                                                                {getStatusIcon(order.status)}
+                                                                {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
                                                             </Badge>
                                                         </div>
-                                                        <p className="text-sm text-gray-600">
-                                                            {order.items?.length || 0} item(s) • ${order.total}
-                                                        </p>
-                                                        <p className="text-xs text-gray-500">
-                                                            {new Date(order.created_at).toLocaleDateString()}
+                                                        
+                                                        <div className="flex items-center gap-4 text-sm text-gray-600">
+                                                            <span className="flex items-center gap-1">
+                                                                <ShoppingBag className="w-4 h-4" />
+                                                                {order.items?.length || 0} item{order.items?.length !== 1 ? 's' : ''}
+                                                            </span>
+                                                            <span className="flex items-center gap-1">
+                                                                <CreditCard className="w-4 h-4" />
+                                                                ${order.total}
+                                                            </span>
+                                                        </div>
+                                                        
+                                                        <p className="text-xs text-gray-500 mt-1">
+                                                            {new Date(order.created_at).toLocaleDateString('en-US', {
+                                                                year: 'numeric',
+                                                                month: 'short',
+                                                                day: 'numeric'
+                                                            })}
                                                         </p>
                                                     </div>
-                                                    <Link href={route('orders')} className="text-blue-600 hover:text-blue-800">
-                                                        <Eye className="w-4 h-4" />
-                                                    </Link>
+                                                    
+                                                    {/* View Button */}
+                                                    <div className="flex-shrink-0">
+                                                        <div className="w-8 h-8 bg-blue-100 group-hover:bg-blue-200 rounded-lg flex items-center justify-center transition-all duration-200">
+                                                            <Eye className="w-4 h-4 text-blue-600 group-hover:text-blue-700" />
+                                                        </div>
+                                                    </div>
                                                 </div>
-                                            ))}
-                                            <div className="pt-2">
-                                                <Link href={route('orders')}>
-                                                    <Button variant="outline" className="w-full">
-                                                        View All Orders
-                                                    </Button>
-                                                </Link>
-                                            </div>
-                                        </div>
-                                    ) : (
-                                        <div className="text-center py-8">
-                                            <div className="text-gray-400 mb-4">
-                                                <Clock className="mx-auto h-12 w-12" />
-                                            </div>
-                                            <h3 className="text-lg font-medium text-gray-900 mb-2">No recent activity</h3>
-                                            <p className="text-gray-500 mb-4">
-                                                Your recent orders and interactions will appear here.
-                                            </p>
-                                            <Link href={route('gallery')}>
-                                                <Button variant="outline">
-                                                    Start Browsing
+                                            </Link>
+                                        ))}
+                                        
+                                        {/* View All Button */}
+                                        <div className="pt-2">
+                                            <Link href={route('orders')}>
+                                                <Button 
+                                                    variant="outline" 
+                                                    className="w-full h-11 border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition-all duration-200"
+                                                >
+                                                    <Package className="w-4 h-4 mr-2" />
+                                                    View All Orders
                                                 </Button>
                                             </Link>
                                         </div>
-                                    )}
-                                </div>
+                                    </div>
+                                ) : (
+                                    <div className="text-center py-12">
+                                        <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                            <Clock className="w-8 h-8 text-gray-400" />
+                                        </div>
+                                        <h3 className="text-lg font-semibold text-gray-900 mb-2">No recent activity</h3>
+                                        <p className="text-gray-500 mb-6 max-w-sm mx-auto">
+                                            Your recent orders and interactions will appear here once you start shopping.
+                                        </p>
+                                        <Link href={route('gallery')}>
+                                            <Button 
+                                                className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-lg font-medium transition-all duration-200"
+                                            >
+                                                <Eye className="w-4 h-4 mr-2" />
+                                                Start Browsing
+                                            </Button>
+                                        </Link>
+                                    </div>
+                                )}
                             </CardContent>
                         </Card>
 

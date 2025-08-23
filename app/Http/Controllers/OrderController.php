@@ -3,7 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\Order;
+use App\Models\OrderItem;
+use App\Models\CartItem;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
 class OrderController extends Controller
@@ -41,7 +46,7 @@ class OrderController extends Controller
             abort(403, 'Unauthorized access to order.');
         }
 
-        $order->load(['items.artwork', 'items.edition.artwork']);
+        $order->load(['items.artwork', 'items.edition.artwork', 'shippingAddress', 'billingAddress', 'user']);
 
         return Inertia::render('Dashboard/OrderDetail', [
             'order' => [
@@ -50,9 +55,32 @@ class OrderController extends Controller
                 'currency' => $order->currency,
                 'status' => $order->status,
                 'stripe_session_id' => $order->stripe_session_id,
-                'email' => $order->email,
+                'order_notes' => $order->order_notes,
+                'email' => $order->user->email,
                 'created_at' => $order->created_at->format('M j, Y H:i'),
                 'updated_at' => $order->updated_at->format('M j, Y H:i'),
+                'shipping_address' => $order->shippingAddress ? [
+                    'name' => $order->shippingAddress->name,
+                    'company' => $order->shippingAddress->company,
+                    'address_line_1' => $order->shippingAddress->address_line_1,
+                    'address_line_2' => $order->shippingAddress->address_line_2,
+                    'city' => $order->shippingAddress->city,
+                    'state_province' => $order->shippingAddress->state_province,
+                    'postal_code' => $order->shippingAddress->postal_code,
+                    'country' => $order->shippingAddress->country,
+                    'phone' => $order->shippingAddress->phone,
+                ] : null,
+                'billing_address' => $order->billingAddress ? [
+                    'name' => $order->billingAddress->name,
+                    'company' => $order->billingAddress->company,
+                    'address_line_1' => $order->billingAddress->address_line_1,
+                    'address_line_2' => $order->billingAddress->address_line_2,
+                    'city' => $order->billingAddress->city,
+                    'state_province' => $order->billingAddress->state_province,
+                    'postal_code' => $order->billingAddress->postal_code,
+                    'country' => $order->billingAddress->country,
+                    'phone' => $order->billingAddress->phone,
+                ] : null,
                 'items' => $order->items->map(function ($item) {
                     return [
                         'id' => $item->id,
@@ -65,6 +93,10 @@ class OrderController extends Controller
                             'slug' => $item->artwork->slug,
                             'medium' => $item->artwork->medium,
                             'year' => $item->artwork->year,
+                            'primaryImage' => $item->artwork->primaryImage ? [
+                                'thumb' => $item->artwork->primaryImage->getUrl('thumb'),
+                                'medium' => $item->artwork->primaryImage->getUrl('medium'),
+                            ] : null,
                         ] : null,
                         'edition' => $item->edition ? [
                             'id' => $item->edition->id,
@@ -75,5 +107,83 @@ class OrderController extends Controller
                 }),
             ],
         ]);
+    }
+
+    /**
+     * Create order from cart items
+     */
+    public function store(Request $request): JsonResponse
+    {
+        $userId = Auth::id();
+        
+        // Get user's cart items
+        $cartItems = CartItem::where('user_id', $userId)
+            ->with(['artwork', 'edition'])
+            ->get();
+
+        if ($cartItems->isEmpty()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Your cart is empty'
+            ], 400);
+        }
+
+        try {
+            DB::beginTransaction();
+
+            // Calculate total
+            $total = $cartItems->sum('total_price');
+
+            // Get user's default shipping address
+            $user = Auth::user();
+            $shippingAddress = $user->defaultShippingAddress();
+            
+            // Create order
+            $order = Order::create([
+                'user_id' => $userId,
+                'stripe_session_id' => 'manual_' . time() . '_' . $userId, // Temporary ID for manual orders
+                'total' => $total,
+                'currency' => 'usd',
+                'status' => 'pending',
+                'order_notes' => $request->input('order_notes'),
+                'shipping_address_id' => $shippingAddress ? $shippingAddress->id : null,
+                'billing_address_id' => $shippingAddress ? $shippingAddress->id : null, // Use shipping as billing for now
+                'meta' => [
+                    'source' => 'cart_submission',
+                    'created_at' => now()->toISOString(),
+                ],
+            ]);
+
+            // Create order items from cart items
+            foreach ($cartItems as $cartItem) {
+                OrderItem::create([
+                    'order_id' => $order->id,
+                    'artwork_id' => $cartItem->artwork_id,
+                    'edition_id' => $cartItem->edition_id,
+                    'qty' => $cartItem->quantity,
+                    'unit_price' => $cartItem->price,
+                    'title_snapshot' => $cartItem->name,
+                ]);
+            }
+
+            // Clear the cart
+            CartItem::where('user_id', $userId)->delete();
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Order submitted successfully',
+                'order_id' => $order->id,
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to create order: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }

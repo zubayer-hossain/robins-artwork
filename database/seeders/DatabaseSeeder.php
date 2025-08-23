@@ -16,7 +16,11 @@ class DatabaseSeeder extends Seeder
             UserSeeder::class,
             ArtworkSeeder::class,
             EditionSeeder::class,
+            AddressSeeder::class,
             OrderSeeder::class,
+            CartSeeder::class,
+            FavoritesSeeder::class,
+            RecentViewsSeeder::class,
         ]);
     }
 }

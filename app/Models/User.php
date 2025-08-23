@@ -52,4 +52,34 @@ class User extends Authenticatable
     {
         return $this->hasMany(Order::class);
     }
+
+    public function cartItems()
+    {
+        return $this->hasMany(CartItem::class);
+    }
+
+    public function favorites()
+    {
+        return $this->hasMany(UserFavorite::class);
+    }
+
+    public function recentViews()
+    {
+        return $this->hasMany(UserRecentView::class);
+    }
+
+    public function addresses()
+    {
+        return $this->hasMany(Address::class);
+    }
+
+    public function defaultShippingAddress()
+    {
+        return $this->hasOne(Address::class)->where('type', 'shipping')->where('is_default', true);
+    }
+
+    public function defaultBillingAddress()
+    {
+        return $this->hasOne(Address::class)->where('type', 'billing')->where('is_default', true);
+    }
 }

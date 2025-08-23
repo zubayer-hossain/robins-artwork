@@ -1,14 +1,13 @@
 ﻿import { Head, Link, router } from '@inertiajs/react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import PublicLayout from '@/Layouts/PublicLayout';
 import { useState, useEffect } from 'react';
+import ArtworkCard from '@/Components/ArtworkCard';
 
-export default function GalleryIndex({ artworks, filters, totalArtworks }) {
+export default function GalleryIndex({ artworks, filters, totalArtworks, stats }) {
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedMedium, setSelectedMedium] = useState('all');
     const [selectedYear, setSelectedYear] = useState('all');
@@ -96,22 +95,22 @@ export default function GalleryIndex({ artworks, filters, totalArtworks }) {
                     {/* Stats */}
                     <div className="flex flex-wrap justify-center gap-8 mt-8">
                         <div className="text-center">
-                            <div className="text-3xl font-bold text-purple-600">{totalArtworks || 0}</div>
+                            <div className="text-3xl font-bold text-purple-600">{stats?.totalArtworks || totalArtworks || 0}</div>
                             <div className="text-sm text-gray-600">Artworks</div>
                         </div>
                         <div className="text-center">
-                            <div className="text-3xl font-bold text-blue-600">10+</div>
-                            <div className="text-sm text-gray-600">Artists</div>
+                            <div className="text-3xl font-bold text-blue-600">{stats?.totalYears || 0}</div>
+                            <div className="text-sm text-gray-600">Years</div>
                         </div>
                         <div className="text-center">
-                            <div className="text-3xl font-bold text-green-600">6</div>
+                            <div className="text-3xl font-bold text-green-600">{stats?.totalMediums || 0}</div>
                             <div className="text-sm text-gray-600">Mediums</div>
                         </div>
                     </div>
                 </div>
 
                 {/* Enhanced Filters */}
-                <div className="bg-gradient-to-r from-purple-50 to-blue-50 rounded-2xl shadow-lg border border-purple-100 p-8 mb-12 relative">
+                <div className="bg-gradient-to-r from-purple-50 to-blue-50 rounded-2xl shadow-lg border border-purple-100 mb-12 relative">
                     {/* Subtle Loading Indicator */}
                     <div className="absolute top-4 right-4">
                         <div className="w-2 h-2 bg-purple-400 rounded-full animate-pulse"></div>
@@ -242,83 +241,7 @@ export default function GalleryIndex({ artworks, filters, totalArtworks }) {
                 {artworks.data.length > 0 ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-8">
                         {artworks.data.map((artwork) => (
-                            <Card key={artwork.id} className="group overflow-hidden hover:shadow-2xl transition-all duration-500 border-0 shadow-lg bg-white rounded-2xl">
-                                {/* Enhanced Image Container */}
-                                <div className="relative aspect-square overflow-hidden bg-gradient-to-br from-purple-100 to-blue-100">
-                                    {artwork.primaryImage && artwork.primaryImage.medium ? (
-                                        <img
-                                            src={artwork.primaryImage.medium}
-                                            alt={artwork.title}
-                                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                                            onError={(e) => {
-                                                e.target.style.display = 'none';
-                                                e.target.nextSibling.style.display = 'flex';
-                                            }}
-                                            onLoad={(e) => {
-                                                e.target.nextSibling.style.display = 'none';
-                                            }}
-                                        />
-                                    ) : null}
-                                    
-                                    {/* Fallback Image Display */}
-                                    <div className={`w-full h-full flex items-center justify-center bg-gradient-to-br from-purple-200 to-blue-200 ${artwork.primaryImage && artwork.primaryImage.medium ? 'hidden' : 'flex'}`}>
-                                        <div className="text-center p-6">
-                                            <div className="text-4xl mb-2">🎨</div>
-                                            <div className="text-sm text-gray-600 font-medium">{artwork.title}</div>
-                                            <div className="text-xs text-gray-500 mt-2">{artwork.medium} • {artwork.year}</div>
-                                        </div>
-                                    </div>
-                                    
-                                    {/* Hover Overlay */}
-                                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                                        <div className="absolute bottom-4 left-4 right-4 text-white">
-                                            <div className="text-lg font-bold mb-1">{artwork.title}</div>
-                                            <div className="text-sm opacity-90">{artwork.medium} • {artwork.year}</div>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <CardHeader className="pb-3 pt-4">
-                                    <CardTitle className="text-xl font-bold text-gray-900 group-hover:text-purple-700 transition-colors duration-300">
-                                        {artwork.title}
-                                    </CardTitle>
-                                    <div className="flex items-center gap-2 text-sm text-gray-600">
-                                        <span className="font-medium text-purple-600">{artwork.medium}</span>
-                                        {artwork.year && <span className="text-gray-400">•</span>}
-                                        {artwork.year && <span className="font-medium">{artwork.year}</span>}
-                                    </div>
-                                </CardHeader>
-                                
-                                <CardContent className="pt-0 pb-4">
-                                    <div className="flex items-center justify-between mb-4">
-                                        {artwork.price && (
-                                            <div className="flex flex-col">
-                                                <span className="text-xs text-gray-500 font-medium">Price</span>
-                                                <span className="text-2xl font-bold text-green-600">
-                                                    ${artwork.price.toLocaleString()}
-                                                </span>
-                                            </div>
-                                        )}
-                                        <div className="flex gap-2">
-                                            {artwork.tags && artwork.tags.slice(0, 2).map((tag) => (
-                                                <Badge 
-                                                    key={tag} 
-                                                    variant="secondary" 
-                                                    className="text-xs px-2 py-1 bg-purple-100 text-purple-700 border-purple-200 hover:bg-purple-200 transition-colors"
-                                                >
-                                                    {tag}
-                                                </Badge>
-                                            ))}
-                                        </div>
-                                    </div>
-                                    
-                                    <Link href={route('artwork.show', artwork.slug)}>
-                                        <Button className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-                                            🌐 View Details
-                                        </Button>
-                                    </Link>
-                                </CardContent>
-                            </Card>
+                            <ArtworkCard key={artwork.id} artwork={artwork} />
                         ))}
                     </div>
                 ) : (

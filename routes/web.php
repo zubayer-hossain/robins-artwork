@@ -7,6 +7,9 @@ use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\WebhookController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\OrderController;
+use App\Http\Controllers\CartController;
+use App\Http\Controllers\FavoriteController;
+use App\Http\Controllers\AddressController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\ArtworkController as AdminArtworkController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
@@ -51,7 +54,29 @@ Route::middleware('auth')->group(function () {
     
     // Customer orders
     Route::get('/orders', [OrderController::class, 'index'])->name('orders');
+    Route::post('/orders', [OrderController::class, 'store'])->name('orders.store');
     Route::get('/orders/{order}', [OrderController::class, 'show'])->name('orders.show');
+    
+    // Customer addresses
+    Route::resource('addresses', AddressController::class);
+    Route::patch('/addresses/{address}/set-default', [AddressController::class, 'setDefault'])->name('addresses.set-default');
+    
+    // Cart routes
+    Route::get('/cart', [CartController::class, 'index'])->name('cart');
+    Route::post('/cart', [CartController::class, 'store'])->name('cart.store');
+    Route::put('/cart/{cartItem}', [CartController::class, 'update'])->name('cart.update');
+    Route::delete('/cart/{cartItem}', [CartController::class, 'destroy'])->name('cart.destroy');
+    Route::delete('/cart', [CartController::class, 'clear'])->name('cart.clear');
+    Route::get('/cart/count', [CartController::class, 'count'])->name('cart.count');
+    
+    // Favorites routes
+    Route::get('/favorites', [FavoriteController::class, 'index'])->name('favorites');
+    Route::post('/favorites/toggle', [FavoriteController::class, 'toggle'])->name('favorites.toggle');
+    Route::get('/favorites/check/{artwork}', [FavoriteController::class, 'check'])->name('favorites.check');
+    
+    // Recent views routes
+    Route::get('/recent-views', [FavoriteController::class, 'recentViews'])->name('recent-views');
+    Route::post('/track-view', [FavoriteController::class, 'trackView'])->name('track-view');
 });
 
 // Admin routes

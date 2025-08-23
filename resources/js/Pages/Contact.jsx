@@ -23,16 +23,21 @@ export default function Contact({ success, errors }) {
         post(route('contact.store'), {
             onSuccess: () => {
                 reset();
+                window.toast?.success('Your message has been sent successfully! We\'ll get back to you soon.', 'Message Sent');
                 setShowSuccess(true);
                 // Hide success message after 8 seconds
                 setTimeout(() => setShowSuccess(false), 8000);
             },
+            onError: () => {
+                window.toast?.error('There was an error sending your message. Please try again.', 'Error');
+            }
         });
     };
 
     // Show success message when it's passed from backend
     useEffect(() => {
         if (success) {
+            window.toast?.success('Your message has been sent successfully! We\'ll get back to you soon.', 'Message Sent');
             setShowSuccess(true);
             setTimeout(() => setShowSuccess(false), 8000);
         }

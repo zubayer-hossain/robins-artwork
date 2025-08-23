@@ -1,8 +1,10 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Link, usePage } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Badge } from '@/components/ui/badge';
+import { useCart } from '@/Contexts/CartContext';
+import CartDropdown from '@/Components/CartDropdown';
 import { 
     User, 
     Settings, 
@@ -11,12 +13,16 @@ import {
     LayoutDashboard, 
     Shield,
     Menu,
-    X
+    X,
+    ShoppingCart
 } from 'lucide-react';
 
 export default function PublicLayout({ children }) {
     const { auth } = usePage().props;
     const [showingNavigationDropdown, setShowingNavigationDropdown] = useState(false);
+    const [isCartDropdownOpen, setIsCartDropdownOpen] = useState(false);
+    const cartButtonRef = useRef(null);
+    const { cartCount } = useCart();
     
     const user = auth.user;
     const isAdmin = user && user.roles && user.roles.includes('admin');
@@ -55,8 +61,39 @@ export default function PublicLayout({ children }) {
                             </div>
                         </div>
 
-                        {/* Right side - Auth/User Menu */}
+                        {/* Right side - Cart + Auth/User Menu */}
                         <div className="flex items-center space-x-4">
+                            {/* Cart Dropdown */}
+                            {auth.user && (
+                                <div className="relative">
+                                    <Button 
+                                        ref={cartButtonRef}
+                                        variant="ghost" 
+                                        size="sm" 
+                                        className="relative p-2 hover:bg-gray-50"
+                                        onClick={() => {
+                                            setIsCartDropdownOpen(!isCartDropdownOpen);
+                                            setShowingNavigationDropdown(false); // Close mobile menu when opening cart dropdown
+                                        }}
+                                    >
+                                        <ShoppingCart className="w-5 h-5 text-gray-600" />
+                                        {cartCount > 0 && (
+                                            <Badge 
+                                                className="absolute -top-2 -right-2 w-5 h-5 p-0 flex items-center justify-center bg-red-500 hover:bg-red-500 text-white text-xs font-bold rounded-full"
+                                            >
+                                                {cartCount > 99 ? '99+' : (cartCount > 10 ? '10+' : cartCount)}
+                                            </Badge>
+                                        )}
+                                    </Button>
+                                    
+                                    <CartDropdown 
+                                        isOpen={isCartDropdownOpen}
+                                        onClose={() => setIsCartDropdownOpen(false)}
+                                        triggerRef={cartButtonRef}
+                                    />
+                                </div>
+                            )}
+
                             {auth.user ? (
                                 <>
                                     {/* User is logged in - Modern Design - Hidden on mobile */}
@@ -186,7 +223,10 @@ export default function PublicLayout({ children }) {
                                 <Button
                                     variant="ghost"
                                     size="sm"
-                                    onClick={() => setShowingNavigationDropdown(!showingNavigationDropdown)}
+                                    onClick={() => {
+                                        setShowingNavigationDropdown(!showingNavigationDropdown);
+                                        setIsCartDropdownOpen(false); // Close cart dropdown when opening mobile menu
+                                    }}
                                     className="p-2"
                                 >
                                     {showingNavigationDropdown ? (
@@ -216,6 +256,26 @@ export default function PublicLayout({ children }) {
                             <MobileNavLink href={route('contact')} active={route().current('contact')}>
                                 Contact
                             </MobileNavLink>
+                            
+                            {/* Cart link for mobile - only show if logged in */}
+                            {auth.user && (
+                                <Button 
+                                    variant="ghost" 
+                                    className="w-full justify-start"
+                                    onClick={() => {
+                                        setIsCartDropdownOpen(!isCartDropdownOpen);
+                                        setShowingNavigationDropdown(false);
+                                    }}
+                                >
+                                    <ShoppingCart className="w-4 h-4 mr-2" />
+                                    Cart
+                                    {cartCount > 0 && (
+                                        <Badge className="ml-auto bg-red-500 hover:bg-red-500 text-white text-xs">
+                                            {cartCount > 99 ? '99+' : (cartCount > 10 ? '10+' : cartCount)}
+                                        </Badge>
+                                    )}
+                                </Button>
+                            )}
                             
                             {/* Mobile auth links */}
                             {!auth.user ? (

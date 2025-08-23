@@ -3,7 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Artwork;
+use App\Models\UserFavorite;
+use App\Models\UserRecentView;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -46,8 +49,23 @@ class ArtworkController extends Controller
         // Get total count of all published artworks (unfiltered)
         $totalArtworks = Artwork::where('status', 'published')->count();
 
+        // Calculate dynamic stats
+        $stats = [
+            'totalArtworks' => $totalArtworks,
+            'totalMediums' => Artwork::where('status', 'published')->distinct('medium')->count('medium'),
+            'totalYears' => Artwork::where('status', 'published')->distinct('year')->count('year'),
+        ];
+
+        // Get user's favorites if authenticated
+        $userFavorites = [];
+        if (Auth::check()) {
+            $userFavorites = UserFavorite::where('user_id', Auth::id())
+                ->pluck('artwork_id')
+                ->toArray();
+        }
+
         return Inertia::render('Gallery/Index', [
-            'artworks' => $artworks->through(function ($artwork) {
+            'artworks' => $artworks->through(function ($artwork) use ($userFavorites) {
                 return [
                     'id' => $artwork->id,
                     'slug' => $artwork->slug,
@@ -57,6 +75,7 @@ class ArtworkController extends Controller
                     'size_text' => $artwork->size_text,
                     'price' => $artwork->price,
                     'tags' => $artwork->tags,
+                    'isFavorite' => in_array($artwork->id, $userFavorites),
                     'primaryImage' => $artwork->primaryImage ? [
                         'thumb' => $artwork->primaryImage->getUrl('thumb'),
                         'medium' => $artwork->primaryImage->getUrl('medium'),
@@ -84,6 +103,7 @@ class ArtworkController extends Controller
                 'tag' => '',
             ], request()->only(['status', 'title', 'medium', 'year', 'price_min', 'price_max', 'tag'])),
             'totalArtworks' => $totalArtworks,
+            'stats' => $stats,
         ]);
     }
 
@@ -95,7 +115,37 @@ class ArtworkController extends Controller
 
         $this->authorize('view', $artwork);
         
+        // Track view if user is authenticated
+        if (Auth::check()) {
+            UserRecentView::updateOrCreate(
+                [
+                    'user_id' => Auth::id(),
+                    'artwork_id' => $artwork->id,
+                ],
+                [
+                    'viewed_at' => now(),
+                ]
+            );
 
+            // Keep only the latest 10 views per user
+            $recentViews = UserRecentView::where('user_id', Auth::id())
+                ->orderBy('viewed_at', 'desc')
+                ->offset(10)
+                ->limit(1000) // Add limit to make offset work
+                ->pluck('id');
+
+            if ($recentViews->count() > 0) {
+                UserRecentView::whereIn('id', $recentViews)->delete();
+            }
+        }
+
+        // Check if artwork is favorited by current user
+        $isFavorite = false;
+        if (Auth::check()) {
+            $isFavorite = UserFavorite::where('user_id', Auth::id())
+                ->where('artwork_id', $artwork->id)
+                ->exists();
+        }
 
         return Inertia::render('Gallery/Show', [
             'artwork' => [
@@ -156,6 +206,7 @@ class ArtworkController extends Controller
                     ];
                 }),
             ],
+            'isFavorite' => $isFavorite,
         ]);
     }
 }

@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
+use Spatie\Image\Enums\Fit;
 
 class Artwork extends Model implements HasMedia
 {
@@ -48,8 +49,9 @@ class Artwork extends Model implements HasMedia
     public function getPrimaryImageAttribute()
     {
         return $this->getMedia('artwork-images')
-            ->where('custom_properties->is_primary', true)
-            ->first();
+            ->first(function($media) {
+                return $media->getCustomProperty('is_primary') == true;
+            }) ?: $this->getMedia('artwork-images')->first();
     }
 
     public function getImagesAttribute()
@@ -66,19 +68,19 @@ class Artwork extends Model implements HasMedia
                 $this->addMediaConversion('thumb')
                     ->width(400)
                     ->height(400)
-                    ->fit('crop', 400, 400)
+                    ->fit(Fit::Crop, 400, 400)
                     ->performOnCollections('artwork-images');
 
                 $this->addMediaConversion('medium')
                     ->width(1000)
                     ->height(1000)
-                    ->fit('crop', 1000, 1000)
+                    ->fit(Fit::Crop, 1000, 1000)
                     ->performOnCollections('artwork-images');
 
                 $this->addMediaConversion('xl')
                     ->width(2000)
                     ->height(2000)
-                    ->fit('crop', 2000, 2000)
+                    ->fit(Fit::Crop, 2000, 2000)
                     ->performOnCollections('artwork-images');
             });
     }

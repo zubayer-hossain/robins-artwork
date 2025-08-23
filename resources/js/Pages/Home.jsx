@@ -1,9 +1,8 @@
 ﻿import { Head } from '@inertiajs/react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import PublicLayout from '@/Layouts/PublicLayout';
 import { Link } from '@inertiajs/react';
+import ArtworkCard from '@/Components/ArtworkCard';
 
 export default function Home({ featuredArtworks, stats }) {
     return (
@@ -80,45 +79,7 @@ export default function Home({ featuredArtworks, stats }) {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
                     {featuredArtworks.map((artwork) => (
-                        <Card key={artwork.id} className="group overflow-hidden hover:shadow-2xl transition-all duration-300 border-0 shadow-lg">
-                            {artwork.primaryImage && (
-                                <div className="aspect-square overflow-hidden">
-                                    <img
-                                        src={artwork.primaryImage.medium}
-                                        alt={artwork.title}
-                                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                                    />
-                                </div>
-                            )}
-                            <CardHeader className="pb-3">
-                                <CardTitle className="text-xl font-semibold text-gray-900">{artwork.title}</CardTitle>
-                                <div className="flex items-center gap-2 text-sm text-gray-600">
-                                    <span className="font-medium">{artwork.medium}</span>
-                                    {artwork.year && <span>• {artwork.year}</span>}
-                                </div>
-                            </CardHeader>
-                            <CardContent className="pt-0">
-                                <div className="flex items-center justify-between mb-4">
-                                    {artwork.price && (
-                                        <span className="text-2xl font-bold text-green-600">
-                                            ${artwork.price.toLocaleString()}
-                                        </span>
-                                    )}
-                                    <div className="flex gap-2">
-                                        {artwork.tags?.slice(0, 2).map((tag) => (
-                                            <Badge key={tag} variant="secondary" className="text-xs px-2 py-1">
-                                                {tag}
-                                            </Badge>
-                                        ))}
-                                    </div>
-                                </div>
-                                <Link href={route('artwork.show', artwork.slug)}>
-                                    <Button className="w-full bg-purple-600 hover:bg-purple-700 text-white py-3">
-                                        View Details
-                                    </Button>
-                                </Link>
-                            </CardContent>
-                        </Card>
+                        <ArtworkCard key={artwork.id} artwork={artwork} />
                     ))}
                 </div>
 

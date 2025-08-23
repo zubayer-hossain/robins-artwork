@@ -44,7 +44,10 @@ export default function AuthenticatedLayout({ header, children }) {
                                     Dashboard
                                 </NavLink>
                                 <NavLink href={route('orders')} active={route().current('orders')}>
-                                    My Orders
+                                    Orders
+                                </NavLink>
+                                <NavLink href={route('addresses.index')} active={route().current('addresses.*')}>
+                                    Addresses
                                 </NavLink>
                                 <NavLink href={route('profile.edit')} active={route().current('profile.*')}>
                                     Profile
@@ -135,7 +138,13 @@ export default function AuthenticatedLayout({ header, children }) {
                                     <DropdownMenuItem>
                                         <Link href={route('orders')} className="flex items-center space-x-2 w-full">
                                             <Package className="w-4 h-4" />
-                                            <span>My Orders</span>
+                                            <span>Orders</span>
+                                        </Link>
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem>
+                                        <Link href={route('addresses.index')} className="flex items-center space-x-2 w-full">
+                                            <User className="w-4 h-4" />
+                                            <span>Addresses</span>
                                         </Link>
                                     </DropdownMenuItem>
                                     <DropdownMenuItem>
@@ -215,7 +224,10 @@ export default function AuthenticatedLayout({ header, children }) {
                             Dashboard
                             </MobileNavLink>
                             <MobileNavLink href={route('orders')} active={route().current('orders')}>
-                                My Orders
+                                Orders
+                            </MobileNavLink>
+                            <MobileNavLink href={route('addresses.index')} active={route().current('addresses.*')}>
+                                Addresses
                             </MobileNavLink>
                             <MobileNavLink href={route('profile.edit')} active={route().current('profile.*')}>
                                 Profile

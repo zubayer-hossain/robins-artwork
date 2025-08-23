@@ -11,11 +11,11 @@ return new class extends Migration
         Schema::create('orders', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->nullable()->constrained()->onDelete('set null');
-            $table->string('email');
             $table->string('stripe_session_id')->unique();
             $table->decimal('total', 10, 2);
             $table->string('currency')->default('usd');
             $table->enum('status', ['pending', 'paid', 'refunded', 'cancelled'])->default('pending');
+            $table->text('order_notes')->nullable();
             $table->json('meta')->nullable();
             $table->timestamps();
         });

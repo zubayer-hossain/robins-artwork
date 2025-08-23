@@ -3,6 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Artwork;
+use App\Models\Edition;
+use App\Models\UserFavorite;
+use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -19,12 +22,20 @@ class HomeController extends Controller
         // Get real statistics from database
         $stats = [
             'totalArtworks' => Artwork::published()->count(),
-            'limitedEditions' => \App\Models\Edition::where('stock', '>', 0)->count(),
+            'limitedEditions' => Edition::where('stock', '>', 0)->count(),
             'featuredArtists' => Artwork::published()->distinct('medium')->count(),
         ];
 
+        // Get user's favorites if authenticated
+        $userFavorites = [];
+        if (Auth::check()) {
+            $userFavorites = UserFavorite::where('user_id', Auth::id())
+                ->pluck('artwork_id')
+                ->toArray();
+        }
+
         return Inertia::render('Home', [
-            'featuredArtworks' => $featuredArtworks->map(function ($artwork) {
+            'featuredArtworks' => $featuredArtworks->map(function ($artwork) use ($userFavorites) {
                 return [
                     'id' => $artwork->id,
                     'slug' => $artwork->slug,
@@ -32,6 +43,8 @@ class HomeController extends Controller
                     'medium' => $artwork->medium,
                     'year' => $artwork->year,
                     'price' => $artwork->price,
+                    'tags' => $artwork->tags,
+                    'isFavorite' => in_array($artwork->id, $userFavorites),
                     'primaryImage' => $artwork->primaryImage ? [
                         'thumb' => $artwork->primaryImage->getUrl('thumb'),
                         'medium' => $artwork->primaryImage->getUrl('medium'),
