@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Inertia\Inertia;
+use App\Models\Address; // Added this import for Address model
 
 class OrderController extends Controller
 {
@@ -129,16 +130,37 @@ class OrderController extends Controller
             ], 400);
         }
 
+        // Validate address selection
+        $request->validate([
+            'shipping_address_id' => 'required|exists:addresses,id',
+            'billing_address_id' => 'required|exists:addresses,id',
+            'order_notes' => 'nullable|string|max:1000',
+        ]);
+
+        // Ensure addresses belong to the user
+        $shippingAddress = Address::where('id', $request->shipping_address_id)
+            ->where('user_id', $userId)
+            ->where('type', 'shipping')
+            ->first();
+            
+        $billingAddress = Address::where('id', $request->billing_address_id)
+            ->where('user_id', $userId)
+            ->where('type', 'billing')
+            ->first();
+
+        if (!$shippingAddress || !$billingAddress) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid address selection'
+            ], 400);
+        }
+
         try {
             DB::beginTransaction();
 
             // Calculate total
             $total = $cartItems->sum('total_price');
 
-            // Get user's default shipping address
-            $user = Auth::user();
-            $shippingAddress = $user->defaultShippingAddress();
-            
             // Create order
             $order = Order::create([
                 'user_id' => $userId,
@@ -147,8 +169,8 @@ class OrderController extends Controller
                 'currency' => 'usd',
                 'status' => 'pending',
                 'order_notes' => $request->input('order_notes'),
-                'shipping_address_id' => $shippingAddress ? $shippingAddress->id : null,
-                'billing_address_id' => $shippingAddress ? $shippingAddress->id : null, // Use shipping as billing for now
+                'shipping_address_id' => $shippingAddress->id,
+                'billing_address_id' => $billingAddress->id,
                 'meta' => [
                     'source' => 'cart_submission',
                     'created_at' => now()->toISOString(),
@@ -174,7 +196,7 @@ class OrderController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Order submitted successfully',
+                'message' => 'Order created successfully',
                 'order_id' => $order->id,
             ]);
 

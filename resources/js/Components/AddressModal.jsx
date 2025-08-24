@@ -12,7 +12,8 @@ export default function AddressModal({
     isOpen, 
     onClose, 
     address = null, 
-    isEditing = false 
+    isEditing = false,
+    onAddressAdded = null
 }) {
     const [formData, setFormData] = useState({
         type: 'shipping',
@@ -103,6 +104,9 @@ export default function AddressModal({
                 window.toast?.success(message, title);
                 onClose();
                 router.reload();
+                if (onAddressAdded) {
+                    onAddressAdded();
+                }
             } else {
                 window.toast?.error(data.message || 'Failed to save address', 'Error');
             }

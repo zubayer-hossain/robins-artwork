@@ -14,7 +14,10 @@ import {
     Shield,
     Menu,
     X,
-    ShoppingCart
+    ShoppingCart,
+    Heart,
+    Eye,
+    MapPin
 } from 'lucide-react';
 
 export default function PublicLayout({ children }) {
@@ -148,9 +151,27 @@ export default function PublicLayout({ children }) {
                                                 </Link>
                                             </DropdownMenuItem>
                                             <DropdownMenuItem>
+                                                <Link href={route('favorites')} className="flex items-center space-x-2 w-full">
+                                                    <Heart className="w-4 h-4" />
+                                                    <span>Favorites</span>
+                                                </Link>
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem>
+                                                <Link href={route('recent-views')} className="flex items-center space-x-2 w-full">
+                                                    <Eye className="w-4 h-4" />
+                                                    <span>Recent Views</span>
+                                                </Link>
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem>
                                                 <Link href={route('orders')} className="flex items-center space-x-2 w-full">
                                                     <Package className="w-4 h-4" />
-                                                    <span>My Orders</span>
+                                                    <span>Orders</span>
+                                                </Link>
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem>
+                                                <Link href={route('addresses.index')} className="flex items-center space-x-2 w-full">
+                                                    <MapPin className="w-4 h-4" />
+                                                    <span>Addresses</span>
                                                 </Link>
                                             </DropdownMenuItem>
                                             <DropdownMenuItem>

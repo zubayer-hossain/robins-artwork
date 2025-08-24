@@ -27,9 +27,11 @@ class CartController extends Controller implements HasMiddleware
      */
     public function index(Request $request)
     {
-        $cartItems = CartItem::with(['artwork.media', 'edition'])
-            ->where('user_id', Auth::id())
-            ->orderBy('created_at', 'desc')
+        $userId = Auth::id();
+        
+        // Get user's cart items
+        $cartItems = CartItem::where('user_id', $userId)
+            ->with(['artwork', 'edition'])
             ->get()
             ->map(function ($item) {
                 return [
@@ -61,6 +63,12 @@ class CartController extends Controller implements HasMiddleware
         $totalPrice = $cartItems->sum('total_price');
         $itemCount = $cartItems->sum('quantity');
 
+        // Get user's addresses for selection
+        $user = Auth::user();
+        $addresses = $user->addresses()->orderBy('is_default', 'desc')->orderBy('created_at', 'desc')->get();
+        $defaultShippingAddress = $user->defaultShippingAddress();
+        $defaultBillingAddress = $user->defaultBillingAddress();
+
         // Return JSON for AJAX requests (cart dropdown) - only when explicitly requested
         if ($request->ajax() && 
             $request->header('X-Requested-With') === 'XMLHttpRequest' && 
@@ -77,6 +85,9 @@ class CartController extends Controller implements HasMiddleware
             'cartItems' => $cartItems,
             'totalPrice' => $totalPrice,
             'itemCount' => $itemCount,
+            'addresses' => $addresses,
+            'defaultShippingAddress' => $defaultShippingAddress,
+            'defaultBillingAddress' => $defaultBillingAddress,
         ]);
     }
 

@@ -20,7 +20,8 @@ import {
     ShoppingBag,
     Truck,
     Receipt,
-    Loader2
+    Loader2,
+    Settings
 } from 'lucide-react';
 
 export default function OrderDetail({ order }) {
@@ -86,18 +87,18 @@ export default function OrderDetail({ order }) {
             <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                     {/* Modern Header */}
-                    <div className="flex items-center justify-between mb-8">
-                        <div className="flex items-center gap-4">
-                            <div className="p-3 bg-blue-100 rounded-xl">
-                                <Receipt className="w-8 h-8 text-blue-600" />
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 sm:gap-0 mb-8">
+                        <div className="flex items-center gap-3 sm:gap-4">
+                            <div className="p-2 sm:p-3 bg-blue-100 rounded-xl">
+                                <Receipt className="w-6 h-6 sm:w-8 sm:h-8 text-blue-600" />
                             </div>
                             <div>
-                                <h1 className="text-3xl font-bold text-gray-900">Order #{order.id}</h1>
-                                <p className="text-gray-600">Order details and purchase information</p>
+                                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Order #{order.id}</h1>
+                                <p className="text-sm sm:text-base text-gray-600">Order details and purchase information</p>
                             </div>
                         </div>
                         <Link href={route('orders')}>
-                            <Button variant="outline" className="flex items-center gap-2 px-6 py-3 border-gray-300 hover:bg-gray-50">
+                            <Button variant="outline" className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 sm:px-6 py-2 sm:py-3 border-gray-300 hover:bg-gray-50">
                                 <ArrowLeft className="w-4 h-4" />
                                 Back to Orders
                             </Button>
@@ -119,21 +120,21 @@ export default function OrderDetail({ order }) {
                                     </CardTitle>
                                 </CardHeader>
                                 <CardContent className="pt-6">
-                                    <div className="flex items-center justify-between">
-                                        <div className="flex items-center gap-4">
-                                            <Badge className={`${getStatusColor(order.status)} flex items-center gap-2 px-3 py-2 text-sm font-medium`}>
+                                    <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 lg:gap-0">
+                                        <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+                                            <Badge className={`${getStatusColor(order.status)} flex items-center gap-2 px-3 py-2 text-sm font-medium w-fit`}>
                                                 {getStatusIcon(order.status)}
                                                 {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
                                             </Badge>
-                                            <div className="text-gray-600">
+                                            <div className="text-sm sm:text-base text-gray-600 max-w-sm lg:max-w-md">
                                                 {order.status === 'paid' && 'Your order has been successfully processed and is ready for shipping'}
                                                 {order.status === 'pending' && 'Your order is being processed and will be updated soon'}
                                                 {order.status === 'refunded' && 'Your order has been refunded and processed'}
                                                 {order.status === 'cancelled' && 'Your order has been cancelled as requested'}
                                             </div>
                                         </div>
-                                        <div className="text-right">
-                                            <p className="text-3xl font-bold text-gray-900">${order.total}</p>
+                                        <div className="text-center lg:text-right">
+                                            <p className="text-2xl sm:text-3xl font-bold text-gray-900">${order.total}</p>
                                             <p className="text-sm text-gray-500 font-medium">{order.currency?.toUpperCase() || 'USD'}</p>
                                         </div>
                                     </div>
@@ -228,97 +229,97 @@ export default function OrderDetail({ order }) {
                                 </CardContent>
                             </Card>
                              {/* Order Notes and Addresses */}
-                    <div className="space-y-6">
-                        {/* Order Notes Section */}
-                        {order.order_notes && (
-                            <Card className="border-0 shadow-sm bg-white">
-                                <CardHeader className="pb-4 border-b border-gray-100">
-                                    <CardTitle className="flex items-center gap-3 text-xl font-semibold text-gray-900">
-                                        <div className="p-2 bg-purple-50 rounded-lg">
-                                            <FileText className="w-5 h-5 text-purple-600" />
-                                        </div>
-                                        Order Notes
-                                    </CardTitle>
-                                </CardHeader>
-                                <CardContent className="pt-6">
-                                    <div className="p-4 bg-purple-50 rounded-xl border border-purple-100">
-                                        <p className="text-gray-800 leading-relaxed">{order.order_notes}</p>
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        )}
-
-                        {/* Addresses Section */}
-                        {(order.shipping_address || order.billing_address) && (
-                            <Card className="border-0 shadow-sm bg-white">
-                                <CardHeader className="pb-4 border-b border-gray-100">
-                                    <CardTitle className="flex items-center gap-3 text-xl font-semibold text-gray-900">
-                                        <div className="p-2 bg-indigo-50 rounded-lg">
-                                            <MapPin className="w-5 h-5 text-indigo-600" />
-                                        </div>
-                                        Addresses
-                                    </CardTitle>
-                                </CardHeader>
-                                <CardContent className="pt-6">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                        {/* Shipping Address */}
-                                        {order.shipping_address && (
-                                            <div className="p-4 bg-blue-50 rounded-xl border border-blue-100">
-                                                <div className="flex items-center gap-2 mb-3">
-                                                    <Truck className="w-5 h-5 text-blue-600" />
-                                                    <h4 className="font-semibold text-blue-900">Shipping Address</h4>
+                            <div className="space-y-6">
+                                {/* Order Notes Section */}
+                                {order.order_notes && (
+                                    <Card className="border-0 shadow-sm bg-white">
+                                        <CardHeader className="pb-4 border-b border-gray-100">
+                                            <CardTitle className="flex items-center gap-3 text-xl font-semibold text-gray-900">
+                                                <div className="p-2 bg-purple-50 rounded-lg">
+                                                    <FileText className="w-5 h-5 text-purple-600" />
                                                 </div>
-                                                <div className="space-y-1 text-sm text-blue-800">
-                                                    <p className="font-medium">{order.shipping_address.name}</p>
-                                                    {order.shipping_address.company && (
-                                                        <p>{order.shipping_address.company}</p>
-                                                    )}
-                                                    <p>{order.shipping_address.address_line_1}</p>
-                                                    {order.shipping_address.address_line_2 && (
-                                                        <p>{order.shipping_address.address_line_2}</p>
-                                                    )}
-                                                    <p>{order.shipping_address.city}, {order.shipping_address.state_province} {order.shipping_address.postal_code}</p>
-                                                    <p>{order.shipping_address.country}</p>
-                                                    {order.shipping_address.phone && (
-                                                        <p className="mt-2 pt-2 border-t border-blue-200">
-                                                            📞 {order.shipping_address.phone}
-                                                        </p>
-                                                    )}
-                                                </div>
+                                                Order Notes
+                                            </CardTitle>
+                                        </CardHeader>
+                                        <CardContent className="pt-6">
+                                            <div className="p-4 bg-purple-50 rounded-xl border border-purple-100">
+                                                <p className="text-gray-800 leading-relaxed">{order.order_notes}</p>
                                             </div>
-                                        )}
+                                        </CardContent>
+                                    </Card>
+                                )}
 
-                                        {/* Billing Address */}
-                                        {order.billing_address && (
-                                            <div className="p-4 bg-green-50 rounded-xl border border-green-100">
-                                                <div className="flex items-center gap-2 mb-3">
-                                                    <CreditCard className="w-5 h-5 text-green-600" />
-                                                    <h4 className="font-semibold text-green-900">Billing Address</h4>
+                                {/* Addresses Section */}
+                                {(order.shipping_address || order.billing_address) && (
+                                    <Card className="border-0 shadow-sm bg-white">
+                                        <CardHeader className="pb-4 border-b border-gray-100">
+                                            <CardTitle className="flex items-center gap-3 text-xl font-semibold text-gray-900">
+                                                <div className="p-2 bg-indigo-50 rounded-lg">
+                                                    <MapPin className="w-5 h-5 text-indigo-600" />
                                                 </div>
-                                                <div className="space-y-1 text-sm text-green-800">
-                                                    <p className="font-medium">{order.billing_address.name}</p>
-                                                    {order.billing_address.company && (
-                                                        <p>{order.billing_address.company}</p>
-                                                    )}
-                                                    <p>{order.billing_address.address_line_1}</p>
-                                                    {order.billing_address.address_line_2 && (
-                                                        <p>{order.billing_address.address_line_2}</p>
-                                                    )}
-                                                    <p>{order.billing_address.city}, {order.billing_address.state_province} {order.billing_address.postal_code}</p>
-                                                    <p>{order.billing_address.country}</p>
-                                                    {order.billing_address.phone && (
-                                                        <p className="mt-2 pt-2 border-t border-green-200">
-                                                            📞 {order.billing_address.phone}
-                                                        </p>
-                                                    )}
-                                                </div>
+                                                Addresses
+                                            </CardTitle>
+                                        </CardHeader>
+                                        <CardContent className="pt-6">
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                                {/* Shipping Address */}
+                                                {order.shipping_address && (
+                                                    <div className="p-4 bg-blue-50 rounded-xl border border-blue-100">
+                                                        <div className="flex items-center gap-2 mb-3">
+                                                            <Truck className="w-5 h-5 text-blue-600" />
+                                                            <h4 className="font-semibold text-blue-900">Shipping Address</h4>
+                                                        </div>
+                                                        <div className="space-y-1 text-sm text-blue-800">
+                                                            <p className="font-medium">{order.shipping_address.name}</p>
+                                                            {order.shipping_address.company && (
+                                                                <p>{order.shipping_address.company}</p>
+                                                            )}
+                                                            <p>{order.shipping_address.address_line_1}</p>
+                                                            {order.shipping_address.address_line_2 && (
+                                                                <p>{order.shipping_address.address_line_2}</p>
+                                                            )}
+                                                            <p>{order.shipping_address.city}, {order.shipping_address.state_province} {order.shipping_address.postal_code}</p>
+                                                            <p>{order.shipping_address.country}</p>
+                                                            {order.shipping_address.phone && (
+                                                                <p className="mt-2 pt-2 border-t border-blue-200">
+                                                                    📞 {order.shipping_address.phone}
+                                                                </p>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                )}
+
+                                                {/* Billing Address */}
+                                                {order.billing_address && (
+                                                    <div className="p-4 bg-green-50 rounded-xl border border-green-100">
+                                                        <div className="flex items-center gap-2 mb-3">
+                                                            <CreditCard className="w-5 h-5 text-green-600" />
+                                                            <h4 className="font-semibold text-green-900">Billing Address</h4>
+                                                        </div>
+                                                        <div className="space-y-1 text-sm text-green-800">
+                                                            <p className="font-medium">{order.billing_address.name}</p>
+                                                            {order.billing_address.company && (
+                                                                <p>{order.billing_address.company}</p>
+                                                            )}
+                                                            <p>{order.billing_address.address_line_1}</p>
+                                                            {order.billing_address.address_line_2 && (
+                                                                <p>{order.billing_address.address_line_2}</p>
+                                                            )}
+                                                            <p>{order.billing_address.city}, {order.billing_address.state_province} {order.billing_address.postal_code}</p>
+                                                            <p>{order.billing_address.country}</p>
+                                                            {order.billing_address.phone && (
+                                                                <p className="mt-2 pt-2 border-t border-green-200">
+                                                                    📞 {order.billing_address.phone}
+                                                                </p>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                )}
                                             </div>
-                                        )}
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        )}
-                    </div>
+                                        </CardContent>
+                                    </Card>
+                                )}
+                            </div>
                         </div>
 
                         {/* Sidebar */}
@@ -390,17 +391,17 @@ export default function OrderDetail({ order }) {
                             </Card>
 
                             {/* Actions */}
-                            {order.status === 'paid' && (
-                                <Card className="border-0 shadow-sm bg-white">
-                                    <CardHeader className="pb-4 border-b border-gray-100">
-                                        <CardTitle className="flex items-center gap-3 text-lg font-semibold text-gray-900">
-                                            <div className="p-2 bg-blue-50 rounded-lg">
-                                                <Download className="w-5 h-5 text-blue-600" />
-                                            </div>
-                                            Actions
-                                        </CardTitle>
-                                    </CardHeader>
-                                    <CardContent className="pt-6 space-y-3">
+                            <Card className="border-0 shadow-sm bg-white">
+                                <CardHeader className="pb-4 border-b border-gray-100">
+                                    <CardTitle className="flex items-center gap-3 text-lg font-semibold text-gray-900">
+                                        <div className="p-2 bg-blue-50 rounded-lg">
+                                            <Settings className="w-5 h-5 text-blue-600" />
+                                        </div>
+                                        Actions
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent className="pt-6 space-y-3">
+                                    {order.status === 'paid' && (
                                         <Button 
                                             variant="outline" 
                                             className={`w-full h-11 transition-all duration-200 ${
@@ -423,17 +424,17 @@ export default function OrderDetail({ order }) {
                                                 </>
                                             )}
                                         </Button>
-                                        <Link href={route('contact')}>
-                                            <Button 
-                                                variant="ghost" 
-                                                className="w-full h-11 text-gray-700 hover:bg-gray-50"
-                                            >
-                                                Need Help?
-                                            </Button>
-                                        </Link>
-                                    </CardContent>
-                                </Card>
-                            )}
+                                    )}
+                                    <Link href={route('contact')}>
+                                        <Button 
+                                            variant="ghost" 
+                                            className="w-full h-11 text-gray-700 hover:bg-gray-50"
+                                        >
+                                            Need Help?
+                                        </Button>
+                                    </Link>
+                                </CardContent>
+                            </Card>
                         </div>
                     </div>
                 </div>

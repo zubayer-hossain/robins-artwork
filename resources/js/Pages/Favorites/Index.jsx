@@ -76,7 +76,7 @@ export default function Favorites({ favorites }) {
                                             </div>
                                         </div>
                                         
-                                        <ArtworkCard artwork={artworkData} showFavoriteButton={false} />
+                                        <ArtworkCard artwork={artworkData} showFavoriteButton={true} />
                                     </div>
                                 );
                             })}

@@ -124,7 +124,20 @@ export default function CartDropdown({ isOpen, onClose, triggerRef }) {
                 ) : (
                     <div className="p-4 space-y-3">
                         {cartItems.slice(0, 3).map((item) => (
-                            <div key={item.id} className="flex items-start space-x-3 p-3 bg-gray-50 rounded-lg">
+                            <div key={item.id} className="relative flex items-start space-x-3 p-3 bg-gray-50 rounded-lg">
+                                {/* Remove Button - Top Right Corner */}
+                                <button
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        handleRemoveItem(item.id);
+                                    }}
+                                    className="absolute top-2 right-2 text-red-400 hover:text-red-600 transition-colors p-1 hover:bg-red-50 rounded-full z-10"
+                                    title="Remove item"
+                                >
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+
                                 {/* Item Image */}
                                 <div className="flex-shrink-0">
                                     <img
@@ -155,17 +168,10 @@ export default function CartDropdown({ isOpen, onClose, triggerRef }) {
                                                 Qty: {item.quantity}
                                             </span>
                                         </div>
-                                        <div className="flex items-center space-x-2">
+                                        <div className="text-right">
                                             <span className="text-sm font-semibold text-gray-900">
                                                 ${item.total_price}
                                             </span>
-                                            <button
-                                                onClick={() => handleRemoveItem(item.id)}
-                                                className="text-red-400 hover:text-red-600 transition-colors"
-                                                title="Remove item"
-                                            >
-                                                <Trash2 className="w-3 h-3" />
-                                            </button>
                                         </div>
                                     </div>
                                 </div>

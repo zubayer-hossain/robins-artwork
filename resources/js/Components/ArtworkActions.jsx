@@ -45,15 +45,11 @@ export function ArtworkCardActions({ artwork, edition = null, isFavorite = false
             const data = await response.json();
 
             if (data.success) {
-                window.toast?.success('Added to cart successfully!', 'Cart Updated');
-                console.log('Cart response data:', data); // Debug log
-                // Refresh cart count from server to get accurate count
-                refreshCartCount();
+                const itemName = edition ? 'Limited Edition Print' : 'Original Artwork';
+                window.toast?.success(`${itemName} added to cart!`, 'Cart Updated');
+                incrementCartCount();
             } else if (data.already_in_cart) {
-                // Item is already in cart - show info toast
                 window.toast?.info(data.message || 'Item is already in your cart', 'Already in Cart');
-                // Still refresh cart count to ensure accuracy
-                refreshCartCount();
             } else {
                 window.toast?.error(data.message || 'Failed to add to cart', 'Error');
             }
@@ -100,6 +96,11 @@ export function ArtworkCardActions({ artwork, edition = null, isFavorite = false
                 const message = data.is_favorite ? 'Added to favorites!' : 'Removed from favorites';
                 const title = data.is_favorite ? 'Favorite Added' : 'Favorite Removed';
                 window.toast?.success(message, title);
+                
+                // If we're on the favorites page, refresh the page data to update the list
+                if (window.location.pathname.includes('/favorites')) {
+                    router.reload({ only: ['favorites'] });
+                }
             } else {
                 window.toast?.error(data.message || 'Failed to toggle favorite', 'Error');
             }
@@ -357,6 +358,11 @@ export function FavoriteButton({
                 const message = data.is_favorite ? 'Added to favorites!' : 'Removed from favorites';
                 const title = data.is_favorite ? 'Favorite Added' : 'Favorite Removed';
                 window.toast?.success(message, title);
+                
+                // If we're on the favorites page, refresh the page data to update the list
+                if (window.location.pathname.includes('/favorites')) {
+                    router.reload({ only: ['favorites'] });
+                }
             } else {
                 window.toast?.error(data.message || 'Failed to toggle favorite', 'Error');
             }

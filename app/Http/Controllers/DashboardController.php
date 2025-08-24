@@ -20,11 +20,11 @@ class DashboardController extends Controller
             'recentViews' => $user->recentViews()->count(),
         ];
 
-        // Get recent orders (last 5)
+        // Get recent orders (last 3)
         $recentOrders = $user->orders()
             ->with(['items.edition.artwork'])
             ->latest()
-            ->take(5)
+            ->take(3)
             ->get();
 
         return Inertia::render('Dashboard', [

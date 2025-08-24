@@ -14,7 +14,8 @@ import {
     Heart,
     Star,
     CheckCircle,
-    XCircle
+    XCircle,
+    MapPin
 } from 'lucide-react';
 
 export default function Dashboard({ stats, recentOrders }) {
@@ -70,7 +71,7 @@ export default function Dashboard({ stats, recentOrders }) {
         {
             title: 'Addresses',
             description: 'Manage your shipping and billing addresses',
-            icon: User,
+            icon: MapPin,
             href: route('addresses.index'),
             color: 'bg-purple-500 hover:bg-purple-600',
             iconColor: 'text-purple-500'
@@ -205,45 +206,47 @@ export default function Dashboard({ stats, recentOrders }) {
                             </CardHeader>
                             <CardContent className="pt-6">
                                 {recentOrders && recentOrders.length > 0 ? (
-                                    <div className="space-y-4">
+                                    <div className="space-y-2">
                                         {recentOrders.map((order) => (
                                             <Link 
                                                 key={order.id} 
                                                 href={route('orders.show', order.id)}
                                                 className="group block"
                                             >
-                                                <div className="flex items-center gap-4 p-4 rounded-xl border border-gray-100 hover:border-blue-200 hover:bg-blue-50/30 transition-all duration-200">
-                                                    {/* Order Icon */}
+                                                <div className="flex items-center gap-3 p-3 rounded-lg border border-gray-100 hover:border-blue-200 hover:bg-blue-50/30 transition-all duration-200 relative">
+                                                    {/* Simplified Order Icon */}
                                                     <div className="flex-shrink-0">
-                                                        <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center shadow-sm">
-                                                            <Package className="w-5 h-5 text-white" />
+                                                        <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center group-hover:bg-blue-200 transition-colors">
+                                                            <Package className="w-4 h-4 text-blue-600" />
                                                         </div>
                                                     </div>
                                                     
-                                                    {/* Order Details */}
+                                                    {/* Streamlined Order Details - Left Side */}
                                                     <div className="flex-1 min-w-0">
-                                                        <div className="flex items-center gap-3 mb-1">
-                                                            <h4 className="font-semibold text-gray-900 group-hover:text-blue-700 transition-colors truncate">
-                                                                Order #{order.id}
-                                                            </h4>
-                                                            <Badge className={`${getStatusColor(order.status)} flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full`}>
-                                                                {getStatusIcon(order.status)}
-                                                                {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
-                                                            </Badge>
-                                                        </div>
+                                                        <h4 className="font-medium text-gray-900 group-hover:text-blue-700 transition-colors mb-1">
+                                                            Order #{order.id}
+                                                        </h4>
                                                         
-                                                        <div className="flex items-center gap-4 text-sm text-gray-600">
+                                                        <div className="flex items-center gap-3 text-sm text-gray-600">
                                                             <span className="flex items-center gap-1">
-                                                                <ShoppingBag className="w-4 h-4" />
+                                                                <ShoppingBag className="w-3.5 h-3.5" />
                                                                 {order.items?.length || 0} item{order.items?.length !== 1 ? 's' : ''}
                                                             </span>
-                                                            <span className="flex items-center gap-1">
-                                                                <CreditCard className="w-4 h-4" />
+                                                            <span className="flex items-center gap-1 font-medium text-gray-900">
+                                                                <CreditCard className="w-3.5 h-3.5" />
                                                                 ${order.total}
                                                             </span>
                                                         </div>
+                                                    </div>
+                                                    
+                                                    {/* Right Side: Status and Date in Same Row */}
+                                                    <div className="flex flex-col items-end gap-1 mr-8">
+                                                        <Badge className={`${getStatusColor(order.status)} flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded-full`}>
+                                                            {getStatusIcon(order.status)}
+                                                            {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                                                        </Badge>
                                                         
-                                                        <p className="text-xs text-gray-500 mt-1">
+                                                        <p className="text-xs text-gray-500">
                                                             {new Date(order.created_at).toLocaleDateString('en-US', {
                                                                 year: 'numeric',
                                                                 month: 'short',
@@ -252,10 +255,10 @@ export default function Dashboard({ stats, recentOrders }) {
                                                         </p>
                                                     </div>
                                                     
-                                                    {/* View Button */}
-                                                    <div className="flex-shrink-0">
-                                                        <div className="w-8 h-8 bg-blue-100 group-hover:bg-blue-200 rounded-lg flex items-center justify-center transition-all duration-200">
-                                                            <Eye className="w-4 h-4 text-blue-600 group-hover:text-blue-700" />
+                                                    {/* Eye Icon - Top Right Corner on Hover */}
+                                                    <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-all duration-200">
+                                                        <div className="w-7 h-7 bg-blue-100 hover:bg-blue-200 rounded-lg flex items-center justify-center shadow-sm">
+                                                            <Eye className="w-4 h-4 text-blue-600" />
                                                         </div>
                                                     </div>
                                                 </div>
@@ -263,11 +266,11 @@ export default function Dashboard({ stats, recentOrders }) {
                                         ))}
                                         
                                         {/* View All Button */}
-                                        <div className="pt-2">
+                                        <div className="pt-3">
                                             <Link href={route('orders')}>
                                                 <Button 
                                                     variant="outline" 
-                                                    className="w-full h-11 border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition-all duration-200"
+                                                    className="w-full h-10 border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition-all duration-200"
                                                 >
                                                     <Package className="w-4 h-4 mr-2" />
                                                     View All Orders
@@ -301,33 +304,39 @@ export default function Dashboard({ stats, recentOrders }) {
                         <Card>
                             <CardHeader>
                                 <CardTitle className="flex items-center gap-2">
-                                    <Star className="w-5 h-5" />
+                                    <Star className="w-5 h-5 text-amber-500" />
                                     Getting Started
                                 </CardTitle>
                             </CardHeader>
                             <CardContent>
                                 <div className="space-y-4">
-                                    <div className="flex items-start gap-3 p-3 bg-blue-50 rounded-lg">
-                                        <div className="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
+                                    <div className="flex items-start gap-3 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-100">
+                                        <div className="w-2 h-2 bg-blue-500 rounded-full mt-2.5"></div>
                                         <div className="flex-1">
-                                            <h4 className="font-medium text-gray-900">Explore the Gallery</h4>
-                                            <p className="text-sm text-gray-600">Browse our collection of unique artworks and limited editions.</p>
+                                            <h4 className="font-semibold text-gray-900 mb-1">Discover Your Style</h4>
+                                            <p className="text-sm text-gray-700 leading-relaxed">
+                                                Browse our curated collections and use the heart icon to save artworks that resonate with you. We'll use this to recommend similar pieces.
+                                            </p>
                                         </div>
                                     </div>
                                     
-                                    <div className="flex items-start gap-3 p-3 bg-green-50 rounded-lg">
-                                        <div className="w-2 h-2 bg-green-500 rounded-full mt-2"></div>
+                                    <div className="flex items-start gap-3 p-4 bg-gradient-to-r from-emerald-50 to-green-50 rounded-lg border border-emerald-100">
+                                        <div className="w-2 h-2 bg-emerald-500 rounded-full mt-2.5"></div>
                                         <div className="flex-1">
-                                            <h4 className="font-medium text-gray-900">Complete Your Profile</h4>
-                                            <p className="text-sm text-gray-600">Add your preferences and contact information for a better experience.</p>
+                                            <h4 className="font-semibold text-gray-900 mb-1">Limited Editions & Exclusives</h4>
+                                            <p className="text-sm text-gray-700 leading-relaxed">
+                                                Many of our artworks are limited editions. Set up notifications to be first to know when new pieces are released.
+                                            </p>
                                         </div>
                                     </div>
                                     
-                                    <div className="flex items-start gap-3 p-3 bg-purple-50 rounded-lg">
-                                        <div className="w-2 h-2 bg-purple-500 rounded-full mt-2"></div>
+                                    <div className="flex items-start gap-3 p-4 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg border border-purple-100">
+                                        <div className="w-2 h-2 bg-purple-500 rounded-full mt-2.5"></div>
                                         <div className="flex-1">
-                                            <h4 className="font-medium text-gray-900">Stay Updated</h4>
-                                            <p className="text-sm text-gray-600">Follow your favorite artists and get notified about new releases.</p>
+                                            <h4 className="font-semibold text-gray-900 mb-1">Art Investment Tips</h4>
+                                            <p className="text-sm text-gray-700 leading-relaxed">
+                                                Learn about art collecting, authentication, and how to care for your pieces. Check our blog for expert insights and market trends.
+                                            </p>
                                         </div>
                                     </div>
                                 </div>
