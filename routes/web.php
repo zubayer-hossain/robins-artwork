@@ -88,10 +88,11 @@ Route::middleware('auth')->group(function () {
     Route::patch('/addresses/{address}/set-default', [AddressController::class, 'setDefault'])->name('addresses.set-default');
     
     // Cart routes
+    Route::post('/cart/{cartItem}/delete', [CartController::class, 'destroy'])->name('cart.destroy');
+    Route::put('/cart/{cartItem}', [CartController::class, 'update'])->name('cart.update');
+
     Route::get('/cart', [CartController::class, 'index'])->name('cart');
     Route::post('/cart', [CartController::class, 'store'])->name('cart.store');
-    Route::put('/cart/{cartItem}', [CartController::class, 'update'])->name('cart.update');
-    Route::post('/cart/{cartItem}/delete', [CartController::class, 'destroy'])->name('cart.destroy');
     Route::post('/cart/clear', [CartController::class, 'clear'])->name('cart.clear');
     Route::get('/cart/count', [CartController::class, 'count'])->name('cart.count');
     
