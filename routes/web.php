@@ -55,6 +55,13 @@ Route::post('/debug/csrf', function () {
     ]);
 })->middleware('auth')->name('debug.csrf');
 
+// CSRF token refresh route
+Route::get('/csrf-token', function () {
+    return response()->json([
+        'token' => csrf_token(),
+    ]);
+})->middleware('auth')->name('csrf.token');
+
 
 // Checkout routes
 Route::post('/checkout', [CheckoutController::class, 'create'])->name('checkout.create');

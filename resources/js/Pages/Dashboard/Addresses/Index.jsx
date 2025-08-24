@@ -16,20 +16,55 @@ export default function AddressesIndex({ addresses }) {
     const [addressToSetDefault, setAddressToSetDefault] = useState(null);
     const [existingDefault, setExistingDefault] = useState(null);
     const [isSettingDefault, setIsSettingDefault] = useState(false);
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const [addressToDelete, setAddressToDelete] = useState(null);
 
     const handleDeleteAddress = async (addressId) => {
-        if (!confirm('Are you sure you want to delete this address?')) return;
+        // Find the address to delete
+        const addressToDelete = addresses.find(addr => addr.id === addressId);
+        if (!addressToDelete) {
+            window.toast?.error('Address not found', 'Error');
+            return;
+        }
 
-        setDeletingAddress(addressId);
+        // Show confirmation modal
+        setAddressToDelete(addressToDelete);
+        setShowDeleteConfirm(true);
+    };
+
+    const confirmDeleteAddress = async () => {
+        if (!addressToDelete) return;
+
+        setDeletingAddress(addressToDelete.id);
         
         try {
-            const response = await fetch(route('addresses.destroy', addressId), {
+            // Get CSRF token from meta tag
+            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+            
+            if (!csrfToken) {
+                window.toast?.error('CSRF token not found. Please refresh the page and try again.', 'Session Error');
+                return;
+            }
+
+            const response = await fetch(route('addresses.destroy', addressToDelete.id), {
                 method: 'POST',
                 headers: {
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content'),
+                    'X-CSRF-TOKEN': csrfToken,
                     'X-Requested-With': 'XMLHttpRequest',
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
                 },
+                credentials: 'same-origin',
             });
+
+            if (!response.ok) {
+                if (response.status === 419) {
+                    // CSRF token mismatch - suggest page refresh
+                    window.toast?.error('Session expired. Please refresh the page and try again.', 'Session Error');
+                    return;
+                }
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
 
             const data = await response.json();
 
@@ -40,10 +75,22 @@ export default function AddressesIndex({ addresses }) {
                 window.toast?.error(data.message || 'Failed to delete address', 'Error');
             }
         } catch (error) {
-            window.toast?.error('Network error occurred', 'Connection Error');
+            console.error('Delete address error:', error);
+            if (error.message.includes('CSRF') || error.message.includes('Session expired')) {
+                window.toast?.error('Session expired. Please refresh the page and try again.', 'Session Error');
+            } else {
+                window.toast?.error('Network error occurred', 'Connection Error');
+            }
         } finally {
             setDeletingAddress(null);
+            setShowDeleteConfirm(false);
+            setAddressToDelete(null);
         }
+    };
+
+    const cancelDeleteAddress = () => {
+        setShowDeleteConfirm(false);
+        setAddressToDelete(null);
     };
 
     const handleSetDefault = async (addressId) => {
@@ -75,13 +122,34 @@ export default function AddressesIndex({ addresses }) {
     const setDefaultAddress = async (addressId) => {
         try {
             setIsSettingDefault(true);
+            
+            // Get CSRF token from meta tag
+            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+            
+            if (!csrfToken) {
+                window.toast?.error('CSRF token not found. Please refresh the page and try again.', 'Session Error');
+                return;
+            }
+
             const response = await fetch(route('addresses.set-default', addressId), {
                 method: 'PATCH',
                 headers: {
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content'),
+                    'X-CSRF-TOKEN': csrfToken,
                     'X-Requested-With': 'XMLHttpRequest',
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
                 },
+                credentials: 'same-origin',
             });
+
+            if (!response.ok) {
+                if (response.status === 419) {
+                    // CSRF token mismatch - suggest page refresh
+                    window.toast?.error('Session expired. Please refresh the page and try again.', 'Session Error');
+                    return;
+                }
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
 
             const data = await response.json();
 
@@ -93,7 +161,12 @@ export default function AddressesIndex({ addresses }) {
                 window.toast?.error(data.message || 'Failed to update default address', 'Error');
             }
         } catch (error) {
-            window.toast?.error('Network error occurred', 'Connection Error');
+            console.error('Set default address error:', error);
+            if (error.message.includes('CSRF') || error.message.includes('Session expired')) {
+                window.toast?.error('Session expired. Please refresh the page and try again.', 'Session Error');
+            } else {
+                window.toast?.error('Network error occurred', 'Connection Error');
+            }
         } finally {
             setIsSettingDefault(false);
         }
@@ -374,6 +447,80 @@ export default function AddressesIndex({ addresses }) {
                                     </>
                                 ) : (
                                     'Replace Default'
+                                )}
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Delete Confirmation Modal */}
+            {showDeleteConfirm && addressToDelete && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6">
+                        <div className="flex items-center gap-3 mb-4">
+                            <div className="p-2 bg-red-100 rounded-full">
+                                <AlertTriangle className="w-6 h-6 text-red-600" />
+                            </div>
+                            <h3 className="text-lg font-semibold text-gray-900">
+                                Confirm Deletion
+                            </h3>
+                        </div>
+                        
+                        <div className="mb-6">
+                            <p className="text-gray-600 mb-4">
+                                Are you sure you want to delete this address? This action cannot be undone.
+                            </p>
+                            
+                            {addressToDelete.is_default && (
+                                <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                                    <div className="flex items-center gap-2">
+                                        <Star className="w-4 h-4 text-yellow-600" />
+                                        <span className="text-sm font-medium text-yellow-800">
+                                            This is your default {addressToDelete.type} address
+                                        </span>
+                                    </div>
+                                    <p className="text-xs text-yellow-700 mt-1">
+                                        Deleting it will remove your default {addressToDelete.type} address.
+                                    </p>
+                                </div>
+                            )}
+                            
+                            <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                                <div className="flex items-center justify-between mb-2">
+                                    <p className="text-sm text-gray-600">
+                                        {addressToDelete.label || `${addressToDelete.type.charAt(0).toUpperCase() + addressToDelete.type.slice(1)} Address`}
+                                    </p>
+                                    <Badge className={`${getAddressTypeColor(addressToDelete.type)} border font-medium px-2 py-1 text-xs`}>
+                                        {addressToDelete.type.charAt(0).toUpperCase() + addressToDelete.type.slice(1)}
+                                    </Badge>
+                                </div>
+                                <p className="text-xs text-gray-500">
+                                    {addressToDelete.address_line_1}, {addressToDelete.city}
+                                </p>
+                            </div>
+                        </div>
+                        
+                        <div className="flex gap-3">
+                            <Button
+                                variant="outline"
+                                onClick={cancelDeleteAddress}
+                                className="flex-1 border-gray-300 text-gray-700 hover:bg-gray-50"
+                            >
+                                Cancel
+                            </Button>
+                            <Button
+                                onClick={confirmDeleteAddress}
+                                disabled={deletingAddress === addressToDelete.id}
+                                className="flex-1 bg-red-600 hover:bg-red-700 text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                {deletingAddress === addressToDelete.id ? (
+                                    <>
+                                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                                        Deleting...
+                                    </>
+                                ) : (
+                                    'Delete Address'
                                 )}
                             </Button>
                         </div>
