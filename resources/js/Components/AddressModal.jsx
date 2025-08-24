@@ -84,7 +84,7 @@ export default function AddressModal({
                 ? route('addresses.update', address.id)
                 : route('addresses.store');
             
-            const method = isEditing ? 'PUT' : 'POST';
+            const method = 'POST'; // Always use POST for both create and update
 
             const response = await fetch(url, {
                 method,

@@ -24,7 +24,7 @@ export default function AddressesIndex({ addresses }) {
         
         try {
             const response = await fetch(route('addresses.destroy', addressId), {
-                method: 'DELETE',
+                method: 'POST',
                 headers: {
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content'),
                     'X-Requested-With': 'XMLHttpRequest',

@@ -34,6 +34,27 @@ Route::get('/test', function () {
     return Inertia::render('Test', ['message' => 'Hello World']);
 })->name('test');
 
+// Debug route for authentication testing
+Route::get('/debug/auth', function () {
+    return response()->json([
+        'authenticated' => auth()->check(),
+        'user_id' => auth()->id(),
+        'user' => auth()->user(),
+        'session_id' => session()->getId(),
+        'csrf_token' => csrf_token(),
+    ]);
+})->middleware('auth')->name('debug.auth');
+
+// Debug route for CSRF testing
+Route::post('/debug/csrf', function () {
+    return response()->json([
+        'success' => true,
+        'message' => 'CSRF token is valid',
+        'received_token' => request()->header('X-CSRF-TOKEN'),
+        'session_token' => csrf_token(),
+    ]);
+})->middleware('auth')->name('debug.csrf');
+
 
 // Checkout routes
 Route::post('/checkout', [CheckoutController::class, 'create'])->name('checkout.create');
@@ -51,7 +72,7 @@ Route::get('/dashboard', [DashboardController::class, 'index'])
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::post('/profile/delete', [ProfileController::class, 'destroy'])->name('profile.destroy');
     
     // Customer orders
     Route::get('/orders', [OrderController::class, 'index'])->name('orders');
@@ -60,15 +81,18 @@ Route::middleware('auth')->group(function () {
     Route::get('/orders/{order}/receipt', [OrderController::class, 'downloadReceipt'])->name('orders.receipt');
     
     // Customer addresses
-    Route::resource('addresses', AddressController::class);
+    Route::get('/addresses', [AddressController::class, 'index'])->name('addresses.index');
+    Route::post('/addresses', [AddressController::class, 'store'])->name('addresses.store');
+    Route::post('/addresses/{address}/update', [AddressController::class, 'update'])->name('addresses.update');
+    Route::post('/addresses/{address}/delete', [AddressController::class, 'destroy'])->name('addresses.destroy');
     Route::patch('/addresses/{address}/set-default', [AddressController::class, 'setDefault'])->name('addresses.set-default');
     
     // Cart routes
     Route::get('/cart', [CartController::class, 'index'])->name('cart');
     Route::post('/cart', [CartController::class, 'store'])->name('cart.store');
     Route::put('/cart/{cartItem}', [CartController::class, 'update'])->name('cart.update');
-    Route::delete('/cart/{cartItem}', [CartController::class, 'destroy'])->name('cart.destroy');
-    Route::delete('/cart', [CartController::class, 'clear'])->name('cart.clear');
+    Route::post('/cart/{cartItem}/delete', [CartController::class, 'destroy'])->name('cart.destroy');
+    Route::post('/cart/clear', [CartController::class, 'clear'])->name('cart.clear');
     Route::get('/cart/count', [CartController::class, 'count'])->name('cart.count');
     
     // Favorites routes

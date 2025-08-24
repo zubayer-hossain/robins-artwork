@@ -61,7 +61,7 @@ export default function CartDropdown({ isOpen, onClose, triggerRef }) {
     const handleRemoveItem = async (cartItemId) => {
         try {
             const response = await fetch(route('cart.destroy', cartItemId), {
-                method: 'DELETE',
+                method: 'POST',
                 headers: {
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content'),
                     'X-Requested-With': 'XMLHttpRequest',
@@ -87,13 +87,12 @@ export default function CartDropdown({ isOpen, onClose, triggerRef }) {
     return (
         <div 
             data-cart-dropdown
-            className="absolute right-0 top-full mt-2 w-80 sm:w-96 md:w-80 lg:w-96 bg-white rounded-lg shadow-xl border border-gray-200 z-50 max-h-96 flex flex-col
-                       max-w-[calc(100vw-2rem)] sm:max-w-none" // Ensure it doesn't overflow on very small screens
+            className="fixed sm:absolute right-4 sm:right-0 top-20 sm:top-full sm:mt-2 w-80 sm:w-96 lg:w-[28rem] bg-white rounded-lg shadow-xl border border-gray-200 z-50 max-h-96 flex flex-col"
         >
             {/* Header */}
-            <div className="p-4 border-b border-gray-100">
+            <div className="p-3 sm:p-5 border-b border-gray-100">
                 <div className="flex items-center justify-between">
-                    <h3 className="font-semibold text-gray-900 flex items-center">
+                    <h3 className="text-sm sm:text-base font-semibold text-gray-900 flex items-center">
                         <ShoppingCart className="w-4 h-4 mr-2" />
                         Cart Items ({cartCount})
                     </h3>
@@ -122,9 +121,9 @@ export default function CartDropdown({ isOpen, onClose, triggerRef }) {
                         <p className="text-sm text-gray-400">Add some artworks to get started</p>
                     </div>
                 ) : (
-                    <div className="p-4 space-y-3">
+                    <div className="p-3 space-y-2">
                         {cartItems.slice(0, 3).map((item) => (
-                            <div key={item.id} className="relative flex items-start space-x-3 p-3 bg-gray-50 rounded-lg">
+                            <div key={item.id} className="relative flex items-start p-2 sm:p-4 bg-gray-50 rounded-lg">
                                 {/* Remove Button - Top Right Corner */}
                                 <button
                                     onClick={(e) => {
@@ -139,13 +138,13 @@ export default function CartDropdown({ isOpen, onClose, triggerRef }) {
                                 </button>
 
                                 {/* Item Image */}
-                                <div className="flex-shrink-0">
+                                <div className="flex-shrink-0 mr-2 sm:mr-4">
                                     <img
                                         src={item.artwork?.primaryImage?.thumb || 
                                              item.edition?.artwork?.primaryImage?.thumb || 
                                              `https://picsum.photos/60/60?random=${item.id}`}
                                         alt={item.name}
-                                        className="w-12 h-12 object-cover rounded-md"
+                                        className="w-10 h-10 sm:w-14 sm:h-14 object-cover rounded-md"
                                     />
                                 </div>
 
@@ -192,24 +191,24 @@ export default function CartDropdown({ isOpen, onClose, triggerRef }) {
 
             {/* Footer */}
             {cartItems.length > 0 && (
-                <div className="p-4 border-t border-gray-100 bg-gray-50 rounded-b-lg">
+                <div className="p-3 sm:p-5 border-t border-gray-100 bg-gray-50 rounded-b-lg">
                     {/* Total */}
                     <div className="flex justify-between items-center mb-3">
-                        <span className="font-medium text-gray-900">Total:</span>
-                        <span className="text-lg font-bold text-gray-900">${totalPrice}</span>
+                        <span className="text-sm sm:text-base font-medium text-gray-900">Total:</span>
+                        <span className="text-base sm:text-lg font-bold text-gray-900">${totalPrice}</span>
                     </div>
 
                     {/* Action Buttons */}
-                    <div className="flex gap-2">
+                    <div className="flex flex-col sm:flex-row gap-2">
                         <Link href={route('cart')} onClick={onClose} className="flex-1">
-                            <Button className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
-                                <Eye className="w-4 h-4 mr-2" />
+                            <Button className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-sm sm:text-base h-10 sm:h-11 transition-all duration-200 shadow-sm hover:shadow-md">
+                                <Eye className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
                                 View Cart
                             </Button>
                         </Link>
                         
                         <Link href={route('gallery')} onClick={onClose} className="flex-1">
-                            <Button variant="outline" className="w-full">
+                            <Button variant="outline" className="w-full text-sm sm:text-base h-10 sm:h-11 border-gray-300 hover:border-gray-400 hover:bg-gray-50 transition-all duration-200">
                                 Continue Shopping
                             </Button>
                         </Link>

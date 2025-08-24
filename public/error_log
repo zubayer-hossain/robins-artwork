@@ -1,0 +1,7 @@
+[24-Aug-2025 07:40:41 UTC] PHP Fatal error:  Uncaught RuntimeException: Composer detected issues in your platform: Your Composer dependencies require a PHP version ">= 8.2.0". You are running 7.4.33. in /home/zubayerh/public_html/subdomains/artwork.zubayerhs.com/vendor/composer/platform_check.php:26
+Stack trace:
+#0 /home/zubayerh/public_html/subdomains/artwork.zubayerhs.com/vendor/composer/autoload_real.php(25): require()
+#1 /home/zubayerh/public_html/subdomains/artwork.zubayerhs.com/vendor/autoload.php(22): ComposerAutoloaderInit88970a0117c062eed55fa8728fc43833::getLoader()
+#2 /home/zubayerh/public_html/subdomains/artwork.zubayerhs.com/public/index.php(14): require('/home/zubayerh/...')
+#3 {main}
+  thrown in /home/zubayerh/public_html/subdomains/artwork.zubayerhs.com/vendor/composer/platform_check.php on line 26

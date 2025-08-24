@@ -56,7 +56,7 @@ export default function CartIndex({ cartItems, totalPrice, itemCount, addresses,
     const handleRemoveItem = async (cartItemId) => {
         try {
             const response = await fetch(route('cart.destroy', cartItemId), {
-                method: 'DELETE',
+                method: 'POST',
                 headers: {
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content'),
                     'X-Requested-With': 'XMLHttpRequest',
@@ -83,7 +83,7 @@ export default function CartIndex({ cartItems, totalPrice, itemCount, addresses,
 
         try {
             const response = await fetch(route('cart.clear'), {
-                method: 'DELETE',
+                method: 'POST',
                 headers: {
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content'),
                     'X-Requested-With': 'XMLHttpRequest',

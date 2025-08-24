@@ -278,25 +278,7 @@ export default function PublicLayout({ children }) {
                                 Contact
                             </MobileNavLink>
                             
-                            {/* Cart link for mobile - only show if logged in */}
-                            {auth.user && (
-                                <Button 
-                                    variant="ghost" 
-                                    className="w-full justify-start"
-                                    onClick={() => {
-                                        setIsCartDropdownOpen(!isCartDropdownOpen);
-                                        setShowingNavigationDropdown(false);
-                                    }}
-                                >
-                                    <ShoppingCart className="w-4 h-4 mr-2" />
-                                    Cart
-                                    {cartCount > 0 && (
-                                        <Badge className="ml-auto bg-red-500 hover:bg-red-500 text-white text-xs">
-                                            {cartCount > 99 ? '99+' : (cartCount > 10 ? '10+' : cartCount)}
-                                        </Badge>
-                                    )}
-                                </Button>
-                            )}
+
                             
                             {/* Mobile auth links */}
                             {!auth.user ? (
@@ -331,10 +313,28 @@ export default function PublicLayout({ children }) {
                                                 Dashboard
                                             </Button>
                                         </Link>
+                                        <Link href={route('favorites')}>
+                                            <Button variant="ghost" className="w-full justify-start">
+                                                <Heart className="w-4 h-4 mr-2" />
+                                                Favorites
+                                            </Button>
+                                        </Link>
+                                        <Link href={route('recent-views')}>
+                                            <Button variant="ghost" className="w-full justify-start">
+                                                <Eye className="w-4 h-4 mr-2" />
+                                                Recent Views
+                                            </Button>
+                                        </Link>
                                         <Link href={route('orders')}>
                                             <Button variant="ghost" className="w-full justify-start">
                                                 <Package className="w-4 h-4 mr-2" />
                                                 My Orders
+                                            </Button>
+                                        </Link>
+                                        <Link href={route('addresses.index')}>
+                                            <Button variant="ghost" className="w-full justify-start">
+                                                <MapPin className="w-4 h-4 mr-2" />
+                                                Addresses
                                             </Button>
                                         </Link>
                                         <Link href={route('profile.edit')}>
@@ -343,6 +343,9 @@ export default function PublicLayout({ children }) {
                                                 Profile
                                             </Button>
                                         </Link>
+                                        
+                                        {/* Separator before admin section */}
+                                        <div className="border-t border-gray-100 my-2"></div>
                                         
                                         {/* Admin Section for Mobile */}
                                         {isAdmin && (
@@ -373,6 +376,9 @@ export default function PublicLayout({ children }) {
                                                 </Link>
                                             </>
                                         )}
+                                        
+                                        {/* Separator before logout */}
+                                        <div className="border-t border-gray-100 my-2"></div>
                                         
                                         <Link href={route('logout')} method="post" as="button">
                                             <Button variant="ghost" className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50">

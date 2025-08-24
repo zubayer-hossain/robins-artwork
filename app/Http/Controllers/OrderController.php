@@ -43,8 +43,22 @@ class OrderController extends Controller
     {
         $user = $request->user();
         
+        // Debug logging
+        \Log::info('Order show attempt', [
+            'user_id' => $user ? $user->id : null,
+            'order_user_id' => $order->user_id,
+            'order_id' => $order->id,
+            'session_id' => $request->session()->getId(),
+            'authenticated' => Auth::check(),
+        ]);
+        
         // Ensure the user can only view their own orders
         if ($order->user_id !== $user->id) {
+            \Log::warning('Unauthorized order access', [
+                'user_id' => $user ? $user->id : null,
+                'order_user_id' => $order->user_id,
+                'order_id' => $order->id,
+            ]);
             abort(403, 'Unauthorized access to order.');
         }
 

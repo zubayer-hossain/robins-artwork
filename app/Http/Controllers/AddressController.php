@@ -80,8 +80,25 @@ class AddressController extends Controller
     public function update(Request $request, Address $address): JsonResponse
     {
         try {
+            // Debug logging
+            \Log::info('Address update attempt', [
+                'user_id' => Auth::id(),
+                'address_user_id' => $address->user_id,
+                'address_id' => $address->id,
+                'session_id' => $request->session()->getId(),
+                'authenticated' => Auth::check(),
+                'method' => $request->method(),
+                'csrf_token' => $request->header('X-CSRF-TOKEN'),
+                'session_csrf' => csrf_token(),
+            ]);
+            
             // Ensure user owns this address
             if ($address->user_id !== Auth::id()) {
+                \Log::warning('Unauthorized address access', [
+                    'user_id' => Auth::id(),
+                    'address_user_id' => $address->user_id,
+                    'address_id' => $address->id,
+                ]);
                 return response()->json([
                     'success' => false,
                     'message' => 'Unauthorized access to address.',
@@ -139,8 +156,22 @@ class AddressController extends Controller
     public function destroy(Address $address): JsonResponse
     {
         try {
+            // Debug logging
+            \Log::info('Address destroy attempt', [
+                'user_id' => Auth::id(),
+                'address_user_id' => $address->user_id,
+                'address_id' => $address->id,
+                'session_id' => request()->session()->getId(),
+                'authenticated' => Auth::check(),
+            ]);
+            
             // Ensure user owns this address
             if ($address->user_id !== Auth::id()) {
+                \Log::warning('Unauthorized address deletion', [
+                    'user_id' => Auth::id(),
+                    'address_user_id' => $address->user_id,
+                    'address_id' => $address->id,
+                ]);
                 return response()->json([
                     'success' => false,
                     'message' => 'Unauthorized access to address.',
