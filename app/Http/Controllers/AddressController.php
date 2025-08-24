@@ -93,7 +93,7 @@ class AddressController extends Controller
             ]);
             
             // Ensure user owns this address
-            if ($address->user_id !== Auth::id()) {
+            if ($address->user_id != Auth::id()) {
                 \Log::warning('Unauthorized address access', [
                     'user_id' => Auth::id(),
                     'address_user_id' => $address->user_id,
@@ -166,7 +166,7 @@ class AddressController extends Controller
             ]);
             
             // Ensure user owns this address
-            if ($address->user_id !== Auth::id()) {
+            if ($address->user_id != Auth::id()) {
                 \Log::warning('Unauthorized address deletion', [
                     'user_id' => Auth::id(),
                     'address_user_id' => $address->user_id,
@@ -205,7 +205,7 @@ class AddressController extends Controller
     {
         try {
             // Ensure user owns this address
-            if ($address->user_id !== Auth::id()) {
+            if ($address->user_id != Auth::id()) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Unauthorized access to address.',

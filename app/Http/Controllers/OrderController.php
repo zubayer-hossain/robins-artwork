@@ -53,7 +53,7 @@ class OrderController extends Controller
         ]);
         
         // Ensure the user can only view their own orders
-        if ($order->user_id !== $user->id) {
+        if ($order->user_id != $user->id) {
             \Log::warning('Unauthorized order access', [
                 'user_id' => $user ? $user->id : null,
                 'order_user_id' => $order->user_id,
@@ -228,7 +228,7 @@ class OrderController extends Controller
     public function downloadReceipt(Order $order)
     {
         // Authz
-        if ($order->user_id !== Auth::id()) {
+        if ($order->user_id != Auth::id()) {
             abort(403, 'Unauthorized');
         }
 

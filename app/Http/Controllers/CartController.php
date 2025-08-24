@@ -181,7 +181,7 @@ class CartController extends Controller implements HasMiddleware
     public function update(Request $request, CartItem $cartItem): JsonResponse
     {
         // Ensure user owns this cart item
-        if ($cartItem->user_id !== Auth::id()) {
+        if ($cartItem->user_id != Auth::id()) {
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
@@ -213,7 +213,7 @@ class CartController extends Controller implements HasMiddleware
     public function destroy(CartItem $cartItem): JsonResponse
     {
         // Ensure user owns this cart item
-        if ($cartItem->user_id !== Auth::id()) {
+        if ($cartItem->user_id != Auth::id()) {
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
