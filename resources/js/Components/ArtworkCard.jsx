@@ -51,7 +51,7 @@ export default function ArtworkCard({ artwork, className = "", showFavoriteButto
                             // Show tags but filter out medium to avoid duplication with header
                             artwork.tags
                                 .filter(tag => tag !== artwork.medium)
-                                .slice(0, 3) // Show up to 3 tags
+                                .slice(0, 2) // Show up to 3 tags
                                 .map((tag) => (
                                     <Badge key={tag} variant="secondary" className="text-xs px-2 py-0.5 bg-gray-100 text-gray-600 border-0">
                                         {tag}
