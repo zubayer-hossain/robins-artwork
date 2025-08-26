@@ -345,7 +345,7 @@ export default function GalleryShow({ artwork, isFavorite: initialIsFavorite }) 
                             )}
                         </div>
 
-                                                {/* Purchase Options */}
+                        {/* Purchase Options */}
                         {canPurchase && (
                             <Card className="border-0 shadow-xl bg-gradient-to-br from-white via-purple-50/20 to-blue-50/20 backdrop-blur-sm">
                                 <CardHeader className="pb-6 border-b border-purple-100">
@@ -374,39 +374,38 @@ export default function GalleryShow({ artwork, isFavorite: initialIsFavorite }) 
                                             }`}
                                             onClick={() => setSelectedOption(null)}
                                         >
+                                            {selectedOption === null && (
+                                                <div className="absolute top-1 right-1 w-6 h-6 bg-purple-500 rounded-full flex items-center justify-center shadow-lg z-10">
+                                                    <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                                    </svg>
+                                                </div>
+                                            )}
                                             <div className="p-4 sm:p-6">
-                                                <div className="flex items-center justify-between">
+                                                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                                                     <div className="flex items-center gap-4">
-                                                        <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full flex items-center justify-center shadow-lg">
+                                                        <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full flex items-center justify-center shadow-lg flex-shrink-0">
                                                             <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
                                                                 <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                                                             </svg>
                                                         </div>
-                                                        <div>
+                                                        <div className="flex-1 min-w-0">
                                                             <h3 className="text-lg font-bold text-gray-800">Original Artwork</h3>
-                                                            <div className="flex items-center gap-2 mt-1">
-                                                                <Badge className="bg-purple-100 text-purple-700 border-purple-200 text-xs">
+                                                            <div className="flex flex-col sm:flex-row sm:items-center gap-2 mt-1">
+                                                                <Badge className="bg-purple-100 text-purple-700 border-purple-200 text-xs w-fit">
                                                                     One of a Kind
                                                                 </Badge>
                                                                 <span className="text-gray-500 text-sm">• Authentic piece</span>
                                                             </div>
                                                         </div>
                                                     </div>
-                                                    <div className="text-right">
+                                                    <div className="text-center sm:text-right">
                                                         <div className="text-2xl font-bold text-purple-600">
                                                             ${artwork.price.toLocaleString()}
                                                         </div>
                                                         <div className="text-sm text-gray-500">USD</div>
                                                     </div>
                                                 </div>
-                                                {selectedOption === null && (
-                                                    <div className="mt-4 flex items-center gap-2 text-purple-700">
-                                                        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                                                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                                                        </svg>
-                                                        <span className="font-medium">Selected</span>
-                                                    </div>
-                                                )}
                                             </div>
                                         </div>
                                     )}
@@ -436,10 +435,17 @@ export default function GalleryShow({ artwork, isFavorite: initialIsFavorite }) 
                                                     }`}
                                                     onClick={() => setSelectedOption(edition.id)}
                                                 >
+                                                    {selectedOption === edition.id && (
+                                                        <div className="absolute top-1 right-1 w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center shadow-lg z-10">
+                                                            <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                                            </svg>
+                                                        </div>
+                                                    )}
                                                     <div className="p-4 sm:p-5">
-                                                        <div className="flex items-center justify-between">
+                                                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                                                             <div className="flex items-center gap-4">
-                                                                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                                                                <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
                                                                     edition.is_limited 
                                                                         ? 'bg-orange-500' 
                                                                         : 'bg-green-500'
@@ -448,12 +454,12 @@ export default function GalleryShow({ artwork, isFavorite: initialIsFavorite }) 
                                                                         <path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clipRule="evenodd" />
                                                                     </svg>
                                                                 </div>
-                                                                <div>
+                                                                <div className="flex-1 min-w-0">
                                                                     <h3 className="text-lg font-bold text-gray-800">
                                                                         {edition.is_limited ? 'Limited Edition Print' : 'Open Edition Print'}
                                                                     </h3>
-                                                                    <div className="flex flex-wrap items-center gap-2 mt-1">
-                                                                        <Badge className={`text-xs ${
+                                                                    <div className="flex flex-col sm:flex-row sm:items-center gap-2 mt-1">
+                                                                        <Badge className={`text-xs w-fit ${
                                                                             edition.is_limited 
                                                                                 ? 'bg-orange-100 text-orange-700 border-orange-200'
                                                                                 : 'bg-green-100 text-green-700 border-green-200'
@@ -468,21 +474,13 @@ export default function GalleryShow({ artwork, isFavorite: initialIsFavorite }) 
                                                                     </div>
                                                                 </div>
                                                             </div>
-                                                            <div className="text-right">
+                                                            <div className="text-center sm:text-right">
                                                                 <div className="text-2xl font-bold text-blue-600">
                                                                     ${edition.price.toLocaleString()}
                                                                 </div>
                                                                 <div className="text-sm text-gray-500">USD</div>
                                                             </div>
                                                         </div>
-                                                        {selectedOption === edition.id && (
-                                                            <div className="mt-4 flex items-center gap-2 text-blue-700">
-                                                                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                                                                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                                                                </svg>
-                                                                <span className="font-medium">Selected</span>
-                                                            </div>
-                                                        )}
                                                     </div>
                                                 </div>
                                             ))}
@@ -536,67 +534,6 @@ export default function GalleryShow({ artwork, isFavorite: initialIsFavorite }) 
                                         </div>
                                     )}
                                     
-                                    {/* What's Included Section */}
-                                    <div className="p-6 bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl border border-green-200">
-                                        <div className="flex items-center gap-4 mb-4">
-                                            <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center shadow-lg">
-                                                <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                                                </svg>
-                                            </div>
-                                            <div>
-                                                <h4 className="text-lg font-bold text-gray-800">What's Included</h4>
-                                                <p className="text-sm text-green-700">Everything you need for a perfect experience</p>
-                                            </div>
-                                        </div>
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                            <div className="flex items-center gap-3 p-3 bg-white/70 rounded-xl">
-                                                <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
-                                                    <svg className="w-4 h-4 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
-                                                        <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                                                    </svg>
-                                                </div>
-                                                <div>
-                                                    <div className="text-sm font-medium text-gray-800">Certificate of Authenticity</div>
-                                                    <div className="text-xs text-gray-600">Signed and verified</div>
-                                                </div>
-                                            </div>
-                                            <div className="flex items-center gap-3 p-3 bg-white/70 rounded-xl">
-                                                <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                                                    <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                                                    </svg>
-                                                </div>
-                                                <div>
-                                                    <div className="text-sm font-medium text-gray-800">Professional Packaging</div>
-                                                    <div className="text-xs text-gray-600">Museum-quality protection</div>
-                                                </div>
-                                            </div>
-                                            <div className="flex items-center gap-3 p-3 bg-white/70 rounded-xl">
-                                                <div className="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center">
-                                                    <svg className="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                                    </svg>
-                                                </div>
-                                                <div>
-                                                    <div className="text-sm font-medium text-gray-800">Worldwide Shipping</div>
-                                                    <div className="text-xs text-gray-600">Fully insured delivery</div>
-                                                </div>
-                                            </div>
-                                            <div className="flex items-center gap-3 p-3 bg-white/70 rounded-xl">
-                                                <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-                                                    <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                                                    </svg>
-                                                </div>
-                                                <div>
-                                                    <div className="text-sm font-medium text-gray-800">30-Day Returns</div>
-                                                    <div className="text-xs text-gray-600">Satisfaction guaranteed</div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-
                                 </CardContent>
                             </Card>
                         )}
@@ -651,7 +588,7 @@ export default function GalleryShow({ artwork, isFavorite: initialIsFavorite }) 
                             <p className="text-gray-600 text-sm">Technical specifications and information</p>
                         </CardHeader>
                         <CardContent>
-                            <div className="grid grid-cols-1 gap-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-xl border border-gray-100">
                                     <div className="w-10 h-10 bg-purple-500 rounded-full flex items-center justify-center">
                                         <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
@@ -707,20 +644,67 @@ export default function GalleryShow({ artwork, isFavorite: initialIsFavorite }) 
                                 </div>
                             </div>
                             
-                            {/* Quality Guarantee */}
-                            <div className="mt-6 p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border border-green-200">
-                                <div className="flex items-center gap-3 mb-3">
-                                    <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
-                                        <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                            <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                            {/* What's Included Section */}
+                            <div className="p-6 mt-6 bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl border border-green-200">
+                                <div className="flex items-center gap-4 mb-4">
+                                    <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center shadow-lg">
+                                        <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                                         </svg>
                                     </div>
                                     <div>
-                                        <h4 className="font-bold text-gray-800">Quality Guarantee</h4>
-                                        <p className="text-sm text-green-700">Authenticity and satisfaction assured</p>
+                                        <h4 className="text-lg font-bold text-gray-800">What's Included</h4>
+                                        <p className="text-sm text-green-700">Everything you need for a perfect experience</p>
+                                    </div>
+                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                    <div className="flex items-center gap-3 p-3 bg-white/70 rounded-xl">
+                                        <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
+                                            <svg className="w-4 h-4 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <div className="text-sm font-medium text-gray-800">Certificate of Authenticity</div>
+                                            <div className="text-xs text-gray-600">Signed and verified</div>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-3 p-3 bg-white/70 rounded-xl">
+                                        <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                                            <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <div className="text-sm font-medium text-gray-800">Professional Packaging</div>
+                                            <div className="text-xs text-gray-600">Museum-quality protection</div>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-3 p-3 bg-white/70 rounded-xl">
+                                        <div className="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center">
+                                            <svg className="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <div className="text-sm font-medium text-gray-800">Worldwide Shipping</div>
+                                            <div className="text-xs text-gray-600">Fully insured delivery</div>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-3 p-3 bg-white/70 rounded-xl">
+                                        <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                                            <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <div className="text-sm font-medium text-gray-800">30-Day Returns</div>
+                                            <div className="text-xs text-gray-600">Satisfaction guaranteed</div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
+                            
                         </CardContent>
                     </Card>
                 </div>

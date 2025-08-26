@@ -190,16 +190,16 @@ export default function CartIndex({ cartItems, totalPrice, itemCount, addresses,
             <div className="py-12">
                 <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
                     {/* Header */}
-                    <div className="flex justify-between items-center mb-8">
+                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
                         <div>
-                            <h1 className="text-3xl font-bold text-gray-900">Shopping Cart</h1>
-                            <p className="text-gray-600 mt-1">{itemCount} {itemCount === 1 ? 'item' : 'items'} in your cart</p>
+                            <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Shopping Cart</h1>
+                            <p className="text-gray-500 text-sm mt-1">{itemCount} {itemCount === 1 ? 'item' : 'items'} in your cart</p>
                         </div>
                         {cartItems.length > 0 && (
                             <Button 
                                 variant="outline" 
                                 onClick={handleClearCart}
-                                className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                                className="text-red-600 hover:text-red-700 hover:bg-red-50 w-full sm:w-auto text-sm px-4 py-2"
                             >
                                 <Trash2 className="w-4 h-4 mr-2" />
                                 Clear Cart
@@ -207,41 +207,36 @@ export default function CartIndex({ cartItems, totalPrice, itemCount, addresses,
                         )}
                     </div>
 
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
                         {/* Left Column - Cart Items and Address Selection */}
                         <div className="lg:col-span-2 space-y-6">
                         {/* Cart Items */}
                             <div className="space-y-4">
                             {cartItems.map((item) => (
-                                <Card key={item.id} className="p-6">
-                                    <div className="flex items-start space-x-4">
+                                <Card key={item.id} className="p-4 sm:p-6 border-0 shadow-sm hover:shadow-md transition-shadow">
+                                    <div className="flex items-start gap-3 sm:gap-4">
                                         {/* Artwork Image */}
                                         <div className="flex-shrink-0">
                                             <img
                                                 src={item.artwork?.primaryImage?.medium || item.edition?.artwork?.primaryImage?.medium || `https://picsum.photos/150/150?random=${item.id}`}
                                                 alt={item.name}
-                                                className="w-20 h-20 object-cover rounded-lg"
+                                                className="w-16 h-16 sm:w-20 sm:h-20 object-cover rounded-lg border border-gray-100"
                                             />
                                         </div>
 
                                         {/* Item Details */}
-                                        <div className="flex-1">
-                                            <div className="flex justify-between items-start">
-                                                <div>
+                                        <div className="flex-1 min-w-0">
+                                            <div className="flex items-start justify-between mb-3">
+                                                <div className="flex-1 min-w-0">
                                                     <Link 
                                                         href={route('artwork.show', item.artwork?.slug || '')} 
                                                         className="hover:opacity-80 transition-opacity"
                                                     >
-                                                        <h3 className="text-lg font-semibold text-gray-900 hover:text-purple-600 transition-colors cursor-pointer">
+                                                        <h3 className="text-base sm:text-lg font-semibold text-gray-900 hover:text-purple-600 transition-colors cursor-pointer truncate">
                                                             {item.name}
                                                         </h3>
                                                     </Link>
-                                                    <p className="text-gray-600 text-sm mt-1">{item.description}</p>
-                                                    
-                                                    {/* Type Badge */}
-                                                    <Badge variant="outline" className="mt-2">
-                                                        {item.type === 'original' ? 'Original Artwork' : 'Print Edition'}
-                                                    </Badge>
+                                                    <p className="text-gray-500 text-sm mt-1">{item.description}</p>
                                                 </div>
                                                 
                                                 {/* Remove Button */}
@@ -249,43 +244,49 @@ export default function CartIndex({ cartItems, totalPrice, itemCount, addresses,
                                                     variant="ghost"
                                                     size="sm"
                                                     onClick={() => handleRemoveItem(item.id)}
-                                                    className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                                                    className="text-gray-400 hover:text-red-600 hover:bg-red-50 p-1 h-8 w-8 flex-shrink-0"
                                                 >
                                                     <Trash2 className="w-4 h-4" />
                                                 </Button>
                                             </div>
-
-                                            {/* Quantity and Price */}
-                                            <div className="flex items-center justify-between mt-4">
-                                                <div className="flex items-center space-x-2">
-                                                    <span className="text-sm text-gray-600">Quantity:</span>
-                                                    <div className="flex items-center space-x-1">
-                                                        <Button
-                                                            variant="outline"
-                                                            size="sm"
-                                                            onClick={() => handleQuantityUpdate(item.id, item.quantity - 1)}
-                                                            disabled={item.quantity <= 1}
-                                                            className="w-8 h-8 p-0"
-                                                        >
-                                                            <Minus className="w-3 h-3" />
-                                                        </Button>
-                                                        <span className="w-8 text-center text-sm font-medium">{item.quantity}</span>
-                                                        <Button
-                                                            variant="outline"
-                                                            size="sm"
-                                                            onClick={() => handleQuantityUpdate(item.id, item.quantity + 1)}
-                                                            className="w-8 h-8 p-0"
-                                                        >
-                                                            <Plus className="w-3 h-3" />
-                                                        </Button>
+                                            
+                                            {/* Type Badge and Quantity - Mobile: Stacked, Desktop: Side by side */}
+                                            <div className="space-y-3 sm:space-y-0 sm:flex sm:items-center sm:justify-between">
+                                                <div className="flex flex-wrap items-center gap-3">
+                                                    <Badge variant="outline" className="text-xs px-3 py-1 bg-gray-50 border-gray-200">
+                                                        {item.type === 'original' ? 'Original Artwork' : 'Print Edition'}
+                                                    </Badge>
+                                                    
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="text-sm text-gray-500 font-medium">Quantity:</span>
+                                                        <div className="flex items-center gap-1">
+                                                            <Button
+                                                                variant="outline"
+                                                                size="sm"
+                                                                onClick={() => handleQuantityUpdate(item.id, item.quantity - 1)}
+                                                                disabled={item.quantity <= 1}
+                                                                className="w-7 h-7 p-0 text-xs"
+                                                            >
+                                                                <Minus className="w-3 h-3" />
+                                                            </Button>
+                                                            <span className="w-8 text-center text-sm font-medium text-gray-700">{item.quantity}</span>
+                                                            <Button
+                                                                variant="outline"
+                                                                size="sm"
+                                                                onClick={() => handleQuantityUpdate(item.id, item.quantity + 1)}
+                                                                className="w-7 h-7 p-0 text-xs"
+                                                            >
+                                                                <Plus className="w-3 h-3" />
+                                                            </Button>
+                                                        </div>
                                                     </div>
                                                 </div>
                                                 
-                                                <div className="text-right">
-                                                    <div className="text-sm text-gray-600">
+                                                <div className="text-left sm:text-right">
+                                                    <div className="text-sm text-gray-500">
                                                         ${item.price} × {item.quantity}
                                                     </div>
-                                                    <div className="text-lg font-semibold text-gray-900">
+                                                    <div className="text-base font-semibold text-gray-900">
                                                         ${item.total_price}
                                                     </div>
                                                 </div>
@@ -318,7 +319,7 @@ export default function CartIndex({ cartItems, totalPrice, itemCount, addresses,
                             ) : (
                                 <>
                                     {/* Shipping Address */}
-                                    <Card className="p-6">
+                                    <Card className="p-4 sm:p-6">
                                         <CardHeader className="px-0 pt-0">
                                             <CardTitle className="flex items-center gap-2">
                                                 <MapPin className="w-5 h-5 text-blue-600" />
@@ -327,7 +328,7 @@ export default function CartIndex({ cartItems, totalPrice, itemCount, addresses,
                                         </CardHeader>
                                         <CardContent className="px-0 pb-0">
                                             <div className="space-y-4">
-                                                <div className="flex items-center justify-between">
+                                                <div className="flex flex-col sm:flex-row sm:items-center gap-3">
                                                     <Select 
                                                         value={selectedShippingAddress} 
                                                         onValueChange={setSelectedShippingAddress}
@@ -350,7 +351,7 @@ export default function CartIndex({ cartItems, totalPrice, itemCount, addresses,
                                                             setEditingAddress(null);
                                                             setIsAddressModalOpen(true);
                                                         }}
-                                                        className="ml-2"
+                                                        className="w-full sm:w-auto"
                                                     >
                                                         <PlusCircle className="w-4 h-4 mr-1" />
                                                         Add New
@@ -383,7 +384,7 @@ export default function CartIndex({ cartItems, totalPrice, itemCount, addresses,
                                     </Card>
 
                                     {/* Billing Address */}
-                                    <Card className="p-6">
+                                    <Card className="p-4 sm:p-6">
                                         <CardHeader className="px-0 pt-0">
                                             <CardTitle className="flex items-center gap-2">
                                                 <MapPin className="w-5 h-5 text-green-600" />
@@ -392,20 +393,21 @@ export default function CartIndex({ cartItems, totalPrice, itemCount, addresses,
                                         </CardHeader>
                                         <CardContent className="px-0 pb-0">
                                             <div className="space-y-4">
-                                                <div className="flex items-center space-x-3 mb-4">
+                                                <div className="flex items-start gap-3 mb-4">
                                                     <Checkbox
                                                         id="use_shipping_as_billing"
                                                         checked={useShippingAsBilling}
                                                         onChange={(e) => setUseShippingAsBilling(e.target.checked)}
+                                                        className="mt-0.5 flex-shrink-0"
                                                     />
-                                                    <label htmlFor="use_shipping_as_billing" className="text-sm font-medium text-gray-700">
+                                                    <label htmlFor="use_shipping_as_billing" className="text-sm font-medium text-gray-700 leading-relaxed">
                                                         Use shipping address as billing address
                                                     </label>
                                                 </div>
                                                 
                                                 {!useShippingAsBilling && (
                                                     <>
-                                                        <div className="flex items-center justify-between">
+                                                        <div className="flex flex-col sm:flex-row sm:items-center gap-3">
                                                             <Select 
                                                                 value={selectedBillingAddress} 
                                                                 onValueChange={setSelectedBillingAddress}
@@ -428,7 +430,7 @@ export default function CartIndex({ cartItems, totalPrice, itemCount, addresses,
                                                                     setEditingAddress(null);
                                                                     setIsAddressModalOpen(true);
                                                                 }}
-                                                                className="ml-2"
+                                                                className="w-full sm:w-auto"
                                                             >
                                                                 <PlusCircle className="w-4 h-4 mr-1" />
                                                                 Add New

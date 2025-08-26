@@ -151,23 +151,30 @@ class OrderController extends Controller
             'order_notes' => 'nullable|string|max:1000',
         ]);
 
-        // Ensure addresses belong to the user
+        // Ensure addresses belong to the user and exist
         $shippingAddress = Address::where('id', $request->shipping_address_id)
             ->where('user_id', $userId)
-            ->where('type', 'shipping')
             ->first();
             
         $billingAddress = Address::where('id', $request->billing_address_id)
             ->where('user_id', $userId)
-            ->where('type', 'billing')
             ->first();
 
         if (!$shippingAddress || !$billingAddress) {
             return response()->json([
                 'success' => false,
-                'message' => 'Invalid address selection'
+                'message' => 'One or more selected addresses not found'
             ], 400);
         }
+
+        // Log the address types for debugging (remove in production)
+        \Log::info('Order submission addresses', [
+            'shipping_address_id' => $request->shipping_address_id,
+            'shipping_address_type' => $shippingAddress->type,
+            'billing_address_id' => $request->billing_address_id,
+            'billing_address_type' => $billingAddress->type,
+            'user_id' => $userId
+        ]);
 
         try {
             DB::beginTransaction();

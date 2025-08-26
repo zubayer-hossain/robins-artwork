@@ -152,78 +152,75 @@ export default function OrderDetail({ order }) {
                                     </CardTitle>
                                 </CardHeader>
                                 <CardContent className="pt-6">
-                                    <div className="space-y-4">
+                                    <div className="space-y-1.5 sm:space-y-3">
                                         {order.items.map((item, index) => (
-                                            <div key={index} className="flex items-center gap-4 p-4 rounded-xl border border-gray-100 hover:border-green-200 hover:bg-green-50/30 transition-all duration-200">
-                                                {/* Artwork Image */}   
-                                                <div className="flex-shrink-0">
-                                                    {item.artwork?.primaryImage?.thumb ? (
-                                                        <img
-                                                            src={item.artwork.primaryImage.thumb}
-                                                            alt={item.title_snapshot || item.artwork?.title}
-                                                            className="w-16 h-16 object-cover rounded-lg shadow-sm"
-                                                        />
-                                                    ) : (
-                                                        <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-green-600 rounded-lg flex items-center justify-center shadow-sm">
-                                                            <Eye className="w-6 h-6 text-white" />
-                                                        </div>
-                                                    )}
-                                                </div>
-                                                
-                                                {/* Item Details */}
-                                                <div className="flex-1 min-w-0">
-                                                    <h4 className="font-semibold text-gray-900 text-lg mb-2">
-                                                        {item.title_snapshot || item.artwork?.title || 'Artwork'}
-                                                    </h4>
-                                                    <div className="flex flex-wrap items-center gap-3 text-sm text-gray-600 mb-2">
-                                                        {item.artwork?.medium && (
-                                                            <span className="flex items-center gap-1">
-                                                                <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
-                                                                {item.artwork.medium}
-                                                            </span>
-                                                        )}
-                                                        {item.artwork?.year && (
-                                                            <span className="flex items-center gap-1">
-                                                                <span className="w-2 h-2 bg-purple-500 rounded-full"></span>
-                                                                {item.artwork.year}
-                                                            </span>
-                                                        )}
-                                                        {item.edition?.name && (
-                                                            <span className="flex items-center gap-1">
-                                                                <span className="w-2 h-2 bg-orange-500 rounded-full"></span>
-                                                                {item.edition.name}
-                                                            </span>
+                                            <Card key={index} className="p-2 sm:p-4 border-0 shadow-sm hover:shadow-md transition-shadow">
+                                                {/* Responsive Layout - Mobile: Image Left + Content Right, Desktop: Horizontal */}
+                                                <div className="flex items-start gap-3 sm:gap-4">
+                                                    {/* Artwork Image - Always left */}
+                                                    <div className="flex-shrink-0">
+                                                        {item.artwork?.primaryImage?.thumb ? (
+                                                            <img
+                                                                src={item.artwork.primaryImage.thumb}
+                                                                alt={item.title_snapshot || item.artwork?.title}
+                                                                className="w-16 h-16 sm:w-20 sm:h-20 object-cover rounded-lg shadow-sm"
+                                                            />
+                                                        ) : (
+                                                            <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-green-500 to-green-600 rounded-lg flex items-center justify-center shadow-sm">
+                                                                <Eye className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
+                                                            </div>
                                                         )}
                                                     </div>
-                                                    {item.qty > 1 && (
-                                                        <p className="text-sm text-gray-600 font-medium">
-                                                            Quantity: {item.qty}
-                                                        </p>
-                                                    )}
+                                                    
+                                                                                                        {/* Item Details */}
+                                                    <div className="flex-1 min-w-0">
+                                                        <div className="flex items-start justify-between mb-2 sm:mb-3">
+                                                            <div className="flex-1 min-w-0">
+                                                                {item.artwork?.slug ? (
+                                                                    <Link 
+                                                                        href={route('artwork.show', item.artwork.slug)} 
+                                                                        className="hover:opacity-80 transition-opacity"
+                                                                    >
+                                                                        <h3 className="text-base sm:text-lg font-semibold text-gray-900 hover:text-purple-600 transition-colors cursor-pointer truncate">
+                                                                            {item.title_snapshot || item.artwork?.title || 'Artwork'}
+                                                                        </h3>
+                                                                    </Link>
+                                                                ) : (
+                                                                    <h3 className="text-base sm:text-lg font-semibold text-gray-900 truncate">
+                                                                        {item.title_snapshot || item.artwork?.title || 'Artwork'}
+                                                                    </h3>
+                                                                )}
+                                                            </div>
+                                                            
+                                                            {/* Price Section */}
+                                                            <div className="text-left sm:text-right">
+                                                                {item.qty > 1 && (
+                                                                    <div className="text-sm text-gray-500">
+                                                                        ${item.unit_price} × {item.qty}
+                                                                    </div>
+                                                                )}
+                                                                <div className="text-base font-semibold text-gray-900">
+                                                                    ${(item.unit_price * item.qty).toFixed(2)}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        
+                                                        {/* Type Badge and Quantity */}
+                                                        <div className="space-y-2 sm:space-y-0 sm:flex sm:items-center sm:justify-between">
+                                                            <div className="flex flex-wrap items-center gap-3">
+                                                                <Badge variant="outline" className="text-xs px-3 py-1 bg-gray-50 border-gray-200">
+                                                                    {item.edition?.name ? 'Print Edition' : 'Original Artwork'}
+                                                                </Badge>
+                                                                
+                                                                <div className="flex items-center gap-2">
+                                                                    <span className="text-sm text-gray-500 font-medium">Quantity:</span>
+                                                                    <span className="text-sm font-medium text-gray-700">{item.qty}</span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
                                                 </div>
-                                                
-                                                {/* Price and Actions */}
-                                                <div className="flex-shrink-0 text-right">
-                                                    <p className="text-xl font-bold text-gray-900 mb-1">${item.unit_price}</p>
-                                                    {item.qty > 1 && (
-                                                        <p className="text-sm text-gray-500 mb-2">
-                                                            ${item.unit_price} × {item.qty} = ${(item.unit_price * item.qty).toFixed(2)}
-                                                        </p>
-                                                    )}
-                                                    {item.artwork?.slug && (
-                                                        <Link href={route('artwork.show', item.artwork.slug)}>
-                                                            <Button 
-                                                                variant="outline" 
-                                                                size="sm" 
-                                                                className="border-green-300 text-green-700 hover:bg-green-50 hover:border-green-400"
-                                                            >
-                                                                <Eye className="w-4 h-4 mr-1" />
-                                                                View Artwork
-                                                            </Button>
-                                                        </Link>
-                                                    )}
-                                                </div>
-                                            </div>
+                                            </Card>
                                         ))}
                                     </div>
                                 </CardContent>
@@ -270,6 +267,7 @@ export default function OrderDetail({ order }) {
                                                             <h4 className="font-semibold text-blue-900">Shipping Address</h4>
                                                         </div>
                                                         <div className="space-y-1 text-sm text-blue-800">
+                                                            <div className="font-medium text-blue-900">{order.shipping_address.label || 'Shipping Address'}</div>
                                                             <p className="font-medium">{order.shipping_address.name}</p>
                                                             {order.shipping_address.company && (
                                                                 <p>{order.shipping_address.company}</p>
@@ -297,6 +295,7 @@ export default function OrderDetail({ order }) {
                                                             <h4 className="font-semibold text-green-900">Billing Address</h4>
                                                         </div>
                                                         <div className="space-y-1 text-sm text-green-800">
+                                                            <div className="font-medium text-green-900">{order.billing_address.label || 'Billing Address'}</div>
                                                             <p className="font-medium">{order.billing_address.name}</p>
                                                             {order.billing_address.company && (
                                                                 <p>{order.billing_address.company}</p>

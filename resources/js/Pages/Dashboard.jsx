@@ -82,15 +82,15 @@ export default function Dashboard({ stats, recentOrders }) {
         <AuthenticatedLayout>
             <Head title="Dashboard" />
 
-            <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+            <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-purple-50/30">
                 {/* Hero Section */}
-                <div className="bg-white border-b">
-                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                        <div>
-                            <h1 className="text-3xl font-bold text-gray-900">
+                <div className="bg-white/90 backdrop-blur-sm border-b border-white/20 shadow-sm">
+                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+                        <div className="text-center sm:text-left">
+                            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-gray-900 via-purple-800 to-blue-900 bg-clip-text text-transparent leading-tight">
                                 Welcome back, {user.name}!
                             </h1>
-                            <p className="mt-2 text-gray-600">
+                            <p className="mt-3 sm:mt-4 text-base sm:text-lg text-gray-600 max-w-2xl sm:mx-0 mx-auto">
                                 Manage your orders, browse artwork, and update your profile
                             </p>
                         </div>
@@ -99,46 +99,68 @@ export default function Dashboard({ stats, recentOrders }) {
 
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                     {/* Stats Grid */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                        <Card className="hover:shadow-lg transition-shadow duration-200">
-                            <CardContent className="p-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8">
+                        <Card className="hover:shadow-xl hover:-translate-y-1 transition-all duration-300 bg-gradient-to-br from-white to-blue-50/50 border border-blue-200/50 shadow-lg">
+                            <CardContent className="p-4 sm:p-6">
                                 <div className="flex items-center justify-between">
                                     <div>
-                                        <p className="text-sm font-medium text-gray-600">Total Orders</p>
-                                        <p className="text-3xl font-bold text-gray-900">{stats.totalOrders}</p>
+                                        <p className="text-xs sm:text-sm font-medium text-gray-500 mb-1">Total Orders</p>
+                                        <p className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                                            {stats.totalOrders}
+                                        </p>
+                                        <p className={`text-xs mt-1 hidden sm:block ${stats.ordersChange !== null ? (stats.ordersChange > 0 ? 'text-green-600' : stats.ordersChange < 0 ? 'text-red-600' : 'text-gray-500') : 'text-gray-400'}`}>
+                                            {stats.ordersChange !== null ? (
+                                                stats.ordersChange > 0 ? '↑' : stats.ordersChange < 0 ? '↓' : '→'
+                                            ) : '→'} {stats.ordersChange !== null ? (
+                                                stats.ordersChange === 100 ? 'New activity' : 
+                                                stats.ordersChange !== 0 ? `${Math.abs(stats.ordersChange)}%` : 'No change'
+                                            ) : 'New user'} from last month
+                                        </p>
                                     </div>
-                                    <div className="p-3 bg-blue-100 rounded-full">
-                                        <ShoppingBag className="w-6 h-6 text-blue-600" />
+                                    <div className="p-2.5 sm:p-3 bg-gradient-to-br from-blue-500 to-purple-500 rounded-xl shadow-lg">
+                                        <ShoppingBag className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                                     </div>
                                 </div>
                             </CardContent>
                         </Card>
 
-                        <Card className="hover:shadow-lg transition-shadow duration-200">
-                            <CardContent className="p-6">
+                        <Card className="hover:shadow-xl hover:-translate-y-1 transition-all duration-300 bg-gradient-to-br from-white to-green-50/50 border border-green-200/50 shadow-lg">
+                            <CardContent className="p-4 sm:p-6">
                                 <div className="flex items-center justify-between">
                                     <div>
-                                        <p className="text-sm font-medium text-gray-600">Total Spent</p>
-                                        <p className="text-3xl font-bold text-gray-900">${stats.totalSpent}</p>
+                                        <p className="text-xs sm:text-sm font-medium text-gray-500 mb-1">Total Spent</p>
+                                        <p className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
+                                            ${stats.totalSpent}
+                                        </p>
+                                        <p className={`text-xs mt-1 hidden sm:block ${stats.spendingChange !== null ? (stats.spendingChange > 0 ? 'text-green-600' : stats.spendingChange < 0 ? 'text-red-600' : 'text-gray-500') : 'text-gray-400'}`}>
+                                            {stats.spendingChange !== null ? (
+                                                stats.spendingChange > 0 ? '↑' : stats.spendingChange < 0 ? '↓' : '→'
+                                            ) : '→'} {stats.spendingChange !== null ? (
+                                                stats.spendingChange === 100 ? 'New spending' : 
+                                                stats.spendingChange !== 0 ? `${Math.abs(stats.spendingChange)}%` : 'No change'
+                                            ) : 'New user'} from last month
+                                        </p>
                                     </div>
-                                    <div className="p-3 bg-green-100 rounded-full">
-                                        <CreditCard className="w-6 h-6 text-green-600" />
+                                    <div className="p-2.5 sm:p-3 bg-gradient-to-br from-green-500 to-emerald-500 rounded-xl shadow-lg">
+                                        <CreditCard className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                                     </div>
                                 </div>
                             </CardContent>
                         </Card>
 
                         <Link href={route('favorites')}>
-                            <Card className="hover:shadow-lg transition-shadow duration-200 cursor-pointer group">
-                                <CardContent className="p-6">
+                            <Card className="hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer group bg-gradient-to-br from-white to-red-50/50 border border-red-200/50 shadow-lg">
+                                <CardContent className="p-4 sm:p-6">
                                     <div className="flex items-center justify-between">
                                         <div>
-                                            <p className="text-sm font-medium text-gray-600">Favorites</p>
-                                            <p className="text-3xl font-bold text-gray-900">{stats.favoriteArtworks}</p>
-                                            <p className="text-xs text-purple-600 group-hover:text-purple-700 transition-colors">Click to explore</p>
+                                            <p className="text-xs sm:text-sm font-medium text-gray-500 mb-1">Favorites</p>
+                                            <p className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-red-600 to-pink-600 bg-clip-text text-transparent">
+                                                {stats.favoriteArtworks}
+                                            </p>
+                                            <p className="text-xs text-red-600 group-hover:text-red-700 transition-colors hidden sm:block">Click to explore</p>
                                         </div>
-                                        <div className="p-3 bg-red-100 rounded-full group-hover:bg-red-200 transition-colors">
-                                            <Heart className="w-6 h-6 text-red-600" />
+                                        <div className="p-2.5 sm:p-3 bg-gradient-to-br from-red-500 to-pink-500 rounded-xl shadow-lg group-hover:shadow-xl transition-all duration-300">
+                                            <Heart className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                                         </div>
                                     </div>
                                 </CardContent>
@@ -146,16 +168,18 @@ export default function Dashboard({ stats, recentOrders }) {
                         </Link>
 
                         <Link href={route('recent-views')}>
-                            <Card className="hover:shadow-lg transition-shadow duration-200 cursor-pointer group">
-                                <CardContent className="p-6">
+                            <Card className="hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer group bg-gradient-to-br from-white to-purple-50/50 border border-purple-200/50 shadow-lg">
+                                <CardContent className="p-4 sm:p-6">
                                     <div className="flex items-center justify-between">
                                         <div>
-                                            <p className="text-sm font-medium text-gray-600">Recent Views</p>
-                                            <p className="text-3xl font-bold text-gray-900">{stats.recentViews}</p>
-                                            <p className="text-xs text-purple-600 group-hover:text-purple-700 transition-colors">Click to explore</p>
+                                            <p className="text-xs sm:text-sm font-medium text-gray-500 mb-1">Recent Views</p>
+                                            <p className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">
+                                                {stats.recentViews}
+                                            </p>
+                                            <p className="text-xs text-purple-600 group-hover:text-purple-700 transition-colors hidden sm:block">Click to explore</p>
                                         </div>
-                                        <div className="p-3 bg-purple-100 rounded-full group-hover:bg-purple-200 transition-colors">
-                                            <Eye className="w-6 h-6 text-purple-600" />
+                                        <div className="p-2.5 sm:p-3 bg-gradient-to-br from-purple-500 to-indigo-500 rounded-xl shadow-lg group-hover:shadow-xl transition-all duration-300">
+                                            <Eye className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                                         </div>
                                     </div>
                                 </CardContent>
@@ -165,23 +189,31 @@ export default function Dashboard({ stats, recentOrders }) {
 
                     {/* Quick Actions */}
                     <div className="mb-8">
-                        <h2 className="text-2xl font-bold text-gray-900 mb-6">Quick Actions</h2>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4 sm:mb-6">Quick Actions</h2>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                             {quickActions.map((action, index) => (
-                                <Card key={index} className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-                                    <CardContent className="p-6">
+                                <Card key={index} className="group hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 cursor-pointer border border-gray-200/50 bg-gradient-to-br from-white to-gray-50/30 shadow-lg">
+                                    <CardContent className="p-6 sm:p-8">
                                         <div className="flex flex-col items-center text-center">
-                                            <div className={`p-4 rounded-full bg-gray-100 group-hover:bg-white transition-colors duration-200 mb-4`}>
-                                                <action.icon className={`w-8 h-8 ${action.iconColor}`} />
+                                            <div className={`p-4 sm:p-5 rounded-2xl shadow-lg group-hover:shadow-2xl transition-all duration-300 mb-4 sm:mb-6 ${
+                                                action.title === 'Browse Gallery' ? 'bg-gradient-to-br from-emerald-500 to-teal-500' :
+                                                action.title === 'Orders' ? 'bg-gradient-to-br from-orange-500 to-red-500' :
+                                                'bg-gradient-to-br from-pink-500 to-rose-500'
+                                            }`}>
+                                                <action.icon className="w-7 h-7 sm:w-10 sm:h-10 text-white" />
                                             </div>
-                                            <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                                            <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2 sm:mb-3">
                                                 {action.title}
                                             </h3>
-                                            <p className="text-gray-600 mb-4">
+                                            <p className="text-sm sm:text-base text-gray-600 mb-4 sm:mb-6 leading-relaxed">
                                                 {action.description}
                                             </p>
                                             <Link href={action.href}>
-                                                <Button className="w-full group-hover:scale-105 transition-transform duration-200">
+                                                <Button className={`w-full text-white px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform group-hover:scale-105 ${
+                                                    action.title === 'Browse Gallery' ? 'bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700' :
+                                                    action.title === 'Orders' ? 'bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700' :
+                                                    'bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700'
+                                                }`}>
                                                     Get Started
                                                 </Button>
                                             </Link>
@@ -195,11 +227,11 @@ export default function Dashboard({ stats, recentOrders }) {
                     {/* Recent Activity & Getting Started */}
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                         {/* Recent Activity */}
-                        <Card className="border-0 shadow-sm bg-white">
-                            <CardHeader className="pb-4 border-b border-gray-100">
-                                <CardTitle className="flex items-center gap-3 text-xl font-semibold text-gray-900">
-                                    <div className="p-2 bg-blue-50 rounded-lg">
-                                        <Clock className="w-5 h-5 text-blue-600" />
+                        <Card className="border-0 shadow-lg bg-gradient-to-br from-white to-blue-50/20 backdrop-blur-sm">
+                            <CardHeader className="pb-4 border-b border-blue-100/50">
+                                <CardTitle className="flex items-center gap-3 text-xl font-bold text-gray-900">
+                                    <div className="p-2.5 bg-gradient-to-br from-blue-500 to-purple-500 rounded-xl shadow-lg">
+                                        <Clock className="w-5 h-5 text-white" />
                                     </div>
                                     Recent Activity
                                 </CardTitle>
@@ -213,52 +245,45 @@ export default function Dashboard({ stats, recentOrders }) {
                                                 href={route('orders.show', order.id)}
                                                 className="group block"
                                             >
-                                                <div className="flex items-center gap-3 p-3 rounded-lg border border-gray-100 hover:border-blue-200 hover:bg-blue-50/30 transition-all duration-200 relative">
-                                                    {/* Simplified Order Icon */}
+                                                <div className="flex items-center gap-3 p-2 sm:p-3 rounded-lg border border-gray-100 hover:border-blue-200 hover:bg-blue-50/30 transition-all duration-200">
+                                                    {/* Order Icon */}
                                                     <div className="flex-shrink-0">
                                                         <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center group-hover:bg-blue-200 transition-colors">
                                                             <Package className="w-4 h-4 text-blue-600" />
                                                         </div>
                                                     </div>
                                                     
-                                                    {/* Streamlined Order Details - Left Side */}
+                                                    {/* Order Details */}
                                                     <div className="flex-1 min-w-0">
-                                                        <h4 className="font-medium text-gray-900 group-hover:text-blue-700 transition-colors mb-1">
-                                                            Order #{order.id}
-                                                        </h4>
-                                                        
-                                                        <div className="flex items-center gap-3 text-sm text-gray-600">
-                                                            <span className="flex items-center gap-1">
-                                                                <ShoppingBag className="w-3.5 h-3.5" />
+                                                        <div className="flex items-center justify-between mb-1">
+                                                            <h4 className="font-medium text-gray-900 group-hover:text-blue-700 transition-colors">
+                                                                Order #{order.id}
+                                                            </h4>
+                                                            <span className="text-sm text-gray-600">
                                                                 {order.items?.length || 0} item{order.items?.length !== 1 ? 's' : ''}
                                                             </span>
-                                                            <span className="flex items-center gap-1 font-medium text-gray-900">
-                                                                <CreditCard className="w-3.5 h-3.5" />
-                                                                ${order.total}
-                                                            </span>
                                                         </div>
-                                                    </div>
-                                                    
-                                                    {/* Right Side: Status and Date in Same Row */}
-                                                    <div className="flex flex-col items-end gap-1 mr-8">
-                                                        <Badge className={`${getStatusColor(order.status)} flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded-full`}>
-                                                            {getStatusIcon(order.status)}
-                                                            {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
-                                                        </Badge>
                                                         
-                                                        <p className="text-xs text-gray-500">
-                                                            {new Date(order.created_at).toLocaleDateString('en-US', {
-                                                                year: 'numeric',
-                                                                month: 'short',
-                                                                day: 'numeric'
-                                                            })}
-                                                        </p>
-                                                    </div>
-                                                    
-                                                    {/* Eye Icon - Top Right Corner on Hover */}
-                                                    <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-all duration-200">
-                                                        <div className="w-7 h-7 bg-blue-100 hover:bg-blue-200 rounded-lg flex items-center justify-center shadow-sm">
-                                                            <Eye className="w-4 h-4 text-blue-600" />
+                                                        <div className="flex items-center justify-between">
+                                                            <div className="flex items-center gap-1 sm:gap-2">
+                                                                <Badge className={`${getStatusColor(order.status)} flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded-full`}>
+                                                                    {getStatusIcon(order.status)}
+                                                                    {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                                                                </Badge>
+                                                                
+                                                                <p className="text-xs text-gray-500">
+                                                                    {new Date(order.created_at).toLocaleDateString('en-US', {
+                                                                        month: 'short',
+                                                                        day: 'numeric'
+                                                                    })}
+                                                                </p>
+                                                            </div>
+                                                            
+                                                            <div className="flex items-center gap-1 sm:gap-2">
+                                                                <span className="font-semibold text-gray-900">
+                                                                    ${order.total}
+                                                                </span>
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 </div>
