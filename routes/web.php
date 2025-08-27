@@ -14,6 +14,8 @@ use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\ArtworkController as AdminArtworkController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Admin\EditionController as AdminEditionController;
+use App\Http\Controllers\Admin\ContactController as AdminContactController;
+use App\Http\Controllers\Admin\AuthController as AdminAuthController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -63,20 +65,23 @@ Route::get('/csrf-token', function () {
 })->middleware('auth')->name('csrf.token');
 
 
-// Checkout routes
-Route::post('/checkout', [CheckoutController::class, 'create'])->name('checkout.create');
-Route::get('/checkout/success', [CheckoutController::class, 'success'])->name('checkout.success');
-Route::get('/checkout/cancel', [CheckoutController::class, 'cancel'])->name('checkout.cancel');
+// Checkout routes - Laravel 12: Only for authenticated customers
+Route::middleware(['customer'])->group(function () {
+    Route::post('/checkout', [CheckoutController::class, 'create'])->name('checkout.create');
+    Route::get('/checkout/success', [CheckoutController::class, 'success'])->name('checkout.success');
+    Route::get('/checkout/cancel', [CheckoutController::class, 'cancel'])->name('checkout.cancel');
+});
 
 // Stripe webhook
 Route::post('/webhooks/stripe', [WebhookController::class, 'stripe'])->name('webhooks.stripe');
 
-// Customer dashboard
+// Customer dashboard - Laravel 12: ONLY for customers, NOT admins
 Route::get('/dashboard', [DashboardController::class, 'index'])
-    ->middleware(['auth', 'verified'])
+    ->middleware(['customer'])
     ->name('dashboard');
 
-Route::middleware('auth')->group(function () {
+// Customer routes - Laravel 12: ONLY accessible by customers
+Route::middleware(['customer'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::post('/profile/delete', [ProfileController::class, 'destroy'])->name('profile.destroy');
@@ -113,24 +118,29 @@ Route::middleware('auth')->group(function () {
     Route::post('/track-view', [FavoriteController::class, 'trackView'])->name('track-view');
 });
 
-// Admin routes
-Route::prefix('admin')->name('admin.')->group(function () {
-    // Admin auth routes (no middleware - accessible to everyone)
-    Route::get('/login', function () {
-        return Inertia::render('Admin/Auth/Login');
-    })->name('login');
+// Admin routes - Laravel 12: Completely separate from customer routes
+Route::prefix('admin')->name('admin.')->middleware('web')->group(function () {
+    // Admin auth routes - Laravel 12: Protected with guest middleware to prevent authenticated access
+    Route::get('/login', [AdminAuthController::class, 'showLogin'])->middleware('guest')->name('login');
+    Route::post('/login', [AdminAuthController::class, 'login'])->middleware('guest')->name('login.store');
+    Route::post('/logout', [AdminAuthController::class, 'logout'])->name('logout');
     
-    // Admin protected routes
-    Route::middleware(['auth', 'role:admin'])->group(function () {
+    // Admin protected routes - Laravel 12: ONLY for admin users
+    Route::middleware(['admin'])->group(function () {
         Route::get('/', [AdminDashboardController::class, 'index'])->name('dashboard');
         Route::resource('artworks', AdminArtworkController::class);
         Route::resource('orders', AdminOrderController::class)->only(['index', 'show']);
         Route::resource('editions', AdminEditionController::class);
         
+        // Admin profile management
+        Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+        Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+        Route::post('/profile/delete', [ProfileController::class, 'destroy'])->name('profile.destroy');
+        
         // Contact messages management
-        Route::get('/contact', function () {
-            return Inertia::render('Admin/Contact/Index');
-        })->name('contact.index');
+        Route::resource('contact', AdminContactController::class)->only(['index', 'show', 'destroy']);
+        Route::patch('/contact/{contact_message}/mark-read', [AdminContactController::class, 'markAsRead'])->name('contact.mark-read');
+        Route::patch('/contact/{contact_message}/mark-replied', [AdminContactController::class, 'markAsReplied'])->name('contact.mark-replied');
     });
 });
 

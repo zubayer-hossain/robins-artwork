@@ -12,7 +12,7 @@ export default function AdminLogin({ status, canResetPassword }) {
 
     const submit = (e) => {
         e.preventDefault();
-        post(route('admin.login'));
+        post(route('admin.login.store'));
     };
 
     return (

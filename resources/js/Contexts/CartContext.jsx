@@ -14,8 +14,19 @@ export function CartProvider({ children }) {
     const [cartCount, setCartCount] = useState(0);
     const [isLoading, setIsLoading] = useState(true);
 
-    // Fetch cart count on mount only if user is authenticated
+    // Fetch cart count on mount only if user is authenticated AND not in admin context
     useEffect(() => {
+        // Check if we're in admin context
+        const isAdminContext = window.location.pathname.startsWith('/admin') || 
+                               document.querySelector('[data-admin-context="true"]') ||
+                               window.route?.current?.()?.startsWith('admin.');
+        
+        if (isAdminContext) {
+            setCartCount(0);
+            setIsLoading(false);
+            return;
+        }
+        
         // Check if user is authenticated by looking for auth-related elements
         const isAuthenticated = document.querySelector('[data-auth="true"]') || 
                                document.querySelector('meta[name="auth-status"]')?.content === 'authenticated' ||
@@ -32,6 +43,18 @@ export function CartProvider({ children }) {
 
     const fetchCartCount = async () => {
         try {
+            // Check if we're in admin context first
+            const isAdminContext = window.location.pathname.startsWith('/admin') || 
+                                   document.querySelector('[data-admin-context="true"]') ||
+                                   window.route?.current?.()?.startsWith('admin.');
+            
+            if (isAdminContext) {
+                console.log('Admin context detected, skipping cart API call');
+                setCartCount(0);
+                setIsLoading(false);
+                return;
+            }
+            
             // Double-check if user is authenticated
             const isAuthenticated = document.querySelector('[data-auth="true"]') || 
                                    document.querySelector('meta[name="auth-status"]')?.content === 'authenticated' ||
@@ -87,6 +110,16 @@ export function CartProvider({ children }) {
     };
 
     const refreshCartCount = () => {
+        // Check if we're in admin context first
+        const isAdminContext = window.location.pathname.startsWith('/admin') || 
+                               document.querySelector('[data-admin-context="true"]') ||
+                               window.route?.current?.()?.startsWith('admin.');
+        
+        if (isAdminContext) {
+            console.log('Admin context detected, skipping cart refresh');
+            return;
+        }
+        
         // Only refresh if user is authenticated
         const isAuthenticated = document.querySelector('[data-auth="true"]') || 
                                document.querySelector('meta[name="auth-status"]')?.content === 'authenticated' ||

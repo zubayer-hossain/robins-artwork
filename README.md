@@ -1,6 +1,6 @@
 # Robin's Artwork - Artist Portfolio & Store
 
-A modern, production-ready artist portfolio and online store built with Laravel 11, Inertia.js, React, and Tailwind CSS. Features a public gallery, secure checkout with Stripe, and a comprehensive admin panel for managing artworks, editions, and orders.
+A modern, production-ready artist portfolio and online store built with Laravel 12, Inertia.js, React, and Tailwind CSS. Features a public gallery, secure checkout with Stripe, and a comprehensive admin panel for managing artworks, editions, and orders.
 
 ## 🚀 Features
 

@@ -22,7 +22,23 @@ export default function AuthenticatedLayout({ header, children }) {
     const user = auth.user;
     const [showingNavigationDropdown, setShowingNavigationDropdown] = useState(false);
 
-    const isAdmin = user.roles && user.roles.includes('admin');
+    // Laravel 12: Strict role checking - user should ONLY have customer role for this layout
+    const isStrictCustomer = user.roles && user.roles.length === 1 && user.roles.includes('customer');
+    const hasAdminRole = user.roles && user.roles.includes('admin');
+    
+    // Laravel 12: Security - If user has admin role, they shouldn't see customer layout
+    if (hasAdminRole) {
+        // Redirect admin users to admin dashboard
+        window.location.href = route('admin.dashboard');
+        return null;
+    }
+
+    // Laravel 12: Only show this layout to verified customer users
+    if (!isStrictCustomer) {
+        // Redirect to home if user doesn't have proper customer role
+        window.location.href = route('home');
+        return null;
+    }
 
     return (
         <div className="min-h-screen bg-white">
@@ -41,7 +57,7 @@ export default function AuthenticatedLayout({ header, children }) {
                                 </Link>
                             </div>
 
-                            {/* Dashboard Navigation Links */}
+                            {/* Dashboard Navigation Links - Customer Only */}
                             <div className="hidden md:ml-8 md:flex md:space-x-8">
                                 <NavLink href={route('dashboard')} active={route().current('dashboard')}>
                                     Dashboard
@@ -61,21 +77,6 @@ export default function AuthenticatedLayout({ header, children }) {
                                 <NavLink href={route('profile.edit')} active={route().current('profile.*')}>
                                     Profile
                                 </NavLink>
-                                
-                                {/* Admin Navigation */}
-                                {isAdmin && (
-                                    <>
-                                        <NavLink href={route('admin.dashboard')} active={route().current('admin.dashboard')}>
-                                            Admin
-                                        </NavLink>
-                                        <NavLink href={route('admin.artworks.index')} active={route().current('admin.artworks.*')}>
-                                            Artworks
-                                        </NavLink>
-                                        <NavLink href={route('admin.orders.index')} active={route().current('admin.orders.*')}>
-                                            Orders
-                                        </NavLink>
-                                    </>
-                                )}
                                 
                                 {/* Back to Website */}
                                 <div className="ml-8 pl-8 border-gray-200">
@@ -104,21 +105,10 @@ export default function AuthenticatedLayout({ header, children }) {
                                                 {user.name.charAt(0).toUpperCase()}
                                             </span>
                                         </div>
-                                        {/* User Info */}
-                                        <div className="hidden sm:block text-left">
-                                            <div className="flex items-center space-x-2">
-                                                <span className="text-sm font-medium text-gray-900">{user.name}</span>
-                                                {isAdmin && (
-                                                    <Badge variant="outline" className="text-xs">
-                                                        Admin
-                                                    </Badge>
-                                                )}
-                                                                                                </div>
-                                                </div>
                                         {/* Chevron */}
                                         <svg className="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
                                             <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
-                                                </svg>
+                                        </svg>
                                     </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end" className="w-56">
@@ -128,14 +118,14 @@ export default function AuthenticatedLayout({ header, children }) {
                                             <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
                                                 <span className="text-white text-sm font-semibold">
                                                     {user.name.charAt(0).toUpperCase()}
-                                        </span>
+                                                </span>
                                             </div>
                                             <div>
                                                 <div className="text-sm font-medium text-gray-900">{user.name}</div>
                                                 <div className="text-xs text-gray-500">{user.email}</div>
                                             </div>
-                            </div>
-                        </div>
+                                        </div>
+                                    </div>
 
                                     {/* Customer Menu Items */}
                                     <DropdownMenuItem>
@@ -175,37 +165,6 @@ export default function AuthenticatedLayout({ header, children }) {
                                         </Link>
                                     </DropdownMenuItem>
 
-                                    {/* Admin Section */}
-                                    {isAdmin && (
-                                        <>
-                                            <DropdownMenuSeparator />
-                                            <div className="px-3 py-1">
-                                                <div className="flex items-center space-x-2">
-                                                    <Shield className="w-3 h-3 text-gray-500" />
-                                                    <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">Admin Panel</span>
-                                                </div>
-                                            </div>
-                                            <DropdownMenuItem>
-                                                <Link href={route('admin.dashboard')} className="flex items-center space-x-2 w-full">
-                                                    <LayoutDashboard className="w-4 h-4" />
-                                                    <span>Admin Dashboard</span>
-                                                </Link>
-                                            </DropdownMenuItem>
-                                            <DropdownMenuItem>
-                                                <Link href={route('admin.artworks.index')} className="flex items-center space-x-2 w-full">
-                                                    <Settings className="w-4 h-4" />
-                                                    <span>Manage Artworks</span>
-                                                </Link>
-                                            </DropdownMenuItem>
-                                            <DropdownMenuItem>
-                                                <Link href={route('admin.orders.index')} className="flex items-center space-x-2 w-full">
-                                                    <Package className="w-4 h-4" />
-                                                    <span>Manage Orders</span>
-                                                </Link>
-                                            </DropdownMenuItem>
-                                        </>
-                                    )}
-
                                     <DropdownMenuSeparator />
                                     <DropdownMenuItem>
                                         <Link href={route('logout')} method="post" as="button" className="flex items-center space-x-2 w-full text-red-600 hover:text-red-700 hover:bg-red-50">
@@ -213,7 +172,7 @@ export default function AuthenticatedLayout({ header, children }) {
                                             <span>Sign Out</span>
                                         </Link>
                                     </DropdownMenuItem>
-                                                                        </DropdownMenuContent>
+                                </DropdownMenuContent>
                                 </DropdownMenu>
                             </div>
 
@@ -242,7 +201,7 @@ export default function AuthenticatedLayout({ header, children }) {
                         <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-white border-t border-gray-200 animate-in slide-in-from-top-2 duration-200">
                             {/* Dashboard Navigation */}
                             <MobileNavLink href={route('dashboard')} active={route().current('dashboard')}>
-                            Dashboard
+                                Dashboard
                             </MobileNavLink>
                             <MobileNavLink href={route('favorites')} active={route().current('favorites')}>
                                 Favorites
@@ -260,27 +219,6 @@ export default function AuthenticatedLayout({ header, children }) {
                                 Profile
                             </MobileNavLink>
                             
-                            {/* Admin Navigation for Mobile */}
-                            {isAdmin && (
-                                <>
-                                    <div className="px-3 py-2 border-t border-gray-100 mt-2">
-                                        <div className="flex items-center space-x-2">
-                                            <Shield className="w-3 h-3 text-gray-500" />
-                                            <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">Admin Panel</span>
-                                        </div>
-                                    </div>
-                                    <MobileNavLink href={route('admin.dashboard')} active={route().current('admin.dashboard')}>
-                                        Admin Dashboard
-                                    </MobileNavLink>
-                                    <MobileNavLink href={route('admin.artworks.index')} active={route().current('admin.artworks.*')}>
-                                        Manage Artworks
-                                    </MobileNavLink>
-                                    <MobileNavLink href={route('admin.orders.index')} active={route().current('admin.orders.*')}>
-                                        Manage Orders
-                                    </MobileNavLink>
-                            </>
-                        )}
-                        
                             {/* Back to Website */}
                             <div className="pt-2 border-t border-gray-100 mt-2">
                                 <Link href={route('home')}>

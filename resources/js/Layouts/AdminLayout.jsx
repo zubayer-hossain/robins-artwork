@@ -7,7 +7,7 @@ export default function AdminLayout({ user, header, children }) {
     const [showingNavigationDropdown, setShowingNavigationDropdown] = useState(false);
 
     return (
-        <div className="min-h-screen bg-gray-100">
+        <div className="min-h-screen bg-gray-100" data-admin-context="true">
             {/* Admin Header */}
             <nav className="bg-white border-b border-gray-200 shadow-sm">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -56,7 +56,6 @@ export default function AdminLayout({ user, header, children }) {
                                         <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                                             <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
                                         </svg>
-                                        <span>{user?.name}</span>
                                         <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                                             <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
                                         </svg>
@@ -64,10 +63,15 @@ export default function AdminLayout({ user, header, children }) {
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end" className="w-48">
                                     <DropdownMenuItem asChild>
-                                        <Link href={route('profile.edit')}>Profile</Link>
+                                        <Link href={route('admin.profile.edit')}>Profile</Link>
                                     </DropdownMenuItem>
-                                    <DropdownMenuItem asChild>
-                                        <Link href={route('logout')} method="post" as="button">
+                                    <DropdownMenuItem>
+                                        <Link 
+                                            href={route('logout')} 
+                                            method="post" 
+                                            as="button"
+                                            className="w-full text-left"
+                                        >
                                             Log Out
                                         </Link>
                                     </DropdownMenuItem>
@@ -90,11 +94,12 @@ export default function AdminLayout({ user, header, children }) {
             </main>
 
             {/* Admin Footer */}
-            <footer className="bg-white border-t border-gray-200 mt-auto">
-                <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-                    <div className="text-center text-sm text-gray-500">
-                        <p>Robin's Artwork Admin Panel</p>
-                        <p className="mt-1">Created with ❤️ by Zubayer @ <a href="https://zubayerhs.com" target="_blank" rel="noopener noreferrer" className="text-purple-600 hover:text-purple-500">zubayerhs.com</a></p>
+            <footer className="bg-gray-900 text-white mt-auto">
+                <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+                    <div className="border-gray-800 text-center">
+                        <p className="text-gray-400 text-sm">
+                            © 2024 Robin's Artwork Admin Panel. All rights reserved. • Created with ❤️ by <a href="https://www.linkedin.com/in/zubayerhs/" target="_blank" rel="noopener noreferrer" className="text-purple-400 hover:text-purple-300 font-medium transition-colors">Zubayer Hossain</a>
+                        </p>
                     </div>
                 </div>
             </footer>

@@ -18,8 +18,19 @@ class ProfileController extends Controller
      */
     public function edit(Request $request): Response
     {
+        $user = $request->user();
+        
+        // Check if user is an admin
+        if ($user->hasRole('admin')) {
+            return Inertia::render('Admin/Profile/Edit', [
+                'mustVerifyEmail' => $user instanceof MustVerifyEmail,
+                'status' => session('status'),
+            ]);
+        }
+        
+        // Default customer profile page
         return Inertia::render('Profile/Edit', [
-            'mustVerifyEmail' => $request->user() instanceof MustVerifyEmail,
+            'mustVerifyEmail' => $user instanceof MustVerifyEmail,
             'status' => session('status'),
         ]);
     }
@@ -29,14 +40,15 @@ class ProfileController extends Controller
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
+        // Only update the validated fields (name only, email is excluded)
         $request->user()->fill($request->validated());
-
-        if ($request->user()->isDirty('email')) {
-            $request->user()->email_verified_at = null;
-        }
-
         $request->user()->save();
 
+        // Redirect based on user role
+        if ($request->user()->hasRole('admin')) {
+            return Redirect::route('admin.profile.edit');
+        }
+        
         return Redirect::route('profile.edit');
     }
 

@@ -1,12 +1,12 @@
-﻿import { Head, Link } from '@inertiajs/react';
+﻿﻿﻿import { Head, Link } from '@inertiajs/react';
+import AdminLayout from '@/Layouts/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import Footer from '@/components/Footer';
 import { Plus, Edit, Trash2, Eye } from 'lucide-react';
 
-export default function AdminArtworksIndex({ artworks }) {
+export default function AdminArtworksIndex({ auth, artworks }) {
     const getStatusBadge = (status) => {
         const variants = {
             draft: 'secondary',
@@ -17,10 +17,10 @@ export default function AdminArtworksIndex({ artworks }) {
     };
 
     return (
-        <>
+        <AdminLayout user={auth.user} header="Manage Artworks">
             <Head title="Manage Artworks" />
             
-            <div className="max-w-7xl mx-auto px-4 py-8">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex items-center justify-between mb-8">
                     <div>
                         <h1 className="text-3xl font-bold">Manage Artworks</h1>
@@ -71,7 +71,7 @@ export default function AdminArtworksIndex({ artworks }) {
                                             <div>
                                                 <div className="font-medium">{artwork.title}</div>
                                                 <div className="text-sm text-gray-600">
-                                                    {artwork.year && `${artwork.year} â€¢ `}
+                                                    {artwork.year && `${artwork.year} • `}
                                                     {artwork.size_text}
                                                 </div>
                                             </div>
@@ -81,7 +81,7 @@ export default function AdminArtworksIndex({ artworks }) {
                                         <TableCell>
                                             {artwork.price ? (
                                                 <span className="font-medium text-green-600">
-                                                    ${artwork.price.toLocaleString()}
+                                                    £{artwork.price.toLocaleString()}
                                                 </span>
                                             ) : (
                                                 <span className="text-gray-400">Not for sale</span>
@@ -132,9 +132,7 @@ export default function AdminArtworksIndex({ artworks }) {
                     </CardContent>
                 </Card>
             </div>
-            
-            <Footer />
-        </>
+        </AdminLayout>
     );
 }
 

@@ -1,12 +1,12 @@
 import { Head, Link } from '@inertiajs/react';
+import AdminLayout from '@/Layouts/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import Footer from '@/components/Footer';
 import { Eye, Download } from 'lucide-react';
 
-export default function AdminOrdersIndex({ orders }) {
+export default function AdminOrdersIndex({ auth, orders }) {
     const getStatusBadge = (status) => {
         const variants = {
             pending: 'secondary',
@@ -18,10 +18,10 @@ export default function AdminOrdersIndex({ orders }) {
     };
 
     return (
-        <>
+        <AdminLayout user={auth.user} header="Manage Orders">
             <Head title="Manage Orders" />
             
-            <div className="max-w-7xl mx-auto px-4 py-8">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="mb-8">
                     <h1 className="text-3xl font-bold">Manage Orders</h1>
                     <p className="text-gray-600">View and manage customer orders</p>
@@ -64,7 +64,7 @@ export default function AdminOrdersIndex({ orders }) {
                                         </TableCell>
                                         <TableCell>
                                             <div className="font-medium">
-                                                ${order.total.toLocaleString()}
+                                                £{order.total.toLocaleString()}
                                             </div>
                                             <div className="text-sm text-gray-600">
                                                 {order.currency.toUpperCase()}
@@ -95,26 +95,38 @@ export default function AdminOrdersIndex({ orders }) {
                         {orders.links && orders.links.length > 3 && (
                             <div className="flex justify-center mt-6">
                                 <div className="flex gap-2">
-                                    {orders.links.map((link, index) => (
-                                        <Link
-                                            key={index}
-                                            href={link.url}
-                                            className={`px-3 py-2 rounded-md text-sm ${
-                                                link.active
-                                                    ? 'bg-blue-600 text-white'
-                                                    : 'bg-white text-gray-700 hover:bg-gray-50 border'
-                                            }`}
-                                            dangerouslySetInnerHTML={{ __html: link.label }}
-                                        />
-                                    ))}
+                                    {orders.links.map((link, index) => {
+                                        // Handle disabled/null links
+                                        if (!link.url) {
+                                            return (
+                                                <span
+                                                    key={index}
+                                                    className="px-3 py-2 rounded-md text-sm text-gray-400 bg-gray-100 cursor-not-allowed"
+                                                    dangerouslySetInnerHTML={{ __html: link.label }}
+                                                />
+                                            );
+                                        }
+                                        
+                                        return (
+                                            <Link
+                                                key={index}
+                                                href={link.url}
+                                                preserveState
+                                                className={`px-3 py-2 rounded-md text-sm ${
+                                                    link.active
+                                                        ? 'bg-blue-600 text-white'
+                                                        : 'bg-white text-gray-700 hover:bg-gray-50 border'
+                                                }`}
+                                                dangerouslySetInnerHTML={{ __html: link.label }}
+                                            />
+                                        );
+                                    })}
                                 </div>
                             </div>
                         )}
                     </CardContent>
                 </Card>
             </div>
-            
-            <Footer />
-        </>
+        </AdminLayout>
     );
 }

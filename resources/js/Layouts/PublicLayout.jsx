@@ -66,8 +66,8 @@ export default function PublicLayout({ children }) {
 
                         {/* Right side - Cart + Auth/User Menu */}
                         <div className="flex items-center space-x-4">
-                            {/* Cart Dropdown */}
-                            {auth.user && (
+                            {/* Cart Dropdown - Only for non-admin users */}
+                            {auth.user && !isAdmin && (
                                 <div className="relative">
                                     <Button 
                                         ref={cartButtonRef}
@@ -103,23 +103,12 @@ export default function PublicLayout({ children }) {
                                     <div className="hidden md:block">
                                         <DropdownMenu>
                                         <DropdownMenuTrigger asChild>
-                                            <Button variant="ghost" className="flex items-center space-x-3 hover:bg-gray-50 px-3 py-2 rounded-lg transition-colors">
+                                            <Button variant="ghost" className="flex items-center space-x-2 hover:bg-gray-50 p-2 rounded-lg transition-colors">
                                                 {/* User Avatar */}
                                                 <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
                                                     <span className="text-white text-sm font-semibold">
                                                         {user.name.charAt(0).toUpperCase()}
                                                     </span>
-                                                </div>
-                                                {/* User Info */}
-                                                <div className="hidden sm:block text-left">
-                                                    <div className="flex items-center space-x-2">
-                                                        <span className="text-sm font-medium text-gray-900">{user.name}</span>
-                                                        {isAdmin && (
-                                                            <Badge variant="outline" className="text-xs">
-                                                                Admin
-                                                            </Badge>
-                                                        )}
-                                                    </div>
                                                 </div>
                                                 {/* Chevron */}
                                                 <svg className="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
@@ -143,48 +132,10 @@ export default function PublicLayout({ children }) {
                                                 </div>
                                             </div>
 
-                                            {/* Customer Menu Items */}
-                                            <DropdownMenuItem>
-                                                <Link href={route('dashboard')} className="flex items-center space-x-2 w-full">
-                                                    <LayoutDashboard className="w-4 h-4" />
-                                                    <span>Dashboard</span>
-                                                </Link>
-                                            </DropdownMenuItem>
-                                            <DropdownMenuItem>
-                                                <Link href={route('favorites')} className="flex items-center space-x-2 w-full">
-                                                    <Heart className="w-4 h-4" />
-                                                    <span>Favorites</span>
-                                                </Link>
-                                            </DropdownMenuItem>
-                                            <DropdownMenuItem>
-                                                <Link href={route('recent-views')} className="flex items-center space-x-2 w-full">
-                                                    <Eye className="w-4 h-4" />
-                                                    <span>Recent Views</span>
-                                                </Link>
-                                            </DropdownMenuItem>
-                                            <DropdownMenuItem>
-                                                <Link href={route('orders')} className="flex items-center space-x-2 w-full">
-                                                    <Package className="w-4 h-4" />
-                                                    <span>Orders</span>
-                                                </Link>
-                                            </DropdownMenuItem>
-                                            <DropdownMenuItem>
-                                                <Link href={route('addresses.index')} className="flex items-center space-x-2 w-full">
-                                                    <MapPin className="w-4 h-4" />
-                                                    <span>Addresses</span>
-                                                </Link>
-                                            </DropdownMenuItem>
-                                            <DropdownMenuItem>
-                                                <Link href={route('profile.edit')} className="flex items-center space-x-2 w-full">
-                                                    <User className="w-4 h-4" />
-                                                    <span>Profile Settings</span>
-                                                </Link>
-                                            </DropdownMenuItem>
-
-                                            {/* Admin Section */}
-                                            {isAdmin && (
+                                            {/* Menu Items - Admin vs Customer */}
+                                            {isAdmin ? (
+                                                // Admin Panel Menu Items
                                                 <>
-                                                    <DropdownMenuSeparator />
                                                     <div className="px-3 py-1">
                                                         <div className="flex items-center space-x-2">
                                                             <Shield className="w-3 h-3 text-gray-500" />
@@ -207,6 +158,58 @@ export default function PublicLayout({ children }) {
                                                         <Link href={route('admin.orders.index')} className="flex items-center space-x-2 w-full">
                                                             <Package className="w-4 h-4" />
                                                             <span>Manage Orders</span>
+                                                        </Link>
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuItem>
+                                                        <Link href={route('admin.editions.index')} className="flex items-center space-x-2 w-full">
+                                                            <Package className="w-4 h-4" />
+                                                            <span>Manage Editions</span>
+                                                        </Link>
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuItem>
+                                                        <Link href={route('admin.contact.index')} className="flex items-center space-x-2 w-full">
+                                                            <User className="w-4 h-4" />
+                                                            <span>Contact Messages</span>
+                                                        </Link>
+                                                    </DropdownMenuItem>
+                                                </>
+                                            ) : (
+                                                // Customer Menu Items
+                                                <>
+                                                    <DropdownMenuItem>
+                                                        <Link href={route('dashboard')} className="flex items-center space-x-2 w-full">
+                                                            <LayoutDashboard className="w-4 h-4" />
+                                                            <span>Dashboard</span>
+                                                        </Link>
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuItem>
+                                                        <Link href={route('favorites')} className="flex items-center space-x-2 w-full">
+                                                            <Heart className="w-4 h-4" />
+                                                            <span>Favorites</span>
+                                                        </Link>
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuItem>
+                                                        <Link href={route('recent-views')} className="flex items-center space-x-2 w-full">
+                                                            <Eye className="w-4 h-4" />
+                                                            <span>Recent Views</span>
+                                                        </Link>
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuItem>
+                                                        <Link href={route('orders')} className="flex items-center space-x-2 w-full">
+                                                            <Package className="w-4 h-4" />
+                                                            <span>Orders</span>
+                                                        </Link>
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuItem>
+                                                        <Link href={route('addresses.index')} className="flex items-center space-x-2 w-full">
+                                                            <MapPin className="w-4 h-4" />
+                                                            <span>Addresses</span>
+                                                        </Link>
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuItem>
+                                                        <Link href={route('profile.edit')} className="flex items-center space-x-2 w-full">
+                                                            <User className="w-4 h-4" />
+                                                            <span>Profile Settings</span>
                                                         </Link>
                                                     </DropdownMenuItem>
                                                 </>
@@ -307,50 +310,10 @@ export default function PublicLayout({ children }) {
                                         <span>Signed in as <span className="font-medium text-gray-900">{user.name}</span></span>
                                     </div>
                                     <div className="flex flex-col space-y-2">
-                                        <Link href={route('dashboard')}>
-                                            <Button variant="ghost" className="w-full justify-start">
-                                                <LayoutDashboard className="w-4 h-4 mr-2" />
-                                                Dashboard
-                                            </Button>
-                                        </Link>
-                                        <Link href={route('favorites')}>
-                                            <Button variant="ghost" className="w-full justify-start">
-                                                <Heart className="w-4 h-4 mr-2" />
-                                                Favorites
-                                            </Button>
-                                        </Link>
-                                        <Link href={route('recent-views')}>
-                                            <Button variant="ghost" className="w-full justify-start">
-                                                <Eye className="w-4 h-4 mr-2" />
-                                                Recent Views
-                                            </Button>
-                                        </Link>
-                                        <Link href={route('orders')}>
-                                            <Button variant="ghost" className="w-full justify-start">
-                                                <Package className="w-4 h-4 mr-2" />
-                                                My Orders
-                                            </Button>
-                                        </Link>
-                                        <Link href={route('addresses.index')}>
-                                            <Button variant="ghost" className="w-full justify-start">
-                                                <MapPin className="w-4 h-4 mr-2" />
-                                                Addresses
-                                            </Button>
-                                        </Link>
-                                        <Link href={route('profile.edit')}>
-                                            <Button variant="ghost" className="w-full justify-start">
-                                                <User className="w-4 h-4 mr-2" />
-                                                Profile
-                                            </Button>
-                                        </Link>
-                                        
-                                        {/* Separator before admin section */}
-                                        <div className="border-t border-gray-100 my-2"></div>
-                                        
-                                        {/* Admin Section for Mobile */}
-                                        {isAdmin && (
+                                        {isAdmin ? (
+                                            // Admin Panel Menu Items for Mobile
                                             <>
-                                                <div className="px-3 py-2 border-t border-gray-100">
+                                                <div className="px-3 py-2 border-b border-gray-100">
                                                     <div className="flex items-center space-x-2">
                                                         <Shield className="w-3 h-3 text-gray-500" />
                                                         <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">Admin Panel</span>
@@ -374,9 +337,60 @@ export default function PublicLayout({ children }) {
                                                         Manage Orders
                                                     </Button>
                                                 </Link>
+                                                <Link href={route('admin.editions.index')}>
+                                                    <Button variant="ghost" className="w-full justify-start">
+                                                        <Package className="w-4 h-4 mr-2" />
+                                                        Manage Editions
+                                                    </Button>
+                                                </Link>
+                                                <Link href={route('admin.contact.index')}>
+                                                    <Button variant="ghost" className="w-full justify-start">
+                                                        <User className="w-4 h-4 mr-2" />
+                                                        Contact Messages
+                                                    </Button>
+                                                </Link>
+                                            </>
+                                        ) : (
+                                            // Customer Menu Items for Mobile
+                                            <>
+                                                <Link href={route('dashboard')}>
+                                                    <Button variant="ghost" className="w-full justify-start">
+                                                        <LayoutDashboard className="w-4 h-4 mr-2" />
+                                                        Dashboard
+                                                    </Button>
+                                                </Link>
+                                                <Link href={route('favorites')}>
+                                                    <Button variant="ghost" className="w-full justify-start">
+                                                        <Heart className="w-4 h-4 mr-2" />
+                                                        Favorites
+                                                    </Button>
+                                                </Link>
+                                                <Link href={route('recent-views')}>
+                                                    <Button variant="ghost" className="w-full justify-start">
+                                                        <Eye className="w-4 h-4 mr-2" />
+                                                        Recent Views
+                                                    </Button>
+                                                </Link>
+                                                <Link href={route('orders')}>
+                                                    <Button variant="ghost" className="w-full justify-start">
+                                                        <Package className="w-4 h-4 mr-2" />
+                                                        My Orders
+                                                    </Button>
+                                                </Link>
+                                                <Link href={route('addresses.index')}>
+                                                    <Button variant="ghost" className="w-full justify-start">
+                                                        <MapPin className="w-4 h-4 mr-2" />
+                                                        Addresses
+                                                    </Button>
+                                                </Link>
+                                                <Link href={route('profile.edit')}>
+                                                    <Button variant="ghost" className="w-full justify-start">
+                                                        <User className="w-4 h-4 mr-2" />
+                                                        Profile
+                                                    </Button>
+                                                </Link>
                                             </>
                                         )}
-                                        
                                         {/* Separator before logout */}
                                         <div className="border-t border-gray-100 my-2"></div>
                                         

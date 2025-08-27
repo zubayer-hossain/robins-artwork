@@ -15,13 +15,18 @@ export default function UpdateProfileInformation({
     const { data, setData, patch, errors, processing, recentlySuccessful } =
         useForm({
             name: user.name,
-            email: user.email,
+            // Email is excluded from form data to prevent updates
         });
 
     const submit = (e) => {
         e.preventDefault();
 
-        patch(route('profile.update'));
+        // Detect if we're in admin context by checking the current route
+        const isAdminContext = route().current('admin.*');
+        const updateRoute = isAdminContext ? route('admin.profile.update') : route('profile.update');
+        
+        // Only send name field, email is readonly
+        patch(updateRoute);
     };
 
     return (
@@ -49,12 +54,15 @@ export default function UpdateProfileInformation({
                     <TextInput
                         id="email"
                         type="email"
-                        className="mt-1 block w-full"
-                        value={data.email}
-                        onChange={(e) => setData('email', e.target.value)}
-                        required
+                        className="mt-1 block w-full bg-gray-50 text-gray-500 cursor-not-allowed"
+                        value={user.email}
+                        readOnly
+                        disabled
                         autoComplete="username"
                     />
+                    <p className="mt-1 text-xs text-gray-500">
+                        Email address cannot be changed. Contact support if you need to update your email.
+                    </p>
 
                     <InputError className="mt-2" message={errors.email} />
                 </div>

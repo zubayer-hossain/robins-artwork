@@ -30,7 +30,11 @@ export default function DeleteUserForm({ className = '' }) {
     const deleteUser = (e) => {
         e.preventDefault();
 
-        destroy(route('profile.destroy'), {
+        // Detect if we're in admin context by checking the current route
+        const isAdminContext = route().current('admin.*');
+        const destroyRoute = isAdminContext ? route('admin.profile.destroy') : route('profile.destroy');
+
+        destroy(destroyRoute, {
             preserveScroll: true,
             onSuccess: () => closeModal(),
             onError: () => passwordInput.current.focus(),

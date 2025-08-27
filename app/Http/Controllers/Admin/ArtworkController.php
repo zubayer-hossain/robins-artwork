@@ -38,8 +38,7 @@ class ArtworkController extends Controller
 
     public function create(): Response
     {
-        return Inertia::render('Admin/Artworks/Edit', [
-            'artwork' => null,
+        return Inertia::render('Admin/Artworks/Create', [
             'mediums' => ['Oil', 'Watercolor', 'Acrylic', 'Gouache', 'Ink', 'Mixed Media'],
             'statuses' => ['draft', 'published', 'sold'],
         ]);

@@ -1,11 +1,11 @@
-﻿import { Head, Link } from '@inertiajs/react';
+﻿﻿import { Head, Link } from '@inertiajs/react';
+import AdminLayout from '@/Layouts/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import Footer from '@/components/Footer';
 import { ArrowLeft, Download, Mail } from 'lucide-react';
 
-export default function AdminOrdersShow({ order }) {
+export default function AdminOrdersShow({ auth, order }) {
     const getStatusBadge = (status) => {
         const variants = {
             pending: 'secondary',
@@ -17,10 +17,10 @@ export default function AdminOrdersShow({ order }) {
     };
 
     return (
-        <>
+        <AdminLayout user={auth.user} header={`Order #${order.id}`}>
             <Head title={`Order #${order.id}`} />
             
-            <div className="max-w-4xl mx-auto px-4 py-8">
+            <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex items-center gap-4 mb-8">
                     <Link href={route('admin.orders.index')}>
                         <Button variant="outline" size="sm">
@@ -82,7 +82,7 @@ export default function AdminOrdersShow({ order }) {
                                             <div className="flex-1">
                                                 <div className="font-medium">{item.title_snapshot}</div>
                                                 <div className="text-sm text-gray-600">
-                                                    Qty: {item.qty} Ã— ${item.unit_price.toLocaleString()}
+                                                    Qty: {item.qty} × £{item.unit_price.toLocaleString()}
                                                 </div>
                                                 {item.artwork && (
                                                     <div className="text-sm text-gray-500 mt-1">
@@ -97,7 +97,7 @@ export default function AdminOrdersShow({ order }) {
                                             </div>
                                             <div className="text-right">
                                                 <div className="font-bold">
-                                                    ${(item.qty * item.unit_price).toLocaleString()}
+                                                    £{(item.qty * item.unit_price).toLocaleString()}
                                                 </div>
                                             </div>
                                         </div>
@@ -139,11 +139,11 @@ export default function AdminOrdersShow({ order }) {
                                 <div className="space-y-3">
                                     <div className="flex justify-between">
                                         <span>Subtotal:</span>
-                                        <span>${order.total.toLocaleString()}</span>
+                                        <span>£{order.total.toLocaleString()}</span>
                                     </div>
                                     <div className="flex justify-between font-bold text-lg border-t pt-3">
                                         <span>Total:</span>
-                                        <span>${order.total.toLocaleString()} {order.currency.toUpperCase()}</span>
+                                        <span>£{order.total.toLocaleString()} {order.currency.toUpperCase()}</span>
                                     </div>
                                 </div>
                             </CardContent>
@@ -172,9 +172,7 @@ export default function AdminOrdersShow({ order }) {
                     </div>
                 </div>
             </div>
-            
-            <Footer />
-        </>
+        </AdminLayout>
     );
 }
 
