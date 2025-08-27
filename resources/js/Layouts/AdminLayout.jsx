@@ -37,6 +37,9 @@ export default function AdminLayout({ user, header, children }) {
                                 <NavLink href={route('admin.editions.index')} active={route().current('admin.editions.*')}>
                                     Editions
                                 </NavLink>
+                                <NavLink href={route('admin.cms.index')} active={route().current('admin.cms.*')}>
+                                    CMS
+                                </NavLink>
                             </div>
                         </div>
 

@@ -15,7 +15,7 @@ use App\Http\Controllers\Admin\ArtworkController as AdminArtworkController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Admin\EditionController as AdminEditionController;
 use App\Http\Controllers\Admin\ContactController as AdminContactController;
-use App\Http\Controllers\Admin\AuthController as AdminAuthController;
+use App\Http\Controllers\Admin\CmsController as AdminCmsController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -141,6 +141,13 @@ Route::prefix('admin')->name('admin.')->middleware('web')->group(function () {
         Route::resource('contact', AdminContactController::class)->only(['index', 'show', 'destroy']);
         Route::patch('/contact/{contact_message}/mark-read', [AdminContactController::class, 'markAsRead'])->name('contact.mark-read');
         Route::patch('/contact/{contact_message}/mark-replied', [AdminContactController::class, 'markAsReplied'])->name('contact.mark-replied');
+        
+        // CMS management
+        Route::get('/cms', [AdminCmsController::class, 'index'])->name('cms.index');
+        Route::get('/cms/global', [AdminCmsController::class, 'global'])->name('cms.global');
+        Route::patch('/cms/global', [AdminCmsController::class, 'updateGlobal'])->name('cms.global.update');
+        Route::get('/cms/{page}', [AdminCmsController::class, 'page'])->name('cms.page');
+        Route::patch('/cms/{page}', [AdminCmsController::class, 'updatePage'])->name('cms.page.update');
     });
 });
 
