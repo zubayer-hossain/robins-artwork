@@ -16,6 +16,8 @@ use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Admin\EditionController as AdminEditionController;
 use App\Http\Controllers\Admin\ContactController as AdminContactController;
 use App\Http\Controllers\Admin\CmsController as AdminCmsController;
+use App\Http\Controllers\Admin\AuthController as AdminAuthController;
+
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
