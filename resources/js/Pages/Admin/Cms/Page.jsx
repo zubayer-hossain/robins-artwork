@@ -9,8 +9,31 @@ import { ChevronRight, Save, Eye, Settings } from 'lucide-react';
 import { useState } from 'react';
 import CmsSidebar from '@/Components/CmsSidebar';
 
-export default function CmsPage({ auth, page, settings, breadcrumbs, pageTitle }) {
-    const [activeSection, setActiveSection] = useState(Object.keys(settings)[0] || '');
+export default function CmsPage({ auth, page, settings, breadcrumbs, pageTitle, activeSection: serverActiveSection }) {
+    // Define section order based on page to match CmsSidebar
+    const getSectionOrder = (pageName) => {
+        const sectionOrders = {
+            home: ['hero', 'stats', 'featured', 'about', 'contact_cta'],
+            gallery: ['header', 'controls', 'empty_state', 'cta', 'features', 'footer_info'],
+            about: ['hero', 'story', 'philosophy', 'process', 'cta'],
+            contact: ['hero', 'form', 'info', 'faq', 'cta']
+        };
+        return sectionOrders[pageName] || Object.keys(settings);
+    };
+    
+    const orderedSections = getSectionOrder(page);
+    // Use server-provided activeSection or fall back to first section
+    const initialSection = serverActiveSection || orderedSections.find(section => settings[section]) || Object.keys(settings)[0] || '';
+    const [activeSection, setActiveSection] = useState(initialSection);
+    
+    // Handle section transitions with URL updates
+    const handleSectionChange = (newSection) => {
+        if (newSection !== activeSection) {
+            setActiveSection(newSection);
+            // Update URL to reflect the section change
+            window.history.pushState({}, '', route('admin.cms.page.section', { page, section: newSection }));
+        }
+    };
     
     // Prepare form data
     const formData = {};
@@ -61,17 +84,22 @@ export default function CmsPage({ auth, page, settings, breadcrumbs, pageTitle }
                 );
             case 'boolean':
                 return (
-                    <div className="flex items-center space-x-2">
-                        <input
-                            type="checkbox"
-                            id={setting.id}
-                            checked={value === '1' || value === 'true'}
-                            onChange={(e) => updateSettingValue(setting.id, e.target.checked ? '1' : '0')}
-                            className="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500 transition-colors"
-                        />
-                        <Label htmlFor={setting.id} className="text-sm font-medium">
-                            Enable this feature
-                        </Label>
+                    <div className="space-y-2">
+                        <div className="flex items-center space-x-3">
+                            <input
+                                type="checkbox"
+                                id={setting.id}
+                                checked={value === '1' || value === 'true'}
+                                onChange={(e) => updateSettingValue(setting.id, e.target.checked ? '1' : '0')}
+                                className="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500 transition-colors"
+                            />
+                            <Label htmlFor={setting.id} className="text-sm font-medium text-gray-900 cursor-pointer">
+                                {setting.key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                            </Label>
+                        </div>
+                        {setting.description && (
+                            <p className="text-xs text-gray-500 ml-7">{setting.description}</p>
+                        )}
                     </div>
                 );
             case 'number':
@@ -100,9 +128,20 @@ export default function CmsPage({ auth, page, settings, breadcrumbs, pageTitle }
     };
 
     return (
-        <AdminLayout user={auth.user} header={pageTitle}>
-            <Head title={`CMS - ${pageTitle}`} />
-            
+        <AdminLayout 
+            user={auth.user} 
+            header={pageTitle}
+            headerIcon={<Settings className="w-8 h-8 text-white" />}
+            headerDescription={`Manage content and settings for the ${page} page`}
+            headerActions={
+                <a href={route(page)} target="_blank" rel="noopener noreferrer">
+                    <Button variant="outline" className="border-gray-300 text-gray-700 hover:bg-gray-50 transition-all duration-200">
+                        <Eye className="w-4 h-4 mr-2" />
+                        Preview Page
+                    </Button>
+                </a>
+            }
+        >
             <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                     {/* Breadcrumbs */}
@@ -131,48 +170,31 @@ export default function CmsPage({ auth, page, settings, breadcrumbs, pageTitle }
                         ))}
                     </nav>
 
-                    {/* Header */}
-                    <div className="flex items-center justify-between mb-8">
-                        <div className="flex items-center gap-4">
-                            <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-indigo-600 rounded-2xl flex items-center justify-center shadow-xl">
-                                <Settings className="w-8 h-8 text-white" />
-                            </div>
-                            <div>
-                                <h1 className="text-4xl font-bold text-gray-900 mb-2">{pageTitle}</h1>
-                                <p className="text-lg text-gray-600">Manage content and settings for the {page} page</p>
-                            </div>
-                        </div>
-                        <div className="flex items-center gap-3">
-                            <Link href={route(page)} target="_blank">
-                                <Button variant="outline" className="border-gray-300 text-gray-700 hover:bg-gray-50 transition-all duration-200">
-                                    <Eye className="w-4 h-4 mr-2" />
-                                    Preview Page
-                                </Button>
-                            </Link>
-                        </div>
-                    </div>
-
                     <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
                         {/* CMS Sidebar */}
                         <div className="lg:col-span-1">
                             <CmsSidebar 
                                 currentPage={page} 
                                 currentSection={activeSection}
-                                onSectionChange={setActiveSection}
+                                onSectionChange={handleSectionChange}
                             />
                         </div>
 
                         {/* Main Content */}
                         <div className="lg:col-span-4">
                             <form onSubmit={handleSubmit}>
-                                {Object.entries(settings).map(([section, sectionSettings]) => (
-                                    <Card 
-                                        key={section} 
-                                        className={`border-0 shadow-xl mb-6 transition-all duration-300 hover:shadow-2xl ${
-                                            activeSection === section ? 'transform scale-[1.01]' : ''
-                                        }`}
-                                        style={{ display: activeSection === section ? 'block' : 'none' }}
-                                    >
+                                {orderedSections.filter(section => settings[section]).map((section) => {
+                                    const sectionSettings = settings[section];
+                                    return (
+                                        <Card 
+                                            key={section} 
+                                            className={`border-0 shadow-xl mb-6 transition-all duration-300 hover:shadow-2xl ${
+                                                activeSection === section ? 'transform scale-[1.01] opacity-100' : 'opacity-0'
+                                            }`}
+                                            style={{ 
+                                                display: activeSection === section ? 'block' : 'none'
+                                            }}
+                                        >
                                         <CardHeader className="bg-gradient-to-r from-white to-gray-50 border-b border-gray-100 pb-6">
                                             <div className="flex items-center gap-4">
                                                 <div className="w-14 h-14 bg-gradient-to-r from-purple-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
@@ -186,12 +208,37 @@ export default function CmsPage({ auth, page, settings, breadcrumbs, pageTitle }
                                                         {section === 'controls' && '🎮'}
                                                         {section === 'story' && '📖'}
                                                         {section === 'philosophy' && '💭'}
-                                                        {!['hero', 'stats', 'featured', 'about', 'contact_cta', 'header', 'controls', 'story', 'philosophy'].includes(section) && '📝'}
+                                                        {section === 'process' && '🔧'}
+                                                        {section === 'cta' && '📢'}
+                                                        {section === 'form' && '📝'}
+                                                        {section === 'info' && 'ℹ️'}
+                                                        {section === 'faq' && '❓'}
+                                                        {section === 'empty_state' && '🈳'}
+                                                        {section === 'features' && '⭐'}
+                                                        {section === 'footer_info' && '📋'}
+                                                        {!['hero', 'stats', 'featured', 'about', 'contact_cta', 'header', 'controls', 'story', 'philosophy', 'process', 'cta', 'form', 'info', 'faq', 'empty_state', 'features', 'footer_info'].includes(section) && '📝'}
                                                     </span>
                                                 </div>
                                                 <div>
                                                     <CardTitle className="text-2xl font-bold text-gray-900 capitalize">
-                                                        {section.replace('_', ' ')}
+                                                        {section === 'hero' && 'Hero Section'}
+                                                        {section === 'stats' && 'Statistics'}
+                                                        {section === 'featured' && 'Featured'}
+                                                        {section === 'about' && 'About Section'}
+                                                        {section === 'contact_cta' && 'Contact CTA'}
+                                                        {section === 'header' && 'Page Header'}
+                                                        {section === 'controls' && 'Gallery Controls'}
+                                                        {section === 'story' && 'Artist Story'}
+                                                        {section === 'philosophy' && 'Philosophy'}
+                                                        {section === 'process' && 'Process & Technique'}
+                                                        {section === 'cta' && 'Call to Action'}
+                                                        {section === 'form' && 'Contact Form'}
+                                                        {section === 'info' && 'Contact Info'}
+                                                        {section === 'faq' && 'FAQ Section'}
+                                                        {section === 'empty_state' && 'Empty State'}
+                                                        {section === 'features' && 'Feature Cards'}
+                                                        {section === 'footer_info' && 'Footer Info'}
+                                                        {!['hero', 'stats', 'featured', 'about', 'contact_cta', 'header', 'controls', 'story', 'philosophy', 'process', 'cta', 'form', 'info', 'faq', 'empty_state', 'features', 'footer_info'].includes(section) && section.replace('_', ' ')}
                                                     </CardTitle>
                                                     <p className="text-gray-600 mt-1">
                                                         Configure content and settings for this section
@@ -201,29 +248,38 @@ export default function CmsPage({ auth, page, settings, breadcrumbs, pageTitle }
                                         </CardHeader>
                                         <CardContent className="p-8 space-y-6">
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                                {sectionSettings.map((setting) => (
-                                                    <div key={setting.id} className={`space-y-3 ${setting.type === 'textarea' ? 'md:col-span-2' : ''}`}>
-                                                        <Label htmlFor={setting.id} className="text-sm font-semibold text-gray-800 capitalize flex items-center gap-2">
-                                                            <span className="w-2 h-2 bg-purple-500 rounded-full"></span>
-                                                            {setting.key.replace('_', ' ')}
-                                                        </Label>
-                                                        <div className="relative">
-                                                            {renderInput(setting)}
-                                                            {errors[`settings.${setting.id}`] && (
-                                                                <div className="absolute -bottom-6 left-0">
-                                                                    <p className="text-sm text-red-600 font-medium">{errors[`settings.${setting.id}`]}</p>
-                                                                </div>
+                                                {sectionSettings.map((setting) => {
+                                                    // Special handling for Gallery Controls section - show 2 checkboxes per row
+                                                    const isGalleryControls = page === 'gallery' && section === 'controls';
+                                                    const booleanColumnSpan = isGalleryControls ? '' : 'md:col-span-2';
+                                                    
+                                                    return (
+                                                        <div key={setting.id} className={`space-y-3 ${setting.type === 'textarea' ? 'md:col-span-2' : ''} ${setting.type === 'boolean' ? booleanColumnSpan : ''}`}>
+                                                            {setting.type !== 'boolean' && (
+                                                                <Label htmlFor={setting.id} className="text-sm font-semibold text-gray-800 capitalize flex items-center gap-2">
+                                                                    <span className="w-2 h-2 bg-purple-500 rounded-full"></span>
+                                                                    {setting.key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                                                                </Label>
+                                                            )}
+                                                            <div className="relative">
+                                                                {renderInput(setting)}
+                                                                {errors[`settings.${setting.id}`] && (
+                                                                    <div className="absolute -bottom-6 left-0">
+                                                                        <p className="text-sm text-red-600 font-medium">{errors[`settings.${setting.id}`]}</p>
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                            {setting.description && setting.type !== 'boolean' && (
+                                                                <p className="text-xs text-gray-500 italic">{setting.description}</p>
                                                             )}
                                                         </div>
-                                                        {setting.description && (
-                                                            <p className="text-xs text-gray-500 italic">{setting.description}</p>
-                                                        )}
-                                                    </div>
-                                                ))}
+                                                    );
+                                                })}
                                             </div>
                                         </CardContent>
                                     </Card>
-                                ))}
+                                    );
+                                })}
 
                                 {/* Save Button */}
                                 <div className="sticky bottom-6 z-10">
@@ -237,10 +293,6 @@ export default function CmsPage({ auth, page, settings, breadcrumbs, pageTitle }
                                                             <span className="text-sm font-medium">Settings saved successfully!</span>
                                                         </div>
                                                     )}
-                                                    <div className="flex items-center gap-2 text-gray-600">
-                                                        <div className="w-2 h-2 bg-gray-400 rounded-full animate-pulse"></div>
-                                                        <span className="text-sm font-medium">Auto-save enabled</span>
-                                                    </div>
                                                 </div>
                                                 <Button 
                                                     type="submit" 

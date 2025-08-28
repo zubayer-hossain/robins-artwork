@@ -1,4 +1,4 @@
-﻿import { Head, Link, router } from '@inertiajs/react';
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿import { Head, Link, router } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -7,7 +7,12 @@ import PublicLayout from '@/Layouts/PublicLayout';
 import { useState, useEffect } from 'react';
 import ArtworkCard from '@/Components/ArtworkCard';
 
-export default function GalleryIndex({ artworks, filters, totalArtworks, stats }) {
+export default function GalleryIndex({ artworks, filters, totalArtworks, stats, cmsSettings = {} }) {
+    // Helper function to get CMS value
+    const getCmsValue = (section, key, defaultValue = '') => {
+        return cmsSettings[section]?.[key] || defaultValue;
+    };
+    
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedMedium, setSelectedMedium] = useState('all');
     const [selectedYear, setSelectedYear] = useState('all');
@@ -81,15 +86,14 @@ export default function GalleryIndex({ artworks, filters, totalArtworks, stats }
                             <span className="text-2xl">🎨</span>
                         </div>
                         <h1 className="text-5xl md:text-6xl font-bold bg-gradient-to-r from-purple-600 via-blue-600 to-purple-800 bg-clip-text text-transparent">
-                            Art Gallery
+                            {getCmsValue('header', 'title', 'Art Gallery')}
                         </h1>
                         <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
                             <span className="text-2xl">✨</span>
                         </div>
                     </div>
                     <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed mb-8">
-                        Discover extraordinary artworks that tell stories, evoke emotions, and transform spaces. 
-                        Each piece is carefully curated to bring beauty and inspiration to your life.
+                        {getCmsValue('header', 'description', 'Discover extraordinary artworks that tell stories, evoke emotions, and transform spaces. Each piece is carefully curated to bring beauty and inspiration to your life.')}
                     </p>
                     
                     {/* Stats */}
@@ -261,10 +265,9 @@ export default function GalleryIndex({ artworks, filters, totalArtworks, stats }
                             </div>
                             
                             {/* Enhanced Message */}
-                            <h3 className="text-3xl font-bold text-gray-800 mb-4">No Artworks Found</h3>
+                            <h3 className="text-3xl font-bold text-gray-800 mb-4">{getCmsValue('empty_state', 'title', 'No Artworks Found')}</h3>
                             <p className="text-lg text-gray-600 mb-8 leading-relaxed max-w-xl mx-auto">
-                                We couldn't find any artworks matching your current filters. 
-                                Don't worry though - our collection is always growing!
+                                {getCmsValue('empty_state', 'description', 'We couldn\'t find any artworks matching your current filters. Don\'t worry though - our collection is always growing!')}
                             </p>
                             
                             {/* Action Buttons */}
@@ -273,14 +276,14 @@ export default function GalleryIndex({ artworks, filters, totalArtworks, stats }
                                     onClick={clearFilters}
                                     className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
                                 >
-                                    🔍 Browse All Artworks
+                                    {getCmsValue('empty_state', 'primary_button_text', '🔍 Browse All Artworks')}
                                 </Button>
                                 <Link href={route('contact')}>
                                     <Button 
                                         variant="outline" 
                                         className="border-2 border-purple-300 text-purple-600 hover:bg-purple-50 hover:border-purple-400 px-6 py-3 rounded-xl font-semibold transition-all duration-300"
                                     >
-                                        💬 Ask About Commissions
+                                        {getCmsValue('empty_state', 'secondary_button_text', '💬 Ask About Commissions')}
                                     </Button>
                                 </Link>
                             </div>
@@ -347,11 +350,10 @@ export default function GalleryIndex({ artworks, filters, totalArtworks, stats }
                         
                         {/* Main Content */}
                         <h3 className="text-3xl md:text-4xl font-bold text-gray-800 mb-6 leading-tight">
-                            Can't Find What You're Looking For?
+                            {getCmsValue('cta', 'title', 'Can\'t Find What You\'re Looking For?')}
                         </h3>
                         <p className="text-lg text-gray-600 mb-8 max-w-3xl mx-auto leading-relaxed">
-                            Our collection is constantly growing with new pieces inspired by the stunning Scottish Highlands. 
-                            Let us know what you're looking for, and we'll help you find the perfect artwork for your space.
+                            {getCmsValue('cta', 'description', 'Our collection is constantly growing with new pieces inspired by the stunning Scottish Highlands. Let us know what you\'re looking for, and we\'ll help you find the perfect artwork for your space.')}
                         </p>
                         
                         {/* Feature Grid */}
@@ -360,22 +362,22 @@ export default function GalleryIndex({ artworks, filters, totalArtworks, stats }
                                 <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-3">
                                     <span className="text-xl">🎨</span>
                                 </div>
-                                <h4 className="font-semibold text-gray-800 mb-2">Custom Commissions</h4>
-                                <p className="text-sm text-gray-600">Personalized artwork tailored to your vision</p>
+                                <h4 className="font-semibold text-gray-800 mb-2">{getCmsValue('features', 'feature1_title', 'Custom Commissions')}</h4>
+                                <p className="text-sm text-gray-600">{getCmsValue('features', 'feature1_description', 'Personalized artwork tailored to your vision')}</p>
                             </div>
                             <div className="text-center p-4">
                                 <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
                                     <span className="text-xl">🏔️</span>
                                 </div>
-                                <h4 className="font-semibold text-gray-800 mb-2">Scottish Landscapes</h4>
-                                <p className="text-sm text-gray-600">Inspired by the beautiful Cairngorms</p>
+                                <h4 className="font-semibold text-gray-800 mb-2">{getCmsValue('features', 'feature2_title', 'Scottish Landscapes')}</h4>
+                                <p className="text-sm text-gray-600">{getCmsValue('features', 'feature2_description', 'Inspired by the beautiful Cairngorms')}</p>
                             </div>
                             <div className="text-center p-4">
                                 <div className="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-3">
                                     <span className="text-xl">🏠</span>
                                 </div>
-                                <h4 className="font-semibold text-gray-800 mb-2">Studio Visits</h4>
-                                <p className="text-sm text-gray-600">Visit Robin's studio in the Highlands</p>
+                                <h4 className="font-semibold text-gray-800 mb-2">{getCmsValue('features', 'feature3_title', 'Studio Visits')}</h4>
+                                <p className="text-sm text-gray-600">{getCmsValue('features', 'feature3_description', 'Visit Robin\'s studio in the Highlands')}</p>
                             </div>
                         </div>
                         
@@ -383,8 +385,7 @@ export default function GalleryIndex({ artworks, filters, totalArtworks, stats }
                         <div className="flex justify-center">
                             <Link href={route('contact')}>
                                 <Button className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-16 py-6 rounded-2xl font-bold shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 text-xl">
-                                    <span className="mr-3 text-2xl">💌</span>
-                                    Get in Touch
+                                    {getCmsValue('cta', 'button_text', '💌 Get in Touch')}
                                 </Button>
                             </Link>
                         </div>
@@ -396,19 +397,19 @@ export default function GalleryIndex({ artworks, filters, totalArtworks, stats }
                                     <svg className="w-4 h-4 text-purple-400" fill="currentColor" viewBox="0 0 20 20">
                                         <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                                     </svg>
-                                    <span>Free consultation</span>
+                                    <span>{getCmsValue('footer_info', 'info1_text', 'Free consultation')}</span>
                                 </div>
                                 <div className="flex items-center gap-2">
                                     <svg className="w-4 h-4 text-purple-400" fill="currentColor" viewBox="0 0 20 20">
                                         <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                                     </svg>
-                                    <span>Worldwide shipping</span>
+                                    <span>{getCmsValue('footer_info', 'info2_text', 'Worldwide shipping')}</span>
                                 </div>
                                 <div className="flex items-center gap-2">
                                     <svg className="w-4 h-4 text-purple-400" fill="currentColor" viewBox="0 0 20 20">
                                         <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                                     </svg>
-                                    <span>Secure payments</span>
+                                    <span>{getCmsValue('footer_info', 'info3_text', 'Secure payments')}</span>
                                 </div>
                             </div>
                         </div>

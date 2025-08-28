@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Artwork;
 use App\Models\UserFavorite;
 use App\Models\UserRecentView;
+use App\Models\CmsSetting;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
@@ -64,6 +65,9 @@ class ArtworkController extends Controller
                 ->toArray();
         }
 
+        // Get all Gallery page CMS settings
+        $cmsSettings = CmsSetting::getPageSettings('gallery');
+
         return Inertia::render('Gallery/Index', [
             'artworks' => $artworks->through(function ($artwork) use ($userFavorites) {
                 return [
@@ -104,6 +108,7 @@ class ArtworkController extends Controller
             ], request()->only(['status', 'title', 'medium', 'year', 'price_min', 'price_max', 'tag'])),
             'totalArtworks' => $totalArtworks,
             'stats' => $stats,
+            'cmsSettings' => $cmsSettings,
         ]);
     }
 

@@ -1,10 +1,10 @@
-﻿﻿﻿import { Head, Link } from '@inertiajs/react';
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿import { Head, Link } from '@inertiajs/react';
 import AdminLayout from '@/Layouts/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Plus, Edit, Trash2, Eye } from 'lucide-react';
+import { Plus, Edit, Trash2, Eye, Palette } from 'lucide-react';
 
 export default function AdminArtworksIndex({ auth, artworks }) {
     const getStatusBadge = (status) => {
@@ -17,22 +17,23 @@ export default function AdminArtworksIndex({ auth, artworks }) {
     };
 
     return (
-        <AdminLayout user={auth.user} header="Manage Artworks">
+        <AdminLayout 
+            user={auth.user} 
+            header="Manage Artworks"
+            headerIcon={<Palette className="w-8 h-8 text-white" />}
+            headerDescription="Create, edit, and manage your artwork listings"
+            headerActions={
+                <Link href={route('admin.artworks.create')}>
+                    <Button>
+                        <Plus className="w-4 h-4 mr-2" />
+                        Add Artwork
+                    </Button>
+                </Link>
+            }
+        >
             <Head title="Manage Artworks" />
             
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="flex items-center justify-between mb-8">
-                    <div>
-                        <h1 className="text-3xl font-bold">Manage Artworks</h1>
-                        <p className="text-gray-600">Create, edit, and manage your artwork listings</p>
-                    </div>
-                    <Link href={route('admin.artworks.create')}>
-                        <Button>
-                            <Plus className="w-4 h-4 mr-2" />
-                            Add Artwork
-                        </Button>
-                    </Link>
-                </div>
 
                 <Card>
                     <CardHeader>

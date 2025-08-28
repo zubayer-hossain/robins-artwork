@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Plus, Edit, Trash2, Eye } from 'lucide-react';
+import { Plus, Edit, Trash2, Eye, Package } from 'lucide-react';
 
 export default function AdminEditionsIndex({ auth, editions }) {
     const getStockBadge = (stock) => {
@@ -14,22 +14,23 @@ export default function AdminEditionsIndex({ auth, editions }) {
     };
 
     return (
-        <AdminLayout user={auth.user} header="Manage Editions">
+        <AdminLayout 
+            user={auth.user} 
+            header="Manage Editions"
+            headerIcon={<Package className="w-8 h-8 text-white" />}
+            headerDescription="Create and manage print editions for your artworks"
+            headerActions={
+                <Link href={route('admin.editions.create')}>
+                    <Button>
+                        <Plus className="w-4 h-4 mr-2" />
+                        Add Edition
+                    </Button>
+                </Link>
+            }
+        >
             <Head title="Manage Editions" />
             
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="flex items-center justify-between mb-8">
-                    <div>
-                        <h1 className="text-3xl font-bold">Manage Editions</h1>
-                        <p className="text-gray-600">Create and manage print editions for your artworks</p>
-                    </div>
-                    <Link href={route('admin.editions.create')}>
-                        <Button>
-                            <Plus className="w-4 h-4 mr-2" />
-                            Add Edition
-                        </Button>
-                    </Link>
-                </div>
 
                 <Card>
                     <CardHeader>
