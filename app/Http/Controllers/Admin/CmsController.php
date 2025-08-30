@@ -26,8 +26,10 @@ class CmsController extends Controller
     /**
      * Show settings for a specific page
      */
-    public function page(string $page, string $section = null): Response
+    public function page(string $page, Request $request): Response
     {
+        $section = $request->query('section'); // Get section from query parameter
+        
         $settings = CmsSetting::where('page', $page)
             ->where('is_active', true)
             ->orderBy('section')
@@ -87,8 +89,10 @@ class CmsController extends Controller
     /**
      * Show global settings
      */
-    public function global(string $section = null): Response
+    public function global(Request $request): Response
     {
+        $section = $request->query('section'); // Get section from query parameter
+        
         $settings = CmsSetting::where('page', 'global')
             ->where('is_active', true)
             ->orderBy('section')
@@ -97,7 +101,7 @@ class CmsController extends Controller
             ->groupBy('section');
 
         // Define section order for global settings
-        $sectionOrders = ['site', 'contact', 'social'];
+        $sectionOrders = ['site', 'contact', 'social', 'images'];
         $orderedSections = $sectionOrders;
         $defaultSection = $section ?? ($orderedSections[0] ?? null);
 
@@ -112,6 +116,30 @@ class CmsController extends Controller
             'pageTitle' => 'Global Settings',
             'activeSection' => $defaultSection
         ]);
+    }
+
+    /**
+     * Update global settings
+     */
+    public function updateGlobal(Request $request)
+    {
+        $request->validate([
+            'settings' => 'required|array',
+            'settings.*.id' => 'required|exists:cms_settings,id',
+            'settings.*.value' => 'nullable|string'
+        ]);
+
+        foreach ($request->settings as $settingData) {
+            $setting = CmsSetting::find($settingData['id']);
+            if ($setting) {
+                $setting->update(['value' => $settingData['value']]);
+            }
+        }
+
+        // Clear cache for global settings
+        CmsSetting::clearCache('global');
+
+        return redirect()->back()->with('success', 'Global settings updated successfully!');
     }
 
     /**

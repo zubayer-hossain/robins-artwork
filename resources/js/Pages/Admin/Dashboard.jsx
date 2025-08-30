@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿import { Head, Link, usePage } from '@inertiajs/react';
+﻿﻿import { Head, Link, usePage } from '@inertiajs/react';
 import AdminLayout from '@/Layouts/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import { Button } from '@/Components/ui/button';
@@ -20,7 +20,6 @@ import {
     BarChart3,
     Layers
 } from 'lucide-react';
-import { Head, Link, usePage } from '@inertiajs/react';
 
 export default function AdminDashboard({ stats, recentOrders, recentMessages, recentArtworks }) {
     const { auth } = usePage().props;

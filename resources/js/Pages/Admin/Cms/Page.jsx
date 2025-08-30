@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { ChevronRight, Save, Eye, Settings } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import CmsSidebar from '@/Components/CmsSidebar';
 
 export default function CmsPage({ auth, page, settings, breadcrumbs, pageTitle, activeSection: serverActiveSection }) {
@@ -22,16 +22,44 @@ export default function CmsPage({ auth, page, settings, breadcrumbs, pageTitle, 
     };
     
     const orderedSections = getSectionOrder(page);
-    // Use server-provided activeSection or fall back to first section
-    const initialSection = serverActiveSection || orderedSections.find(section => settings[section]) || Object.keys(settings)[0] || '';
-    const [activeSection, setActiveSection] = useState(initialSection);
+    
+    // Get section from URL or server, with fallback to first available section
+    const getInitialSection = () => {
+        // First try to get from server
+        if (serverActiveSection) {
+            return serverActiveSection;
+        }
+        
+        // Then try to get from URL query parameter
+        const urlParams = new URLSearchParams(window.location.search);
+        const urlSection = urlParams.get('section');
+        if (urlSection && orderedSections.includes(urlSection)) {
+            return urlSection;
+        }
+        
+        // Finally fall back to first available section
+        return orderedSections.find(section => settings[section]) || Object.keys(settings)[0] || '';
+    };
+    
+    const [activeSection, setActiveSection] = useState(getInitialSection);
+    
+    // Sync with URL changes
+    useEffect(() => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const urlSection = urlParams.get('section');
+        if (urlSection && urlSection !== activeSection && orderedSections.includes(urlSection)) {
+            setActiveSection(urlSection);
+        }
+    }, [window.location.search]);
     
     // Handle section transitions with URL updates
     const handleSectionChange = (newSection) => {
         if (newSection !== activeSection) {
             setActiveSection(newSection);
-            // Update URL to reflect the section change
-            window.history.pushState({}, '', route('admin.cms.page.section', { page, section: newSection }));
+            // Update URL to reflect the section change using query parameter
+            const currentUrl = new URL(window.location);
+            currentUrl.searchParams.set('section', newSection);
+            window.history.pushState({}, '', currentUrl.toString());
         }
     };
     
@@ -78,7 +106,7 @@ export default function CmsPage({ auth, page, settings, breadcrumbs, pageTitle, 
                         id={setting.id}
                         value={value}
                         onChange={(e) => updateSettingValue(setting.id, e.target.value)}
-                        className="min-h-[100px] transition-all duration-200 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                        className="min-h-[100px] transition-all duration-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                         placeholder={setting.description}
                     />
                 );
@@ -91,7 +119,7 @@ export default function CmsPage({ auth, page, settings, breadcrumbs, pageTitle, 
                                 id={setting.id}
                                 checked={value === '1' || value === 'true'}
                                 onChange={(e) => updateSettingValue(setting.id, e.target.checked ? '1' : '0')}
-                                className="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500 transition-colors"
+                                className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 transition-colors"
                             />
                             <Label htmlFor={setting.id} className="text-sm font-medium text-gray-900 cursor-pointer">
                                 {setting.key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
@@ -109,7 +137,7 @@ export default function CmsPage({ auth, page, settings, breadcrumbs, pageTitle, 
                         id={setting.id}
                         value={value}
                         onChange={(e) => updateSettingValue(setting.id, e.target.value)}
-                        className="transition-all duration-200 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                        className="transition-all duration-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                         placeholder={setting.description}
                     />
                 );
@@ -120,7 +148,7 @@ export default function CmsPage({ auth, page, settings, breadcrumbs, pageTitle, 
                         id={setting.id}
                         value={value}
                         onChange={(e) => updateSettingValue(setting.id, e.target.value)}
-                        className="transition-all duration-200 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                        className="transition-all duration-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                         placeholder={setting.description}
                     />
                 );
@@ -142,22 +170,24 @@ export default function CmsPage({ auth, page, settings, breadcrumbs, pageTitle, 
                 </a>
             }
         >
-            <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white">
+            <Head title={`${pageTitle} - CMS`} />
+            
+            <div className="min-h-screen bg-gray-50">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                     {/* Breadcrumbs */}
                     <nav className="flex items-center space-x-2 text-sm text-gray-600 mb-8">
-                        <Link href={route('admin.dashboard')} className="hover:text-purple-600 transition-colors font-medium">
+                        <Link href={route('admin.dashboard')} className="hover:text-blue-600 transition-colors font-medium">
                             Admin
                         </Link>
                         <ChevronRight className="w-4 h-4 text-gray-400" />
-                        <Link href={route('admin.cms.index')} className="hover:text-purple-600 transition-colors font-medium">
+                        <Link href={route('admin.cms.index')} className="hover:text-blue-600 transition-colors font-medium">
                             CMS
                         </Link>
                         <ChevronRight className="w-4 h-4 text-gray-400" />
                         {breadcrumbs.filter(crumb => crumb.label.toLowerCase() !== 'cms').map((crumb, index) => (
                             <div key={index} className="flex items-center space-x-2">
                                 {crumb.url ? (
-                                    <Link href={crumb.url} className="hover:text-purple-600 transition-colors font-medium">
+                                    <Link href={crumb.url} className="hover:text-blue-600 transition-colors font-medium">
                                         {crumb.label}
                                     </Link>
                                 ) : (
@@ -188,132 +218,61 @@ export default function CmsPage({ auth, page, settings, breadcrumbs, pageTitle, 
                                     return (
                                         <Card 
                                             key={section} 
-                                            className={`border-0 shadow-xl mb-6 transition-all duration-300 hover:shadow-2xl ${
-                                                activeSection === section ? 'transform scale-[1.01] opacity-100' : 'opacity-0'
+                                            className={`bg-white border-0 shadow-sm mb-6 transition-all duration-300 ${
+                                                activeSection === section ? 'opacity-100' : 'opacity-0'
                                             }`}
                                             style={{ 
                                                 display: activeSection === section ? 'block' : 'none'
                                             }}
                                         >
-                                        <CardHeader className="bg-gradient-to-r from-white to-gray-50 border-b border-gray-100 pb-6">
-                                            <div className="flex items-center gap-4">
-                                                <div className="w-14 h-14 bg-gradient-to-r from-purple-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
-                                                    <span className="text-3xl">
-                                                        {section === 'hero' && '🦸'}
-                                                        {section === 'stats' && '📊'}
-                                                        {section === 'featured' && '⭐'}
-                                                        {section === 'about' && '👨‍🎨'}
-                                                        {section === 'contact_cta' && '📞'}
-                                                        {section === 'header' && '📄'}
-                                                        {section === 'controls' && '🎮'}
-                                                        {section === 'story' && '📖'}
-                                                        {section === 'philosophy' && '💭'}
-                                                        {section === 'process' && '🔧'}
-                                                        {section === 'cta' && '📢'}
-                                                        {section === 'form' && '📝'}
-                                                        {section === 'info' && 'ℹ️'}
-                                                        {section === 'faq' && '❓'}
-                                                        {section === 'empty_state' && '🈳'}
-                                                        {section === 'features' && '⭐'}
-                                                        {section === 'footer_info' && '📋'}
-                                                        {!['hero', 'stats', 'featured', 'about', 'contact_cta', 'header', 'controls', 'story', 'philosophy', 'process', 'cta', 'form', 'info', 'faq', 'empty_state', 'features', 'footer_info'].includes(section) && '📝'}
-                                                    </span>
+                                            <CardHeader className="border-b border-gray-100 pb-6">
+                                                <div className="flex items-center gap-4">
+                                                    <div className="w-12 h-12 bg-blue-100 rounded-lg border-2 border-blue-200 flex items-center justify-center">
+                                                        <Settings className="w-5 h-5 text-blue-700" />
+                                                    </div>
+                                                    <div>
+                                                        <CardTitle className="text-xl font-semibold text-gray-900 capitalize">
+                                                            {section.replace(/_/g, ' ')}
+                                                        </CardTitle>
+                                                        <p className="text-sm text-gray-600 mt-1">
+                                                            Manage {section.replace(/_/g, ' ')} content and settings
+                                                        </p>
+                                                    </div>
                                                 </div>
-                                                <div>
-                                                    <CardTitle className="text-2xl font-bold text-gray-900 capitalize">
-                                                        {section === 'hero' && 'Hero Section'}
-                                                        {section === 'stats' && 'Statistics'}
-                                                        {section === 'featured' && 'Featured'}
-                                                        {section === 'about' && 'About Section'}
-                                                        {section === 'contact_cta' && 'Contact CTA'}
-                                                        {section === 'header' && 'Page Header'}
-                                                        {section === 'controls' && 'Gallery Controls'}
-                                                        {section === 'story' && 'Artist Story'}
-                                                        {section === 'philosophy' && 'Philosophy'}
-                                                        {section === 'process' && 'Process & Technique'}
-                                                        {section === 'cta' && 'Call to Action'}
-                                                        {section === 'form' && 'Contact Form'}
-                                                        {section === 'info' && 'Contact Info'}
-                                                        {section === 'faq' && 'FAQ Section'}
-                                                        {section === 'empty_state' && 'Empty State'}
-                                                        {section === 'features' && 'Feature Cards'}
-                                                        {section === 'footer_info' && 'Footer Info'}
-                                                        {!['hero', 'stats', 'featured', 'about', 'contact_cta', 'header', 'controls', 'story', 'philosophy', 'process', 'cta', 'form', 'info', 'faq', 'empty_state', 'features', 'footer_info'].includes(section) && section.replace('_', ' ')}
-                                                    </CardTitle>
-                                                    <p className="text-gray-600 mt-1">
-                                                        Configure content and settings for this section
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        </CardHeader>
-                                        <CardContent className="p-8 space-y-6">
-                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                                {sectionSettings.map((setting) => {
-                                                    // Special handling for Gallery Controls section - show 2 checkboxes per row
-                                                    const isGalleryControls = page === 'gallery' && section === 'controls';
-                                                    const booleanColumnSpan = isGalleryControls ? '' : 'md:col-span-2';
-                                                    
-                                                    return (
-                                                        <div key={setting.id} className={`space-y-3 ${setting.type === 'textarea' ? 'md:col-span-2' : ''} ${setting.type === 'boolean' ? booleanColumnSpan : ''}`}>
-                                                            {setting.type !== 'boolean' && (
-                                                                <Label htmlFor={setting.id} className="text-sm font-semibold text-gray-800 capitalize flex items-center gap-2">
-                                                                    <span className="w-2 h-2 bg-purple-500 rounded-full"></span>
+                                            </CardHeader>
+                                            
+                                            <CardContent className="p-6">
+                                                <div className="space-y-6">
+                                                    {sectionSettings.map((setting) => (
+                                                        <div key={setting.id} className="space-y-2">
+                                                            {setting.id && setting.type !== 'boolean' && (
+                                                                <Label htmlFor={setting.id} className="text-sm font-medium text-gray-900">
                                                                     {setting.key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
                                                                 </Label>
                                                             )}
-                                                            <div className="relative">
-                                                                {renderInput(setting)}
-                                                                {errors[`settings.${setting.id}`] && (
-                                                                    <div className="absolute -bottom-6 left-0">
-                                                                        <p className="text-sm text-red-600 font-medium">{errors[`settings.${setting.id}`]}</p>
-                                                                    </div>
-                                                                )}
-                                                            </div>
+                                                            {renderInput(setting)}
+                                                            {/* Only show description for non-checkbox inputs since checkbox inputs already show description */}
                                                             {setting.description && setting.type !== 'boolean' && (
-                                                                <p className="text-xs text-gray-500 italic">{setting.description}</p>
+                                                                <p className="text-xs text-gray-500">{setting.description}</p>
                                                             )}
                                                         </div>
-                                                    );
-                                                })}
-                                            </div>
-                                        </CardContent>
-                                    </Card>
+                                                    ))}
+                                                </div>
+                                            </CardContent>
+                                        </Card>
                                     );
                                 })}
 
                                 {/* Save Button */}
-                                <div className="sticky bottom-6 z-10">
-                                    <Card className="border-0 shadow-2xl">
-                                        <CardContent className="p-6">
-                                            <div className="flex items-center justify-between">
-                                                <div className="flex items-center gap-4">
-                                                    {recentlySuccessful && (
-                                                        <div className="flex items-center gap-2 text-green-600">
-                                                            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                                                            <span className="text-sm font-medium">Settings saved successfully!</span>
-                                                        </div>
-                                                    )}
-                                                </div>
-                                                <Button 
-                                                    type="submit" 
-                                                    disabled={processing}
-                                                    className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white px-8 py-3 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
-                                                >
-                                                    {processing ? (
-                                                        <>
-                                                            <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-3"></div>
-                                                            Saving Changes...
-                                                        </>
-                                                    ) : (
-                                                        <>
-                                                            <Save className="w-5 h-5 mr-3" />
-                                                            Save Changes
-                                                        </>
-                                                    )}
-                                                </Button>
-                                            </div>
-                                        </CardContent>
-                                    </Card>
+                                <div className="flex justify-end">
+                                    <Button 
+                                        type="submit" 
+                                        disabled={processing}
+                                        className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 transition-colors duration-200"
+                                    >
+                                        {processing ? 'Saving...' : 'Save Changes'}
+                                        <Save className="w-4 h-4 ml-2" />
+                                    </Button>
                                 </div>
                             </form>
                         </div>

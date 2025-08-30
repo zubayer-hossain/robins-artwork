@@ -146,7 +146,6 @@ Route::prefix('admin')->name('admin.')->middleware('web')->group(function () {
         // CMS management
         Route::get('/cms', [AdminCmsController::class, 'index'])->name('cms.index');
         Route::get('/cms/global', [AdminCmsController::class, 'global'])->name('cms.global');
-        Route::get('/cms/global/{section}', [AdminCmsController::class, 'global'])->name('cms.global.section');
         Route::patch('/cms/global', [AdminCmsController::class, 'updateGlobal'])->name('cms.global.update');
         
         // CMS Image Management
@@ -156,8 +155,8 @@ Route::prefix('admin')->name('admin.')->middleware('web')->group(function () {
         Route::patch('/cms/images/{id}', [AdminCmsController::class, 'updateImage'])->name('cms.images.update');
         Route::post('/cms/images/organize', [AdminCmsController::class, 'organizeImages'])->name('cms.images.organize');
         
+        // CMS Page Management - Single route with section as query parameter
         Route::get('/cms/{page}', [AdminCmsController::class, 'page'])->name('cms.page');
-        Route::get('/cms/{page}/{section}', [AdminCmsController::class, 'page'])->name('cms.page.section');
         Route::patch('/cms/{page}', [AdminCmsController::class, 'updatePage'])->name('cms.page.update');
     });
 });

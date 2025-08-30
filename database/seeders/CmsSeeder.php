@@ -1011,6 +1011,62 @@ class CmsSeeder extends Seeder
                 'sort_order' => 3
             ],
             
+            // GLOBAL SOCIAL MEDIA SETTINGS
+            [
+                'page' => 'global',
+                'section' => 'social',
+                'key' => 'social_title',
+                'value' => 'Follow Robin\'s Journey',
+                'type' => 'text',
+                'description' => 'Social media section title',
+                'sort_order' => 1
+            ],
+            [
+                'page' => 'global',
+                'section' => 'social',
+                'key' => 'social_description',
+                'value' => 'Connect with Robin on social media for updates, behind-the-scenes content, and artistic inspiration',
+                'type' => 'textarea',
+                'description' => 'Social media section description',
+                'sort_order' => 2
+            ],
+            [
+                'page' => 'global',
+                'section' => 'social',
+                'key' => 'linkedin_url',
+                'value' => 'https://www.linkedin.com/in/robin-aitken-56180410/',
+                'type' => 'text',
+                'description' => 'LinkedIn profile URL',
+                'sort_order' => 3
+            ],
+            [
+                'page' => 'global',
+                'section' => 'social',
+                'key' => 'facebook_url',
+                'value' => 'https://www.facebook.com/robin.aitken.woodley',
+                'type' => 'text',
+                'description' => 'Facebook profile URL',
+                'sort_order' => 4
+            ],
+            [
+                'page' => 'global',
+                'section' => 'social',
+                'key' => 'instagram_url',
+                'value' => 'https://www.instagram.com/robinsartwork',
+                'type' => 'text',
+                'description' => 'Instagram profile URL',
+                'sort_order' => 5
+            ],
+            [
+                'page' => 'global',
+                'section' => 'social',
+                'key' => 'twitter_url',
+                'value' => 'https://twitter.com/robinsartwork',
+                'type' => 'text',
+                'description' => 'Twitter/X profile URL',
+                'sort_order' => 6
+            ],
+            
             // IMAGE MANAGEMENT SETTINGS
             [
                 'page' => 'global',
