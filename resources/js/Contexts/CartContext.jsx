@@ -57,8 +57,9 @@ export function CartProvider({ children }) {
                     return;
                 }
                 
-                const isAuthenticated = document.querySelector('[data-auth="true"]') !== null;
-                const userRoles = document.querySelector('[data-user-roles]')?.getAttribute('data-user-roles') || '';
+                const authElement = document.body;
+                const isAuthenticated = authElement?.getAttribute('data-auth') === 'true';
+                const userRoles = authElement?.getAttribute('data-user-roles') || '';
                 const hasCustomerRole = userRoles.includes('customer');
                 
                 if (isAuthenticated && hasCustomerRole) {
@@ -111,12 +112,13 @@ export function CartProvider({ children }) {
             }
             
             // Double-check if user is authenticated
-            const isAuthenticated = document.querySelector('[data-auth="true"]') || 
+            const authElement = document.body;
+            const isAuthenticated = authElement?.getAttribute('data-auth') === 'true' ||
                                    document.querySelector('meta[name="auth-status"]')?.content === 'authenticated' ||
                                    window.authUser;
             
             if (!isAuthenticated) {
-                console.log('User not authenticated, skipping cart count fetch');
+                console.log('User not authenticated, skipping cart count fetch. data-auth:', authElement?.getAttribute('data-auth'));
                 setCartCount(0);
                 setIsLoading(false);
                 return;

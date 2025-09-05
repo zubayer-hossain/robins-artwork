@@ -1,15 +1,19 @@
 import { Head, useForm, Link } from '@inertiajs/react';
+import { useEffect, useState } from 'react';
 import AdminLayout from '@/Layouts/AdminLayout';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Checkbox } from '@/components/ui/checkbox';
-import { ArrowLeft, Save } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
+import { Button } from '@/Components/ui/button';
+import { Input } from '@/Components/ui/input';
+import { Label } from '@/Components/ui/label';
+import { Textarea } from '@/Components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
+import { Checkbox } from '@/Components/ui/checkbox';
+import { Badge } from '@/Components/ui/badge';
+import { ArrowLeft, Save, Palette, X } from 'lucide-react';
 
-export default function AdminArtworkCreate({ auth, mediums, statuses }) {
+export default function AdminArtworkCreate({ auth, mediums, statuses, flash }) {
+    const [newTagInput, setNewTagInput] = useState('');
+
     const { data, setData, post, processing, errors, reset } = useForm({
         title: '',
         slug: '',
@@ -18,18 +22,38 @@ export default function AdminArtworkCreate({ auth, mediums, statuses }) {
         size_text: '',
         price: '',
         status: 'draft',
-        story: '',
-        tags: '',
+        story: { content: '' },
+        tags: [],
         is_original: true,
         is_print_available: false,
     });
+
+    // Handle flash messages
+    useEffect(() => {
+        if (flash?.success && window.toast) {
+            window.toast.success(flash.success, 'Success');
+        }
+        if (flash?.error && window.toast) {
+            window.toast.error(flash.error, 'Error');
+        }
+    }, [flash]);
 
     const handleSubmit = (e) => {
         e.preventDefault();
         post(route('admin.artworks.store'), {
             onSuccess: () => {
                 reset();
+                if (window.toast) {
+                    window.toast.success('Artwork created successfully!', 'Success');
+                }
+                // Redirect to artworks list
+                window.location.href = route('admin.artworks.index');
             },
+            onError: (errors) => {
+                if (window.toast) {
+                    window.toast.error('Please check the form for errors.', 'Validation Error');
+                }
+            }
         });
     };
 
@@ -49,33 +73,56 @@ export default function AdminArtworkCreate({ auth, mediums, statuses }) {
         }
     };
 
+    const addTag = () => {
+        if (newTagInput.trim() && !data.tags.includes(newTagInput.trim())) {
+            setData('tags', [...data.tags, newTagInput.trim()]);
+            setNewTagInput('');
+        }
+    };
+
+    const removeTag = (tagToRemove) => {
+        setData('tags', data.tags.filter(tag => tag !== tagToRemove));
+    };
+
+    const handleKeyPress = (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            addTag();
+        }
+    };
+
     return (
-        <AdminLayout user={auth.user} header="Create New Artwork">
+        <AdminLayout 
+            user={auth.user} 
+            header="Create New Artwork"
+            headerIcon={<Palette className="w-8 h-8 text-white" />}
+            headerDescription="Add a new artwork to your collection"
+            headerActions={
+                <Link href={route('admin.artworks.index')}>
+                    <Button variant="outline" className="border-gray-300 text-gray-700 hover:bg-gray-50 transition-all duration-200">
+                        <ArrowLeft className="w-4 h-4 mr-2" />
+                        Back to Artworks
+                    </Button>
+                </Link>
+            }
+        >
             <Head title="Create Artwork" />
             
-            <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="flex items-center gap-4 mb-8">
-                    <Link href={route('admin.artworks.index')}>
-                        <Button variant="outline" size="sm">
-                            <ArrowLeft className="w-4 h-4 mr-2" />
-                            Back to Artworks
-                        </Button>
-                    </Link>
-                    <div>
-                        <h1 className="text-3xl font-bold">Create New Artwork</h1>
-                        <p className="text-gray-600">Add a new artwork to your collection</p>
-                    </div>
-                </div>
+            <div className="min-h-screen bg-gray-50">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
                 <form onSubmit={handleSubmit}>
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                         {/* Main Content */}
                         <div className="lg:col-span-2 space-y-6">
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle>Basic Information</CardTitle>
+                            <Card className="border-0 shadow-sm">
+                                <CardHeader className="bg-gray-50/50 border-b">
+                                    <CardTitle className="flex items-center gap-2">
+                                        <Palette className="w-5 h-5 text-purple-600" />
+                                        Basic Information
+                                    </CardTitle>
                                 </CardHeader>
-                                <CardContent className="space-y-4">
+                                    <CardContent className="p-6 space-y-4">
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <div>
                                             <Label htmlFor="title">Title *</Label>
@@ -131,7 +178,7 @@ export default function AdminArtworkCreate({ auth, mediums, statuses }) {
                                             {errors.year && <p className="text-sm text-red-600 mt-1">{errors.year}</p>}
                                         </div>
                                         <div>
-                                            <Label htmlFor="price">Price (£)</Label>
+                                            <Label htmlFor="price">Price ($)</Label>
                                             <Input
                                                 id="price"
                                                 type="number"
@@ -158,17 +205,20 @@ export default function AdminArtworkCreate({ auth, mediums, statuses }) {
                                 </CardContent>
                             </Card>
 
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle>Description & Tags</CardTitle>
+                            <Card className="border-0 shadow-sm">
+                                <CardHeader className="bg-gray-50/50 border-b">
+                                    <CardTitle className="flex items-center gap-2">
+                                        <Save className="w-5 h-5 text-blue-600" />
+                                        Description & Tags
+                                    </CardTitle>
                                 </CardHeader>
-                                <CardContent className="space-y-4">
+                                <CardContent className="p-6 space-y-4">
                                     <div>
                                         <Label htmlFor="story">Story/Description</Label>
                                         <Textarea
                                             id="story"
-                                            value={data.story}
-                                            onChange={(e) => setData('story', e.target.value)}
+                                            value={data.story.content || ''}
+                                            onChange={(e) => setData('story', { ...data.story, content: e.target.value })}
                                             placeholder="Tell the story behind this artwork..."
                                             rows={4}
                                         />
@@ -176,13 +226,33 @@ export default function AdminArtworkCreate({ auth, mediums, statuses }) {
                                     </div>
 
                                     <div>
-                                        <Label htmlFor="tags">Tags</Label>
-                                        <Input
-                                            id="tags"
-                                            value={data.tags}
-                                            onChange={(e) => setData('tags', e.target.value)}
-                                            placeholder="landscape, mountain, scotland (comma separated)"
-                                        />
+                                        <Label>Tags</Label>
+                                        <div className="flex flex-wrap gap-2 mb-2">
+                                            {data.tags.map((tag) => (
+                                                <Badge key={tag} variant="secondary" className="gap-1">
+                                                    {tag}
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => removeTag(tag)}
+                                                        className="ml-1 hover:text-red-600"
+                                                    >
+                                                        <X className="w-3 h-3" />
+                                                    </button>
+                                                </Badge>
+                                            ))}
+                                        </div>
+                                        <div className="flex gap-2">
+                                            <Input
+                                                value={newTagInput}
+                                                onChange={(e) => setNewTagInput(e.target.value)}
+                                                onKeyPress={handleKeyPress}
+                                                placeholder="Add a tag..."
+                                                className="flex-1"
+                                            />
+                                            <Button type="button" onClick={addTag} variant="outline">
+                                                Add
+                                            </Button>
+                                        </div>
                                         {errors.tags && <p className="text-sm text-red-600 mt-1">{errors.tags}</p>}
                                     </div>
                                 </CardContent>
@@ -191,11 +261,14 @@ export default function AdminArtworkCreate({ auth, mediums, statuses }) {
 
                         {/* Sidebar */}
                         <div className="space-y-6">
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle>Publication</CardTitle>
+                            <Card className="border-0 shadow-sm">
+                                <CardHeader className="bg-gradient-to-r from-blue-50 to-purple-50 border-b">
+                                    <CardTitle className="flex items-center gap-2 text-blue-900">
+                                        <Save className="w-5 h-5" />
+                                        Publication
+                                    </CardTitle>
                                 </CardHeader>
-                                <CardContent>
+                                <CardContent className="p-6">
                                     <div>
                                         <Label htmlFor="status">Status</Label>
                                         <Select value={data.status} onValueChange={(value) => setData('status', value)}>
@@ -215,11 +288,14 @@ export default function AdminArtworkCreate({ auth, mediums, statuses }) {
                                 </CardContent>
                             </Card>
 
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle>Artwork Type</CardTitle>
+                            <Card className="border-0 shadow-sm">
+                                <CardHeader className="bg-gradient-to-r from-green-50 to-emerald-50 border-b">
+                                    <CardTitle className="flex items-center gap-2 text-green-900">
+                                        <Palette className="w-5 h-5" />
+                                        Artwork Type
+                                    </CardTitle>
                                 </CardHeader>
-                                <CardContent className="space-y-4">
+                                <CardContent className="p-6 space-y-4">
                                     <div className="flex items-center space-x-2">
                                         <Checkbox
                                             id="is_original"
@@ -239,17 +315,24 @@ export default function AdminArtworkCreate({ auth, mediums, statuses }) {
                                 </CardContent>
                             </Card>
 
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle>Actions</CardTitle>
+                            <Card className="border-0 shadow-sm">
+                                <CardHeader className="bg-gradient-to-r from-gray-50 to-slate-50 border-b">
+                                    <CardTitle className="flex items-center gap-2 text-gray-900">
+                                        <Save className="w-5 h-5" />
+                                        Actions
+                                    </CardTitle>
                                 </CardHeader>
-                                <CardContent className="space-y-3">
-                                    <Button type="submit" className="w-full" disabled={processing}>
+                                <CardContent className="p-6">
+                                    <Button 
+                                        type="submit" 
+                                        className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-3 px-6 rounded-lg shadow-md transition-all duration-200 mb-3" 
+                                        disabled={processing}
+                                    >
                                         <Save className="w-4 h-4 mr-2" />
                                         {processing ? 'Creating...' : 'Create Artwork'}
                                     </Button>
                                     <Link href={route('admin.artworks.index')}>
-                                        <Button type="button" variant="outline" className="w-full">
+                                        <Button type="button" variant="outline" className="w-full border-gray-300 text-gray-700 hover:bg-gray-50">
                                             Cancel
                                         </Button>
                                     </Link>
@@ -258,6 +341,7 @@ export default function AdminArtworkCreate({ auth, mediums, statuses }) {
                         </div>
                     </div>
                 </form>
+                </div>
             </div>
         </AdminLayout>
     );

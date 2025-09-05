@@ -38,6 +38,16 @@ class CustomRoleMiddleware
                 'referer' => $request->header('referer')
             ]);
             
+            // Handle pure AJAX requests (not Inertia) with JSON response
+            if ($request->ajax() && !$request->header('X-Inertia') && $request->header('Accept') === 'application/json') {
+                return response()->json([
+                    'error' => 'Access denied',
+                    'message' => 'You do not have permission to access this resource.',
+                    'required_role' => $role,
+                    'user_roles' => $user->getRoleNames()->toArray()
+                ], 403);
+            }
+            
             // Laravel 12: User-friendly redirect based on role and previous page
             if ($user->hasRole('customer') && $role === 'admin') {
                 // Customer trying to access admin area - redirect to previous page or dashboard

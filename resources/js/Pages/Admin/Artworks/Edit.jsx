@@ -1,17 +1,20 @@
 ﻿import { Head, useForm, Link } from '@inertiajs/react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Save, X } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import AdminLayout from '@/Layouts/AdminLayout';
+import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
+import { Button } from '@/Components/ui/button';
+import { Input } from '@/Components/ui/input';
+import { Label } from '@/Components/ui/label';
+import { Textarea } from '@/Components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
+import { Checkbox } from '@/Components/ui/checkbox';
+import { Badge } from '@/Components/ui/badge';
+import { ArrowLeft, Save, X, Palette, Edit, Eye } from 'lucide-react';
 
-export default function AdminArtworksEdit({ artwork, mediums, statuses }) {
-    const [newTag, setNewTag] = useState('');
+export default function AdminArtworksEdit({ auth, artwork, mediums, statuses, flash }) {
     const [newTagInput, setNewTagInput] = useState('');
 
-    const { data, setData, post, put, processing, errors } = useForm({
+    const { data, setData, put, processing, errors } = useForm({
         title: artwork?.title || '',
         slug: artwork?.slug || '',
         medium: artwork?.medium || '',
@@ -25,13 +28,32 @@ export default function AdminArtworksEdit({ artwork, mediums, statuses }) {
         is_print_available: artwork?.is_print_available ?? false,
     });
 
+    // Handle flash messages
+    useEffect(() => {
+        if (flash?.success && window.toast) {
+            window.toast.success(flash.success, 'Success');
+        }
+        if (flash?.error && window.toast) {
+            window.toast.error(flash.error, 'Error');
+        }
+    }, [flash]);
+
     const handleSubmit = (e) => {
         e.preventDefault();
-        if (artwork) {
-            put(route('admin.artworks.update', artwork.id));
-        } else {
-            post(route('admin.artworks.store'));
-        }
+        put(route('admin.artworks.update', artwork.id), {
+            onSuccess: () => {
+                if (window.toast) {
+                    window.toast.success('Artwork updated successfully!', 'Success');
+                }
+                // Redirect to artworks list
+                window.location.href = route('admin.artworks.index');
+            },
+            onError: (errors) => {
+                if (window.toast) {
+                    window.toast.error('Please check the form for errors.', 'Validation Error');
+                }
+            }
+        });
     };
 
     const addTag = () => {
@@ -53,216 +75,264 @@ export default function AdminArtworksEdit({ artwork, mediums, statuses }) {
     };
 
     return (
-        <>
-            <Head title={artwork ? `Edit ${artwork.title}` : 'Create Artwork'} />
-            
-            <div className="max-w-4xl mx-auto px-4 py-8">
-                <div className="flex items-center gap-4 mb-8">
+        <AdminLayout 
+            user={auth.user} 
+            header={`Edit ${artwork.title}`}
+            headerIcon={<Edit className="w-8 h-8 text-white" />}
+            headerDescription="Update artwork details"
+            headerActions={
+                <div className="flex items-center gap-3">
+                    <Link href={route('admin.artworks.show', artwork.id)}>
+                        <Button variant="outline" className="border-gray-300 text-gray-700 hover:bg-gray-50 transition-all duration-200">
+                            <Eye className="w-4 h-4 mr-2" />
+                            View Artwork
+                        </Button>
+                    </Link>
                     <Link href={route('admin.artworks.index')}>
-                        <Button variant="outline" size="sm">
+                        <Button variant="outline" className="border-gray-300 text-gray-700 hover:bg-gray-50 transition-all duration-200">
                             <ArrowLeft className="w-4 h-4 mr-2" />
                             Back to Artworks
                         </Button>
                     </Link>
-                    <div>
-                        <h1 className="text-3xl font-bold">
-                            {artwork ? `Edit ${artwork.title}` : 'Create New Artwork'}
-                        </h1>
-                        <p className="text-gray-600">
-                            {artwork ? 'Update artwork details' : 'Add a new artwork to your gallery'}
-                        </p>
-                    </div>
                 </div>
+            }
+        >
+            <Head title={`Edit ${artwork.title}`} />
+            
+            <div className="min-h-screen bg-gray-50">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
-                <form onSubmit={handleSubmit} className="space-y-6">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Basic Information</CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block text-sm font-medium mb-2">Title *</label>
-                                    <Input
-                                        value={data.title}
-                                        onChange={(e) => setData('title', e.target.value)}
-                                        error={errors.title}
-                                    />
-                                    {errors.title && <p className="text-red-500 text-sm mt-1">{errors.title}</p>}
-                                </div>
+                <form onSubmit={handleSubmit}>
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        {/* Main Content */}
+                        <div className="lg:col-span-2 space-y-6">
+                            <Card className="border-0 shadow-sm">
+                                <CardHeader className="bg-gray-50/50 border-b">
+                                    <CardTitle className="flex items-center gap-2">
+                                        <Palette className="w-5 h-5 text-purple-600" />
+                                        Basic Information
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent className="p-6 space-y-4">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div>
+                                            <Label htmlFor="title">Title *</Label>
+                                            <Input
+                                                id="title"
+                                                value={data.title}
+                                                onChange={(e) => setData('title', e.target.value)}
+                                                placeholder="Enter artwork title"
+                                                required
+                                            />
+                                            {errors.title && <p className="text-sm text-red-600 mt-1">{errors.title}</p>}
+                                        </div>
+                                        <div>
+                                            <Label htmlFor="slug">URL Slug</Label>
+                                            <Input
+                                                id="slug"
+                                                value={data.slug}
+                                                onChange={(e) => setData('slug', e.target.value)}
+                                                placeholder="artwork-url-slug"
+                                            />
+                                            {errors.slug && <p className="text-sm text-red-600 mt-1">{errors.slug}</p>}
+                                        </div>
+                                    </div>
 
-                                <div>
-                                    <label className="block text-sm font-medium mb-2">Slug</label>
-                                    <Input
-                                        value={data.slug}
-                                        onChange={(e) => setData('slug', e.target.value)}
-                                        placeholder="auto-generated from title"
-                                        error={errors.slug}
-                                    />
-                                    {errors.slug && <p className="text-red-500 text-sm mt-1">{errors.slug}</p>}
-                                </div>
-                            </div>
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                        <div>
+                                            <Label htmlFor="medium">Medium *</Label>
+                                            <Select value={data.medium} onValueChange={(value) => setData('medium', value)}>
+                                                <SelectTrigger>
+                                                    <SelectValue placeholder="Select medium" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    {mediums.map((medium) => (
+                                                        <SelectItem key={medium} value={medium}>
+                                                            {medium}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                            {errors.medium && <p className="text-sm text-red-600 mt-1">{errors.medium}</p>}
+                                        </div>
+                                        <div>
+                                            <Label htmlFor="year">Year</Label>
+                                            <Input
+                                                id="year"
+                                                type="number"
+                                                value={data.year}
+                                                onChange={(e) => setData('year', e.target.value)}
+                                                placeholder="2024"
+                                                min="1900"
+                                                max={new Date().getFullYear() + 1}
+                                            />
+                                            {errors.year && <p className="text-sm text-red-600 mt-1">{errors.year}</p>}
+                                        </div>
+                                        <div>
+                                            <Label htmlFor="price">Price ($)</Label>
+                                            <Input
+                                                id="price"
+                                                type="number"
+                                                step="0.01"
+                                                value={data.price}
+                                                onChange={(e) => setData('price', e.target.value)}
+                                                placeholder="0.00"
+                                                min="0"
+                                            />
+                                            {errors.price && <p className="text-sm text-red-600 mt-1">{errors.price}</p>}
+                                        </div>
+                                    </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <div>
-                                    <label className="block text-sm font-medium mb-2">Medium *</label>
-                                    <Select value={data.medium} onValueChange={(value) => setData('medium', value)}>
-                                        <SelectTrigger placeholder="Select medium">
-                                            <SelectValue value={data.medium} placeholder="Select medium" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {mediums.map((medium) => (
-                                                <SelectItem key={medium} value={medium}>
-                                                    {medium}
-                                                </SelectItem>
+                                    <div>
+                                        <Label htmlFor="size_text">Size Description</Label>
+                                        <Input
+                                            id="size_text"
+                                            value={data.size_text}
+                                            onChange={(e) => setData('size_text', e.target.value)}
+                                            placeholder="e.g., 30cm x 40cm, A4, etc."
+                                        />
+                                        {errors.size_text && <p className="text-sm text-red-600 mt-1">{errors.size_text}</p>}
+                                    </div>
+                                </CardContent>
+                            </Card>
+
+                            <Card className="border-0 shadow-sm">
+                                <CardHeader className="bg-gray-50/50 border-b">
+                                    <CardTitle className="flex items-center gap-2">
+                                        <Save className="w-5 h-5 text-blue-600" />
+                                        Description & Tags
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent className="p-6 space-y-4">
+                                    <div>
+                                        <Label htmlFor="story">Story/Description</Label>
+                                        <Textarea
+                                            id="story"
+                                            value={data.story.content || ''}
+                                            onChange={(e) => setData('story', { ...data.story, content: e.target.value })}
+                                            placeholder="Tell the story behind this artwork..."
+                                            rows={4}
+                                        />
+                                        {errors.story && <p className="text-sm text-red-600 mt-1">{errors.story}</p>}
+                                    </div>
+
+                                    <div>
+                                        <Label>Tags</Label>
+                                        <div className="flex flex-wrap gap-2 mb-2">
+                                            {data.tags.map((tag) => (
+                                                <Badge key={tag} variant="secondary" className="gap-1">
+                                                    {tag}
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => removeTag(tag)}
+                                                        className="ml-1 hover:text-red-600"
+                                                    >
+                                                        <X className="w-3 h-3" />
+                                                    </button>
+                                                </Badge>
                                             ))}
-                                        </SelectContent>
-                                    </Select>
-                                    {errors.medium && <p className="text-red-500 text-sm mt-1">{errors.medium}</p>}
-                                </div>
+                                        </div>
+                                        <div className="flex gap-2">
+                                            <Input
+                                                value={newTagInput}
+                                                onChange={(e) => setNewTagInput(e.target.value)}
+                                                onKeyPress={handleKeyPress}
+                                                placeholder="Add a tag..."
+                                                className="flex-1"
+                                            />
+                                            <Button type="button" onClick={addTag} variant="outline">
+                                                Add
+                                            </Button>
+                                        </div>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        </div>
 
-                                <div>
-                                    <label className="block text-sm font-medium mb-2">Year</label>
-                                    <Input
-                                        type="number"
-                                        value={data.year}
-                                        onChange={(e) => setData('year', e.target.value)}
-                                        placeholder="2024"
-                                        error={errors.year}
-                                    />
-                                    {errors.year && <p className="text-red-500 text-sm mt-1">{errors.year}</p>}
-                                </div>
+                        {/* Sidebar */}
+                        <div className="space-y-6">
+                            <Card className="border-0 shadow-sm">
+                                <CardHeader className="bg-gradient-to-r from-blue-50 to-purple-50 border-b">
+                                    <CardTitle className="flex items-center gap-2 text-blue-900">
+                                        <Save className="w-5 h-5" />
+                                        Publication
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent className="p-6">
+                                    <div>
+                                        <Label htmlFor="status">Status</Label>
+                                        <Select value={data.status} onValueChange={(value) => setData('status', value)}>
+                                            <SelectTrigger>
+                                                <SelectValue />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {statuses.map((status) => (
+                                                    <SelectItem key={status} value={status}>
+                                                        {status.charAt(0).toUpperCase() + status.slice(1)}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                        {errors.status && <p className="text-sm text-red-600 mt-1">{errors.status}</p>}
+                                    </div>
+                                </CardContent>
+                            </Card>
 
-                                <div>
-                                    <label className="block text-sm font-medium mb-2">Dimensions</label>
-                                    <Input
-                                        value={data.size_text}
-                                        onChange={(e) => setData('size_text', e.target.value)}
-                                        placeholder="24&quot; x 36&quot;"
-                                        error={errors.size_text}
-                                    />
-                                    {errors.size_text && <p className="text-red-500 text-sm mt-1">{errors.size_text}</p>}
-                                </div>
-                            </div>
+                            <Card className="border-0 shadow-sm">
+                                <CardHeader className="bg-gradient-to-r from-green-50 to-emerald-50 border-b">
+                                    <CardTitle className="flex items-center gap-2 text-green-900">
+                                        <Palette className="w-5 h-5" />
+                                        Artwork Type
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent className="p-6 space-y-4">
+                                    <div className="flex items-center space-x-2">
+                                        <Checkbox
+                                            id="is_original"
+                                            checked={data.is_original}
+                                            onChange={(e) => setData('is_original', e.target.checked)}
+                                        />
+                                        <Label htmlFor="is_original">Original Artwork</Label>
+                                    </div>
+                                    <div className="flex items-center space-x-2">
+                                        <Checkbox
+                                            id="is_print_available"
+                                            checked={data.is_print_available}
+                                            onChange={(e) => setData('is_print_available', e.target.checked)}
+                                        />
+                                        <Label htmlFor="is_print_available">Prints Available</Label>
+                                    </div>
+                                </CardContent>
+                            </Card>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block text-sm font-medium mb-2">Price</label>
-                                    <Input
-                                        type="number"
-                                        step="0.01"
-                                        value={data.price}
-                                        onChange={(e) => setData('price', e.target.value)}
-                                        placeholder="1200.00"
-                                        error={errors.price}
-                                    />
-                                    {errors.price && <p className="text-red-500 text-sm mt-1">{errors.price}</p>}
-                                </div>
-
-                                <div>
-                                    <label className="block text-sm font-medium mb-2">Status</label>
-                                    <Select value={data.status} onValueChange={(value) => setData('status', value)}>
-                                        <SelectTrigger placeholder="Select status">
-                                            <SelectValue value={data.status} placeholder="Select status" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {statuses.map((status) => (
-                                                <SelectItem key={status} value={status}>
-                                                    {status.charAt(0).toUpperCase() + status.slice(1)}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                    {errors.status && <p className="text-red-500 text-sm mt-1">{errors.status}</p>}
-                                </div>
-                            </div>
-                        </CardContent>
-                    </Card>
-
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Content & Settings</CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                            <div>
-                                <label className="block text-sm font-medium mb-2">Artist's Story</label>
-                                <textarea
-                                    value={data.story.content || ''}
-                                    onChange={(e) => setData('story', { ...data.story, content: e.target.value })}
-                                    rows={4}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                    placeholder="Tell the story behind this artwork..."
-                                />
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium mb-2">Tags</label>
-                                <div className="flex gap-2 mb-2">
-                                    {data.tags.map((tag) => (
-                                        <Badge key={tag} variant="secondary" className="gap-1">
-                                            {tag}
-                                            <button
-                                                type="button"
-                                                onClick={() => removeTag(tag)}
-                                                className="ml-1 hover:text-red-600"
-                                            >
-                                                <X className="w-3 h-3" />
-                                            </button>
-                                        </Badge>
-                                    ))}
-                                </div>
-                                <div className="flex gap-2">
-                                    <Input
-                                        value={newTagInput}
-                                        onChange={(e) => setNewTagInput(e.target.value)}
-                                        onKeyPress={handleKeyPress}
-                                        placeholder="Add a tag..."
-                                        className="flex-1"
-                                    />
-                                    <Button type="button" onClick={addTag} variant="outline">
-                                        Add
+                            <Card className="border-0 shadow-sm">
+                                <CardHeader className="bg-gradient-to-r from-gray-50 to-slate-50 border-b">
+                                    <CardTitle className="flex items-center gap-2 text-gray-900">
+                                        <Save className="w-5 h-5" />
+                                        Actions
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent className="p-6">
+                                    <Button 
+                                        type="submit" 
+                                        className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-3 px-6 rounded-lg shadow-md transition-all duration-200 mb-3" 
+                                        disabled={processing}
+                                    >
+                                        <Save className="w-4 h-4 mr-2" />
+                                        {processing ? 'Updating...' : 'Update Artwork'}
                                     </Button>
-                                </div>
-                            </div>
-
-                            <div className="flex gap-6">
-                                <label className="flex items-center gap-2">
-                                    <input
-                                        type="checkbox"
-                                        checked={data.is_original}
-                                        onChange={(e) => setData('is_original', e.target.checked)}
-                                        className="rounded border-gray-300"
-                                    />
-                                    <span className="text-sm">Original artwork</span>
-                                </label>
-
-                                <label className="flex items-center gap-2">
-                                    <input
-                                        type="checkbox"
-                                        checked={data.is_print_available}
-                                        onChange={(e) => setData('is_print_available', e.target.checked)}
-                                        className="rounded border-gray-300"
-                                    />
-                                    <span className="text-sm">Prints available</span>
-                                </label>
-                            </div>
-                        </CardContent>
-                    </Card>
-
-                    <div className="flex gap-4">
-                        <Button type="submit" disabled={processing} className="flex-1">
-                            <Save className="w-4 h-4 mr-2" />
-                            {artwork ? 'Update Artwork' : 'Create Artwork'}
-                        </Button>
-                        <Link href={route('admin.artworks.index')} className="flex-1">
-                            <Button variant="outline" className="w-full">
-                                Cancel
-                            </Button>
-                        </Link>
+                                    <Link href={route('admin.artworks.index')}>
+                                        <Button type="button" variant="outline" className="w-full border-gray-300 text-gray-700 hover:bg-gray-50">
+                                            Cancel
+                                        </Button>
+                                    </Link>
+                                </CardContent>
+                            </Card>
+                        </div>
                     </div>
                 </form>
+                </div>
             </div>
-        </>
+        </AdminLayout>
     );
 }
-

@@ -124,13 +124,14 @@ Route::prefix('admin')->name('admin.')->middleware('web')->group(function () {
     // Admin auth routes - Laravel 12: Protected with guest middleware to prevent authenticated access
     Route::get('/login', [AdminAuthController::class, 'showLogin'])->middleware('guest')->name('login');
     Route::post('/login', [AdminAuthController::class, 'login'])->middleware('guest')->name('login.store');
-    Route::post('/logout', [AdminAuthController::class, 'logout'])->name('admin.logout');
+    Route::post('/logout', [AdminAuthController::class, 'logout'])->name('logout');
     
     // Admin protected routes - Laravel 12: ONLY for admin users
     Route::middleware(['admin'])->group(function () {
         Route::get('/', [AdminDashboardController::class, 'index'])->name('dashboard');
         Route::resource('artworks', AdminArtworkController::class);
         Route::resource('orders', AdminOrderController::class)->only(['index', 'show']);
+        Route::patch('/orders/{order}/status', [AdminOrderController::class, 'updateStatus'])->name('orders.update-status');
         Route::resource('editions', AdminEditionController::class);
         
         // Admin profile management

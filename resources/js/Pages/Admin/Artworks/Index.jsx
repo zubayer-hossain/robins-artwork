@@ -1,4 +1,5 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿import { Head, Link } from '@inertiajs/react';
+﻿﻿import { Head, Link, router } from '@inertiajs/react';
+import { useState } from 'react';
 import AdminLayout from '@/Layouts/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -7,6 +8,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Plus, Edit, Trash2, Eye, Palette } from 'lucide-react';
 
 export default function AdminArtworksIndex({ auth, artworks }) {
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [artworkToDelete, setArtworkToDelete] = useState(null);
+    const [isDeleting, setIsDeleting] = useState(false);
+
     const getStatusBadge = (status) => {
         const variants = {
             draft: 'secondary',
@@ -14,6 +19,33 @@ export default function AdminArtworksIndex({ auth, artworks }) {
             sold: 'destructive',
         };
         return <Badge variant={variants[status]}>{status}</Badge>;
+    };
+
+    const handleDeleteClick = (artwork) => {
+        setArtworkToDelete(artwork);
+        setShowDeleteModal(true);
+    };
+
+    const handleDelete = () => {
+        if (!artworkToDelete) return;
+        
+        setIsDeleting(true);
+        router.delete(route('admin.artworks.destroy', artworkToDelete.id), {
+            onSuccess: () => {
+                if (window.toast) {
+                    window.toast.success('Artwork deleted successfully!', 'Success');
+                }
+                setShowDeleteModal(false);
+                setArtworkToDelete(null);
+                setIsDeleting(false);
+            },
+            onError: () => {
+                setIsDeleting(false);
+                if (window.toast) {
+                    window.toast.error('Failed to delete artwork. Please try again.', 'Error');
+                }
+            }
+        });
     };
 
     return (
@@ -82,7 +114,7 @@ export default function AdminArtworksIndex({ auth, artworks }) {
                                         <TableCell>
                                             {artwork.price ? (
                                                 <span className="font-medium text-green-600">
-                                                    £{artwork.price.toLocaleString()}
+                                                    ${artwork.price.toLocaleString()}
                                                 </span>
                                             ) : (
                                                 <span className="text-gray-400">Not for sale</span>
@@ -91,7 +123,7 @@ export default function AdminArtworksIndex({ auth, artworks }) {
                                         <TableCell>{artwork.created_at}</TableCell>
                                         <TableCell>
                                             <div className="flex gap-2">
-                                                <Link href={route('artwork.show', artwork.slug)}>
+                                                <Link href={route('admin.artworks.show', artwork.id)}>
                                                     <Button variant="outline" size="sm">
                                                         <Eye className="w-4 h-4" />
                                                     </Button>
@@ -101,7 +133,12 @@ export default function AdminArtworksIndex({ auth, artworks }) {
                                                         <Edit className="w-4 h-4" />
                                                     </Button>
                                                 </Link>
-                                                <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700">
+                                                <Button 
+                                                    variant="outline" 
+                                                    size="sm" 
+                                                    className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                                                    onClick={() => handleDeleteClick(artwork)}
+                                                >
                                                     <Trash2 className="w-4 h-4" />
                                                 </Button>
                                             </div>
@@ -133,6 +170,62 @@ export default function AdminArtworksIndex({ auth, artworks }) {
                     </CardContent>
                 </Card>
             </div>
+
+            {/* Delete Confirmation Modal */}
+            {showDeleteModal && artworkToDelete && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+                        <div className="flex items-center gap-3 mb-4">
+                            <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
+                                <Trash2 className="w-5 h-5 text-red-600" />
+                            </div>
+                            <div>
+                                <h3 className="text-lg font-semibold text-gray-900">Delete Artwork</h3>
+                                <p className="text-sm text-gray-600">This action cannot be undone.</p>
+                            </div>
+                        </div>
+                        
+                        <div className="mb-6">
+                            <p className="text-gray-700">
+                                Are you sure you want to delete <strong>"{artworkToDelete.title}"</strong>? 
+                                This will permanently remove the artwork and all associated data.
+                            </p>
+                        </div>
+
+                        <div className="flex gap-3 justify-end">
+                            <Button
+                                variant="outline"
+                                onClick={() => {
+                                    setShowDeleteModal(false);
+                                    setArtworkToDelete(null);
+                                }}
+                                disabled={isDeleting}
+                                className="border-gray-300 text-gray-700 hover:bg-gray-50"
+                            >
+                                Cancel
+                            </Button>
+                            <Button
+                                variant="destructive"
+                                onClick={handleDelete}
+                                disabled={isDeleting}
+                                className="bg-red-600 hover:bg-red-700 text-white"
+                            >
+                                {isDeleting ? (
+                                    <>
+                                        <div className="w-4 h-4 mr-2 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                        Deleting...
+                                    </>
+                                ) : (
+                                    <>
+                                        <Trash2 className="w-4 h-4 mr-2" />
+                                        Delete Artwork
+                                    </>
+                                )}
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </AdminLayout>
     );
 }

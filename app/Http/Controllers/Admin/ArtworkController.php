@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Artwork;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -60,14 +62,76 @@ class ArtworkController extends Controller
             'is_print_available' => 'boolean',
         ]);
 
-        if (empty($validated['slug'])) {
-            $validated['slug'] = Str::slug($validated['title']);
+        try {
+            DB::beginTransaction();
+
+            if (empty($validated['slug'])) {
+                $validated['slug'] = Str::slug($validated['title']);
+            }
+
+            $artwork = Artwork::create($validated);
+
+            DB::commit();
+
+            Log::info('Artwork created successfully', ['artwork_id' => $artwork->id, 'title' => $artwork->title]);
+
+            return redirect()->route('admin.artworks.edit', $artwork)
+                ->with('success', 'Artwork created successfully.');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            
+            Log::error('Failed to create artwork', [
+                'error' => $e->getMessage(),
+                'data' => $validated
+            ]);
+
+            return back()->withInput()
+                ->with('error', 'Failed to create artwork. Please try again.');
         }
+    }
 
-        $artwork = Artwork::create($validated);
+    public function show(Artwork $artwork): Response
+    {
+        $artwork->load(['media', 'editions']);
 
-        return redirect()->route('admin.artworks.edit', $artwork)
-            ->with('success', 'Artwork created successfully.');
+        return Inertia::render('Admin/Artworks/Show', [
+            'artwork' => [
+                'id' => $artwork->id,
+                'slug' => $artwork->slug,
+                'title' => $artwork->title,
+                'medium' => $artwork->medium,
+                'year' => $artwork->year,
+                'size_text' => $artwork->size_text,
+                'price' => $artwork->price,
+                'status' => $artwork->status,
+                'story' => $artwork->story,
+                'tags' => $artwork->tags,
+                'is_original' => $artwork->is_original,
+                'is_print_available' => $artwork->is_print_available,
+                'created_at' => $artwork->created_at,
+                'updated_at' => $artwork->updated_at,
+                'images' => $artwork->images->map(function ($image) {
+                    return [
+                        'id' => $image->id,
+                        'is_primary' => $image->custom_properties['is_primary'] ?? false,
+                        'thumb' => $image->getUrl('thumb'),
+                        'medium' => $image->getUrl('medium'),
+                        'xl' => $image->getUrl('xl'),
+                    ];
+                }),
+                'editions' => $artwork->editions->map(function ($edition) {
+                    return [
+                        'id' => $edition->id,
+                        'sku' => $edition->sku,
+                        'edition_total' => $edition->edition_total,
+                        'price' => $edition->price,
+                        'stock' => $edition->stock,
+                        'is_limited' => $edition->is_limited,
+                    ];
+                }),
+            ],
+        ]);
     }
 
     public function edit(Artwork $artwork): Response
@@ -129,16 +193,57 @@ class ArtworkController extends Controller
             'is_print_available' => 'boolean',
         ]);
 
-        $artwork->update($validated);
+        try {
+            DB::beginTransaction();
 
-        return back()->with('success', 'Artwork updated successfully.');
+            $artwork->update($validated);
+
+            DB::commit();
+
+            Log::info('Artwork updated successfully', ['artwork_id' => $artwork->id, 'title' => $artwork->title]);
+
+            return back()->with('success', 'Artwork updated successfully.');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            
+            Log::error('Failed to update artwork', [
+                'artwork_id' => $artwork->id,
+                'error' => $e->getMessage(),
+                'data' => $validated
+            ]);
+
+            return back()->withInput()
+                ->with('error', 'Failed to update artwork. Please try again.');
+        }
     }
 
     public function destroy(Artwork $artwork)
     {
-        $artwork->delete();
+        try {
+            DB::beginTransaction();
 
-        return redirect()->route('admin.artworks.index')
-            ->with('success', 'Artwork deleted successfully.');
+            $artworkTitle = $artwork->title;
+            $artworkId = $artwork->id;
+
+            $artwork->delete();
+
+            DB::commit();
+
+            Log::info('Artwork deleted successfully', ['artwork_id' => $artworkId, 'title' => $artworkTitle]);
+
+            return redirect()->route('admin.artworks.index')
+                ->with('success', 'Artwork deleted successfully.');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            
+            Log::error('Failed to delete artwork', [
+                'artwork_id' => $artwork->id,
+                'error' => $e->getMessage()
+            ]);
+
+            return back()->with('error', 'Failed to delete artwork. Please try again.');
+        }
     }
 }

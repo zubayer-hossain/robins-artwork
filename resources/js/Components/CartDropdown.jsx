@@ -42,6 +42,11 @@ export default function CartDropdown({ isOpen, onClose, triggerRef }) {
             setTotalPrice(response.data.totalPrice || 0);
         } catch (error) {
             console.error('Error fetching cart items:', error);
+            if (error.response?.status === 403) {
+                console.log('Access denied to cart - user may not have customer role');
+            } else if (error.response?.status === 419) {
+                console.log('CSRF token expired');
+            }
             setCartItems([]);
             setTotalPrice(0);
         } finally {

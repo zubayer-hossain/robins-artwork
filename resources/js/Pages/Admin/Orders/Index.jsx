@@ -65,10 +65,10 @@ export default function AdminOrdersIndex({ auth, orders }) {
                                         </TableCell>
                                         <TableCell>
                                             <div className="font-medium">
-                                                £{order.total.toLocaleString()}
+                                                ${order.total.toLocaleString()}
                                             </div>
                                             <div className="text-sm text-gray-600">
-                                                {order.currency.toUpperCase()}
+                                                USD
                                             </div>
                                         </TableCell>
                                         <TableCell>{getStatusBadge(order.status)}</TableCell>

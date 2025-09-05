@@ -104,7 +104,7 @@ export default function AdminEditionCreate({ auth, artworks }) {
                                             {errors.sku && <p className="text-sm text-red-600 mt-1">{errors.sku}</p>}
                                         </div>
                                         <div>
-                                            <Label htmlFor="price">Price (£) *</Label>
+                                            <Label htmlFor="price">Price ($) *</Label>
                                             <Input
                                                 id="price"
                                                 type="number"

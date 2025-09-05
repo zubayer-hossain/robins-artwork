@@ -308,7 +308,7 @@ export default function AdminDashboard({ stats, recentOrders, recentMessages, re
                                                             </div>
                                                             <div className="flex items-center gap-1 sm:gap-2">
                                                                 <span className="font-semibold text-gray-900">
-                                                                    £{order.total}
+                                                                    ${order.total}
                                                                 </span>
                                                             </div>
                                                         </div>

@@ -2,6 +2,7 @@
 import axios from 'axios'
 
 axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest'
+axios.defaults.headers.common['Accept'] = 'application/json'
 
 // Grab CSRF token from Blade <meta> tag
 const token = document.head.querySelector('meta[name="csrf-token"]')

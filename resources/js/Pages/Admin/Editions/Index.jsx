@@ -75,7 +75,7 @@ export default function AdminEditionsIndex({ auth, editions }) {
                                         </TableCell>
                                         <TableCell>
                                             <span className="font-medium text-green-600">
-                                                £{edition.price.toLocaleString()}
+                                                ${edition.price.toLocaleString()}
                                             </span>
                                         </TableCell>
                                         <TableCell>

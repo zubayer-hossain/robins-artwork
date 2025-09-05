@@ -18,17 +18,12 @@ export default function AdminLayout({ user, header, headerIcon, headerDescriptio
         
         try {
             await axios.post(route('admin.logout'));
-            // Stay on current page after successful logout
-            router.reload();
+            // Redirect to admin login page after successful logout
+            router.visit(route('admin.login'));
         } catch (error) {
             console.error('Logout error:', error);
-            // If 419 error, try once more with a fresh page reload
-            if (error.response?.status === 419) {
-                window.location.reload();
-            } else {
-                // For other errors, just reload the current page
-                router.reload();
-            }
+            // For any error, redirect to admin login page
+            router.visit(route('admin.login'));
         }
     };
 
@@ -97,7 +92,7 @@ export default function AdminLayout({ user, header, headerIcon, headerDescriptio
                                     <DropdownMenuItem>
                                         <button 
                                             onClick={handleLogout}
-                                            className="w-full text-left px-2 py-1.5 text-sm"
+                                            className="w-full text-left py-1.5 text-sm"
                                         >
                                             Log Out
                                         </button>
