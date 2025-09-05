@@ -1,4 +1,5 @@
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
+import { useState } from 'react';
 import AdminLayout from '@/Layouts/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -7,10 +8,41 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Plus, Edit, Trash2, Eye, Package } from 'lucide-react';
 
 export default function AdminEditionsIndex({ auth, editions }) {
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [editionToDelete, setEditionToDelete] = useState(null);
+    const [isDeleting, setIsDeleting] = useState(false);
+
     const getStockBadge = (stock) => {
         if (stock === 0) return <Badge variant="destructive">Out of Stock</Badge>;
         if (stock <= 5) return <Badge variant="secondary">Low Stock</Badge>;
         return <Badge variant="default">In Stock</Badge>;
+    };
+
+    const handleDeleteClick = (edition) => {
+        setEditionToDelete(edition);
+        setShowDeleteModal(true);
+    };
+
+    const handleDelete = () => {
+        if (!editionToDelete) return;
+        
+        setIsDeleting(true);
+        router.delete(route('admin.editions.destroy', editionToDelete.id), {
+            onSuccess: () => {
+                if (window.toast) {
+                    window.toast.success('Edition deleted successfully!', 'Success');
+                }
+                setShowDeleteModal(false);
+                setEditionToDelete(null);
+                setIsDeleting(false);
+            },
+            onError: () => {
+                setIsDeleting(false);
+                if (window.toast) {
+                    window.toast.error('Failed to delete edition. Please try again.', 'Error');
+                }
+            }
+        });
     };
 
     return (
@@ -92,19 +124,22 @@ export default function AdminEditionsIndex({ auth, editions }) {
                                         <TableCell>{edition.created_at}</TableCell>
                                         <TableCell>
                                             <div className="flex gap-2">
-                                                {edition.artwork && (
-                                                    <Link href={route('artwork.show', edition.artwork.slug)}>
-                                                        <Button variant="outline" size="sm">
-                                                            <Eye className="w-4 h-4" />
-                                                        </Button>
-                                                    </Link>
-                                                )}
+                                                 <Link href={route('admin.editions.show', edition.id)}>
+                                                    <Button variant="outline" size="sm">
+                                                        <Eye className="w-4 h-4" />
+                                                    </Button>
+                                                </Link>
                                                 <Link href={route('admin.editions.edit', edition.id)}>
                                                     <Button variant="outline" size="sm">
                                                         <Edit className="w-4 h-4" />
                                                     </Button>
                                                 </Link>
-                                                <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700">
+                                                <Button 
+                                                    variant="outline" 
+                                                    size="sm" 
+                                                    className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                                                    onClick={() => handleDeleteClick(edition)}
+                                                >
                                                     <Trash2 className="w-4 h-4" />
                                                 </Button>
                                             </div>
@@ -136,6 +171,62 @@ export default function AdminEditionsIndex({ auth, editions }) {
                     </CardContent>
                 </Card>
             </div>
+
+            {/* Delete Confirmation Modal */}
+            {showDeleteModal && editionToDelete && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+                        <div className="flex items-center gap-3 mb-4">
+                            <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
+                                <Trash2 className="w-5 h-5 text-red-600" />
+                            </div>
+                            <div>
+                                <h3 className="text-lg font-semibold text-gray-900">Delete Edition</h3>
+                                <p className="text-sm text-gray-600">This action cannot be undone.</p>
+                            </div>
+                        </div>
+                        
+                        <div className="mb-6">
+                            <p className="text-gray-700">
+                                Are you sure you want to delete <strong>"{editionToDelete.sku}"</strong>? 
+                                This will permanently remove the edition and all associated data.
+                            </p>
+                        </div>
+
+                        <div className="flex gap-3 justify-end">
+                            <Button
+                                variant="outline"
+                                onClick={() => {
+                                    setShowDeleteModal(false);
+                                    setEditionToDelete(null);
+                                }}
+                                disabled={isDeleting}
+                                className="border-gray-300 text-gray-700 hover:bg-gray-50"
+                            >
+                                Cancel
+                            </Button>
+                            <Button
+                                variant="destructive"
+                                onClick={handleDelete}
+                                disabled={isDeleting}
+                                className="bg-red-600 hover:bg-red-700 text-white"
+                            >
+                                {isDeleting ? (
+                                    <>
+                                        <div className="w-4 h-4 mr-2 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                        Deleting...
+                                    </>
+                                ) : (
+                                    <>
+                                        <Trash2 className="w-4 h-4 mr-2" />
+                                        Delete Edition
+                                    </>
+                                )}
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </AdminLayout>
     );
 }

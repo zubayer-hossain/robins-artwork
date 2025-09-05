@@ -28,7 +28,7 @@ export default function AdminLayout({ user, header, headerIcon, headerDescriptio
     };
 
     return (
-        <div className="min-h-screen bg-gray-100" data-admin-context="true">
+        <div className="min-h-screen bg-gray-100 flex flex-col" data-admin-context="true">
             {/* Admin Header */}
             <nav className="bg-white border-b border-gray-200 shadow-sm">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -105,7 +105,7 @@ export default function AdminLayout({ user, header, headerIcon, headerDescriptio
             </nav>
 
             {/* Page Content */}
-            <main className="py-8">
+            <main className="flex-1 py-8">
                 {header && (
                     <header className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8">
                         <div className="flex items-center justify-between">
@@ -133,7 +133,7 @@ export default function AdminLayout({ user, header, headerIcon, headerDescriptio
             </main>
 
             {/* Admin Footer */}
-            <footer className="bg-gray-900 text-white mt-auto">
+            <footer className="bg-gray-900 text-white">
                 <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
                     <div className="border-gray-800 text-center">
                         <p className="text-gray-400 text-sm">
