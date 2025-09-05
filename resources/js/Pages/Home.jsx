@@ -10,6 +10,22 @@ export default function Home({ featuredArtworks, stats, cmsSettings = {} }) {
         return cmsSettings[section]?.[key] || defaultValue;
     };
     
+    // Helper function to get boolean CMS value with proper casting
+    const getCmsBoolean = (section, key, defaultValue = false) => {
+        const value = cmsSettings[section]?.[key];
+        if (value === undefined || value === null) return defaultValue;
+        
+        // Handle various boolean representations
+        if (typeof value === 'boolean') return value;
+        if (typeof value === 'string') {
+            const lowerValue = value.toLowerCase();
+            return lowerValue === '1' || lowerValue === 'true' || lowerValue === 'yes' || lowerValue === 'on';
+        }
+        if (typeof value === 'number') return value !== 0;
+        
+        return defaultValue;
+    };
+    
     return (
         <PublicLayout>
             <Head title="Home" />
@@ -47,37 +63,39 @@ export default function Home({ featuredArtworks, stats, cmsSettings = {} }) {
                 <div className="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-t from-white to-transparent"></div>
             </section>
 
-            {/* Stats Section */}
-            <section className="py-16 bg-gray-50">
-                <div className="max-w-7xl mx-auto px-4">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
-                        <div>
-                            <div className="text-4xl font-bold text-purple-600 mb-2">
-                                {stats?.totalArtworks || 0}+
+            {/* Stats Section - Only show if enabled in CMS */}
+            {getCmsBoolean('stats', 'show_stats') && (
+                <section className="py-16 bg-gray-50">
+                    <div className="max-w-7xl mx-auto px-4">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+                            <div>
+                                <div className="text-4xl font-bold text-purple-600 mb-2">
+                                    {stats?.totalArtworks || 0}+
+                                </div>
+                                <div className="text-gray-600">
+                                    {getCmsValue('stats', 'stat1_label')}
+                                </div>
                             </div>
-                            <div className="text-gray-600">
-                                {getCmsValue('stats', 'stat1_label')}
+                            <div>
+                                <div className="text-4xl font-bold text-indigo-600 mb-2">
+                                    {stats?.limitedEditions || 0}+
+                                </div>
+                                <div className="text-gray-600">
+                                    {getCmsValue('stats', 'stat2_label')}
+                                </div>
                             </div>
-                        </div>
-                        <div>
-                            <div className="text-4xl font-bold text-indigo-600 mb-2">
-                                {stats?.limitedEditions || 0}+
-                            </div>
-                            <div className="text-gray-600">
-                                {getCmsValue('stats', 'stat2_label')}
-                            </div>
-                        </div>
-                        <div>
-                            <div className="text-4xl font-bold text-pink-600 mb-2">
-                                {stats?.featuredArtists || 0}+
-                            </div>
-                            <div className="text-gray-600">
-                                {getCmsValue('stats', 'stat3_label')}
+                            <div>
+                                <div className="text-4xl font-bold text-pink-600 mb-2">
+                                    {stats?.featuredArtists || 0}+
+                                </div>
+                                <div className="text-gray-600">
+                                    {getCmsValue('stats', 'stat3_label')}
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            </section>
+                </section>
+            )}
 
             {/* Featured Artworks */}
             <section id="featured" className="py-20 px-4 max-w-7xl mx-auto">

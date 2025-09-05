@@ -268,6 +268,7 @@ export default function CmsSidebar({ currentPage, currentSection = null, onSecti
                         {/* Global Settings - Expandable with sub-sections */}
                         <div className="border-b border-gray-100 last:border-b-0">
                             <div className={`flex items-center justify-between p-3 hover:bg-gray-50 transition-colors duration-200 relative ${currentPage === 'global' ? 'bg-blue-50 text-blue-700' : ''}`}>
+
                                 <button
                                     onClick={() => togglePage('global_tools')}
                                     className="flex items-center gap-3 flex-1 text-left"

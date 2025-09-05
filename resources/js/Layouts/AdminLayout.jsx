@@ -1,11 +1,36 @@
 import { useState } from 'react';
-import { Link, usePage } from '@inertiajs/react';
+import { Link, usePage, router } from '@inertiajs/react';
+import axios from 'axios';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Settings } from 'lucide-react';
 
 export default function AdminLayout({ user, header, headerIcon, headerDescription, headerActions, children }) {
     const [showingNavigationDropdown, setShowingNavigationDropdown] = useState(false);
+
+    // Custom logout function using axios
+    const handleLogout = async (e) => {
+        e.preventDefault();
+        
+        // Disable the button to prevent double clicks
+        const button = e.target;
+        button.disabled = true;
+        
+        try {
+            await axios.post(route('admin.logout'));
+            // Stay on current page after successful logout
+            router.reload();
+        } catch (error) {
+            console.error('Logout error:', error);
+            // If 419 error, try once more with a fresh page reload
+            if (error.response?.status === 419) {
+                window.location.reload();
+            } else {
+                // For other errors, just reload the current page
+                router.reload();
+            }
+        }
+    };
 
     return (
         <div className="min-h-screen bg-gray-100" data-admin-context="true">
@@ -70,14 +95,12 @@ export default function AdminLayout({ user, header, headerIcon, headerDescriptio
                                         <Link href={route('admin.profile.edit')}>Profile</Link>
                                     </DropdownMenuItem>
                                     <DropdownMenuItem>
-                                        <Link 
-                                            href={route('logout')} 
-                                            method="post" 
-                                            as="button"
-                                            className="w-full text-left"
+                                        <button 
+                                            onClick={handleLogout}
+                                            className="w-full text-left px-2 py-1.5 text-sm"
                                         >
                                             Log Out
-                                        </Link>
+                                        </button>
                                     </DropdownMenuItem>
                                 </DropdownMenuContent>
                             </DropdownMenu>

@@ -303,11 +303,20 @@ class CmsSeeder extends Seeder
             [
                 'page' => 'gallery',
                 'section' => 'cta',
+                'key' => 'show_cta',
+                'value' => '1',
+                'type' => 'boolean',
+                'description' => 'Show/hide CTA section',
+                'sort_order' => 1
+            ],
+            [
+                'page' => 'gallery',
+                'section' => 'cta',
                 'key' => 'title',
                 'value' => 'Can\'t Find What You\'re Looking For?',
                 'type' => 'text',
                 'description' => 'Gallery CTA section title',
-                'sort_order' => 1
+                'sort_order' => 2
             ],
             [
                 'page' => 'gallery',
@@ -316,7 +325,7 @@ class CmsSeeder extends Seeder
                 'value' => 'Our collection is constantly growing with new pieces inspired by the stunning Scottish Highlands. Let us know what you\'re looking for, and we\'ll help you find the perfect artwork for your space.',
                 'type' => 'textarea',
                 'description' => 'Gallery CTA description',
-                'sort_order' => 2
+                'sort_order' => 3
             ],
             [
                 'page' => 'gallery',
@@ -325,7 +334,7 @@ class CmsSeeder extends Seeder
                 'value' => '💌 Get in Touch',
                 'type' => 'text',
                 'description' => 'Gallery CTA button text',
-                'sort_order' => 3
+                'sort_order' => 4
             ],
 
             // GALLERY FEATURES SECTION
@@ -417,11 +426,20 @@ class CmsSeeder extends Seeder
             [
                 'page' => 'about',
                 'section' => 'hero',
+                'key' => 'show_hero',
+                'value' => '1',
+                'type' => 'boolean',
+                'description' => 'Show/hide hero section',
+                'sort_order' => 1
+            ],
+            [
+                'page' => 'about',
+                'section' => 'hero',
                 'key' => 'title',
                 'value' => 'About Robin',
                 'type' => 'text',
                 'description' => 'About page hero title',
-                'sort_order' => 1
+                'sort_order' => 2
             ],
             [
                 'page' => 'about',
@@ -437,11 +455,20 @@ class CmsSeeder extends Seeder
             [
                 'page' => 'about',
                 'section' => 'story',
+                'key' => 'show_story',
+                'value' => '1',
+                'type' => 'boolean',
+                'description' => 'Show/hide story section',
+                'sort_order' => 1
+            ],
+            [
+                'page' => 'about',
+                'section' => 'story',
                 'key' => 'title',
                 'value' => 'The Artist\'s Journey',
                 'type' => 'text',
                 'description' => 'Artist story section title',
-                'sort_order' => 1
+                'sort_order' => 2
             ],
             [
                 'page' => 'about',
@@ -493,11 +520,20 @@ class CmsSeeder extends Seeder
             [
                 'page' => 'about',
                 'section' => 'philosophy',
+                'key' => 'show_philosophy',
+                'value' => '1',
+                'type' => 'boolean',
+                'description' => 'Show/hide philosophy section',
+                'sort_order' => 1
+            ],
+            [
+                'page' => 'about',
+                'section' => 'philosophy',
                 'key' => 'title',
                 'value' => 'Artistic Philosophy',
                 'type' => 'text',
                 'description' => 'Philosophy section title',
-                'sort_order' => 1
+                'sort_order' => 2
             ],
             [
                 'page' => 'about',
@@ -567,11 +603,20 @@ class CmsSeeder extends Seeder
             [
                 'page' => 'about',
                 'section' => 'process',
+                'key' => 'show_process',
+                'value' => '1',
+                'type' => 'boolean',
+                'description' => 'Show/hide process section',
+                'sort_order' => 1
+            ],
+            [
+                'page' => 'about',
+                'section' => 'process',
                 'key' => 'title',
                 'value' => 'Process & Technique',
                 'type' => 'text',
                 'description' => 'Process section title',
-                'sort_order' => 1
+                'sort_order' => 2
             ],
             [
                 'page' => 'about',
@@ -623,11 +668,20 @@ class CmsSeeder extends Seeder
             [
                 'page' => 'about',
                 'section' => 'cta',
+                'key' => 'show_cta',
+                'value' => '1',
+                'type' => 'boolean',
+                'description' => 'Show/hide CTA section',
+                'sort_order' => 1
+            ],
+            [
+                'page' => 'about',
+                'section' => 'cta',
                 'key' => 'title',
                 'value' => 'Ready to Experience Robin\'s Art?',
                 'type' => 'text',
                 'description' => 'About page CTA title',
-                'sort_order' => 1
+                'sort_order' => 2
             ],
             [
                 'page' => 'about',

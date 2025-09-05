@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿import { Head, Link, router } from '@inertiajs/react';
+﻿import { Head, Link, router } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -11,6 +11,22 @@ export default function GalleryIndex({ artworks, filters, totalArtworks, stats, 
     // Helper function to get CMS value
     const getCmsValue = (section, key, defaultValue = '') => {
         return cmsSettings[section]?.[key] || defaultValue;
+    };
+    
+    // Helper function to get boolean CMS value with proper casting
+    const getCmsBoolean = (section, key, defaultValue = false) => {
+        const value = cmsSettings[section]?.[key];
+        if (value === undefined || value === null) return defaultValue;
+        
+        // Handle various boolean representations
+        if (typeof value === 'boolean') return value;
+        if (typeof value === 'string') {
+            const lowerValue = value.toLowerCase();
+            return lowerValue === '1' || lowerValue === 'true' || lowerValue === 'yes' || lowerValue === 'on';
+        }
+        if (typeof value === 'number') return value !== 0;
+        
+        return defaultValue;
     };
     
     const [searchTerm, setSearchTerm] = useState('');
@@ -113,133 +129,137 @@ export default function GalleryIndex({ artworks, filters, totalArtworks, stats, 
                     </div>
                 </div>
 
-                {/* Enhanced Filters */}
-                <div className="bg-gradient-to-r from-purple-50 to-blue-50 rounded-2xl shadow-lg border border-purple-100 mb-12 relative">
-                    {/* Subtle Loading Indicator */}
-                    <div className="absolute top-4 right-4">
-                        <div className="w-2 h-2 bg-purple-400 rounded-full animate-pulse"></div>
-                    </div>
-                    {/* Filters */}
-                    <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
-                        <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-                            <span className="mr-2">🔍</span>
-                            Refine Your Search
-                        </h3>
-                        <p className="text-gray-600 mb-6">Find the perfect artwork that speaks to your soul</p>
+                {/* Enhanced Filters - Only show if enabled in CMS */}
+                {getCmsBoolean('controls', 'show_filters') && (
+                    <div className="bg-gradient-to-r from-purple-50 to-blue-50 rounded-2xl shadow-lg border border-purple-100 mb-12 relative">
+                        {/* Subtle Loading Indicator */}
+                        <div className="absolute top-4 right-4">
+                            <div className="w-2 h-2 bg-purple-400 rounded-full animate-pulse"></div>
+                        </div>
+                        {/* Filters */}
+                        <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
+                            <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                                <span className="mr-2">🔍</span>
+                                Refine Your Search
+                            </h3>
+                            <p className="text-gray-600 mb-6">Find the perfect artwork that speaks to your soul</p>
                         
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                            {/* Search */}
-                            <div>
-                                <Label htmlFor="search" className="text-sm font-medium text-gray-700 mb-2 block">
-                                    Search artworks...
-                                </Label>
-                                <div className="relative">
-                                    <Input
-                                        id="search"
-                                        type="text"
-                                        placeholder="Search artworks..."
-                                        value={searchTerm}
-                                        onChange={(e) => setSearchTerm(e.target.value)}
-                                        className="pl-10"
-                                    />
-                                    <svg className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                                    </svg>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                                {/* Search - Only show if enabled in CMS */}
+                                {getCmsBoolean('controls', 'show_search') && (
+                                    <div>
+                                        <Label htmlFor="search" className="text-sm font-medium text-gray-700 mb-2 block">
+                                            Search artworks...
+                                        </Label>
+                                        <div className="relative">
+                                            <Input
+                                                id="search"
+                                                type="text"
+                                                placeholder="Search artworks..."
+                                                value={searchTerm}
+                                                onChange={(e) => setSearchTerm(e.target.value)}
+                                                className="pl-10"
+                                            />
+                                            <svg className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                            </svg>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Medium Filter */}
+                                <div>
+                                    <Label className="text-sm font-medium text-gray-700 mb-2 block">
+                                        <span className="mr-2">🎨</span>
+                                        Medium
+                                    </Label>
+                                    <Select value={selectedMedium} onValueChange={(value) => setSelectedMedium(value)}>
+                                        <SelectTrigger placeholder="All mediums">
+                                            <SelectValue value={selectedMedium} placeholder="All mediums" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="all">All mediums</SelectItem>
+                                            {mediums.map((medium) => (
+                                                <SelectItem key={medium} value={medium}>
+                                                    {medium}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+
+                                {/* Year Filter */}
+                                <div>
+                                    <Label className="text-sm font-medium text-gray-700 mb-2 block">
+                                        <span className="mr-2">📅</span>
+                                        Year
+                                    </Label>
+                                    <Select value={selectedYear} onValueChange={(value) => setSelectedYear(value)}>
+                                        <SelectTrigger placeholder="All years">
+                                            <SelectValue value={selectedYear} placeholder="All years" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="all">All years</SelectItem>
+                                            {years.map((year) => (
+                                                <SelectItem key={year} value={year}>
+                                                    {year}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+
+                                {/* Price Range */}
+                                <div>
+                                    <Label className="text-sm font-medium text-gray-700 mb-2 block">
+                                        <span className="mr-2">💰</span>
+                                        Price Range
+                                    </Label>
+                                    <div className="grid grid-cols-2 gap-2">
+                                        <Input
+                                            type="number"
+                                            placeholder="Min"
+                                            value={priceRange.min}
+                                            onChange={(e) => setPriceRange(prev => ({ ...prev, min: e.target.value }))}
+                                            className="text-sm"
+                                        />
+                                        <Input
+                                            type="number"
+                                            placeholder="Max"
+                                            value={priceRange.max}
+                                            onChange={(e) => setPriceRange(prev => ({ ...prev, max: e.target.value }))}
+                                            className="text-sm"
+                                        />
+                                    </div>
                                 </div>
                             </div>
 
-                            {/* Medium Filter */}
-                            <div>
-                                <Label className="text-sm font-medium text-gray-700 mb-2 block">
-                                    <span className="mr-2">🎨</span>
-                                    Medium
-                                </Label>
-                                <Select value={selectedMedium} onValueChange={(value) => setSelectedMedium(value)}>
-                                    <SelectTrigger placeholder="All mediums">
-                                        <SelectValue value={selectedMedium} placeholder="All mediums" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="all">All mediums</SelectItem>
-                                        {mediums.map((medium) => (
-                                            <SelectItem key={medium} value={medium}>
-                                                {medium}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-
-                            {/* Year Filter */}
-                            <div>
-                                <Label className="text-sm font-medium text-gray-700 mb-2 block">
-                                    <span className="mr-2">📅</span>
-                                    Year
-                                </Label>
-                                <Select value={selectedYear} onValueChange={(value) => setSelectedYear(value)}>
-                                    <SelectTrigger placeholder="All years">
-                                        <SelectValue value={selectedYear} placeholder="All years" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="all">All years</SelectItem>
-                                        {years.map((year) => (
-                                            <SelectItem key={year} value={year}>
-                                                {year}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-
-                            {/* Price Range */}
-                            <div>
-                                <Label className="text-sm font-medium text-gray-700 mb-2 block">
-                                    <span className="mr-2">💰</span>
-                                    Price Range
-                                </Label>
-                                <div className="grid grid-cols-2 gap-2">
-                                    <Input
-                                        type="number"
-                                        placeholder="Min"
-                                        value={priceRange.min}
-                                        onChange={(e) => setPriceRange(prev => ({ ...prev, min: e.target.value }))}
-                                        className="text-sm"
-                                    />
-                                    <Input
-                                        type="number"
-                                        placeholder="Max"
-                                        value={priceRange.max}
-                                        onChange={(e) => setPriceRange(prev => ({ ...prev, max: e.target.value }))}
-                                        className="text-sm"
-                                    />
+                            {/* Active Filters and Clear Button */}
+                            {(searchTerm || selectedMedium !== 'all' || selectedYear !== 'all' || priceRange.min || priceRange.max) && (
+                                <div className="mt-6 p-4 bg-white rounded-xl border border-purple-200 shadow-sm">
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-sm font-semibold text-gray-700">🔍 Active Filters:</span>
+                                            {searchTerm && <span className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-medium">"{searchTerm}"</span>}
+                                            {selectedMedium !== 'all' && <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">{selectedMedium}</span>}
+                                            {selectedYear !== 'all' && <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">{selectedYear}</span>}
+                                            {priceRange.min && <span className="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-xs font-medium">Min: ${priceRange.min}</span>}
+                                            {priceRange.max && <span className="px-3 py-1 bg-red-100 text-red-700 rounded-full text-xs font-medium">Max: ${priceRange.max}</span>}
+                                        </div>
+                                        <Button 
+                                            variant="outline" 
+                                            onClick={clearFilters}
+                                            size="sm"
+                                            className="border-purple-300 text-purple-600 hover:bg-purple-50 px-4 py-2 text-sm font-medium transition-all duration-300"
+                                        >
+                                            🗑️ Clear All
+                                        </Button>
+                                    </div>
                                 </div>
-                            </div>
+                            )}
                         </div>
                     </div>
-
-                    {/* Active Filters and Clear Button */}
-                    {(searchTerm || selectedMedium !== 'all' || selectedYear !== 'all' || priceRange.min || priceRange.max) && (
-                        <div className="mt-6 p-4 bg-white rounded-xl border border-purple-200 shadow-sm">
-                            <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-2">
-                                    <span className="text-sm font-semibold text-gray-700">🔍 Active Filters:</span>
-                                    {searchTerm && <span className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-medium">"{searchTerm}"</span>}
-                                    {selectedMedium !== 'all' && <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">{selectedMedium}</span>}
-                                    {selectedYear !== 'all' && <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">{selectedYear}</span>}
-                                    {priceRange.min && <span className="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-xs font-medium">Min: ${priceRange.min}</span>}
-                                    {priceRange.max && <span className="px-3 py-1 bg-red-100 text-red-700 rounded-full text-xs font-medium">Max: ${priceRange.max}</span>}
-                                </div>
-                                <Button 
-                                    variant="outline" 
-                                    onClick={clearFilters}
-                                    size="sm"
-                                    className="border-purple-300 text-purple-600 hover:bg-purple-50 px-4 py-2 text-sm font-medium transition-all duration-300"
-                                >
-                                    🗑️ Clear All
-                                </Button>
-                            </div>
-                        </div>
-                    )}
-                </div>
+                )}
 
                                 {/* Enhanced Artworks Grid */}
                 {artworks.data.length > 0 ? (
@@ -333,8 +353,9 @@ export default function GalleryIndex({ artworks, filters, totalArtworks, stats, 
                     </div>
                 )}
                 
-                {/* Enhanced Call to Action Section */}
-                <div className="mt-16 py-16 bg-gradient-to-br from-purple-50 via-indigo-50 to-blue-50 rounded-3xl border border-purple-100 shadow-lg">
+                {/* Enhanced Call to Action Section - Only show if enabled in CMS */}
+                {getCmsBoolean('cta', 'show_cta', true) && (
+                    <div className="mt-16 py-16 bg-gradient-to-br from-purple-50 via-indigo-50 to-blue-50 rounded-3xl border border-purple-100 shadow-lg">
                     <div className="max-w-4xl mx-auto px-6 text-center">
                         {/* Decorative Elements */}
                         <div className="relative mb-8">
@@ -415,6 +436,7 @@ export default function GalleryIndex({ artworks, filters, totalArtworks, stats, 
                         </div>
                     </div>
                 </div>
+                )}
             </div>
         </PublicLayout>
     );

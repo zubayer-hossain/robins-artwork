@@ -124,7 +124,7 @@ Route::prefix('admin')->name('admin.')->middleware('web')->group(function () {
     // Admin auth routes - Laravel 12: Protected with guest middleware to prevent authenticated access
     Route::get('/login', [AdminAuthController::class, 'showLogin'])->middleware('guest')->name('login');
     Route::post('/login', [AdminAuthController::class, 'login'])->middleware('guest')->name('login.store');
-    Route::post('/logout', [AdminAuthController::class, 'logout'])->name('logout');
+    Route::post('/logout', [AdminAuthController::class, 'logout'])->name('admin.logout');
     
     // Admin protected routes - Laravel 12: ONLY for admin users
     Route::middleware(['admin'])->group(function () {

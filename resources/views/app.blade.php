@@ -38,7 +38,9 @@
             @endif
         @endif
     </head>
-    <body class="font-sans antialiased" data-auth="{{ auth()->check() ? 'true' : 'false' }}">
+    <body class="font-sans antialiased" 
+          data-auth="{{ auth()->check() ? 'true' : 'false' }}"
+          data-user-roles="{{ auth()->check() && auth()->user()->roles ? auth()->user()->roles->pluck('name')->implode(',') : '' }}">
         @inertia
     </body>
 </html>

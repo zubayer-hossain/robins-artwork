@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Link, usePage } from '@inertiajs/react';
+import { Link, usePage, router } from '@inertiajs/react';
+import axios from 'axios';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Badge } from '@/components/ui/badge';
@@ -21,6 +22,30 @@ export default function AuthenticatedLayout({ header, children }) {
     const { auth } = usePage().props;
     const user = auth.user;
     const [showingNavigationDropdown, setShowingNavigationDropdown] = useState(false);
+
+    // Custom logout function using axios
+    const handleLogout = async (e) => {
+        e.preventDefault();
+        
+        // Disable the button to prevent double clicks
+        const button = e.target;
+        button.disabled = true;
+        
+        try {
+            await axios.post(route('logout'));
+            // Stay on current page after successful logout
+            router.reload();
+        } catch (error) {
+            console.error('Logout error:', error);
+            // If 419 error, try once more with a fresh page reload
+            if (error.response?.status === 419) {
+                window.location.reload();
+            } else {
+                // For other errors, just reload the current page
+                router.reload();
+            }
+        }
+    };
 
     // Laravel 12: Strict role checking - user should ONLY have customer role for this layout
     const isStrictCustomer = user.roles && user.roles.length === 1 && user.roles.includes('customer');
@@ -167,10 +192,10 @@ export default function AuthenticatedLayout({ header, children }) {
 
                                     <DropdownMenuSeparator />
                                     <DropdownMenuItem>
-                                        <Link href={route('logout')} method="post" as="button" className="flex items-center space-x-2 w-full text-red-600 hover:text-red-700 hover:bg-red-50">
+                                        <button onClick={handleLogout} className="flex items-center space-x-2 w-full text-red-600 hover:text-red-700 hover:bg-red-50 px-2 py-1.5 text-sm">
                                             <LogOut className="w-4 h-4" />
                                             <span>Sign Out</span>
-                                        </Link>
+                                        </button>
                                     </DropdownMenuItem>
                                 </DropdownMenuContent>
                                 </DropdownMenu>
@@ -242,12 +267,14 @@ export default function AuthenticatedLayout({ header, children }) {
                                     <span>Signed in as <span className="font-medium text-gray-900">{user.name}</span></span>
                                 </div>
                                 <div className="px-2">
-                                    <Link href={route('logout')} method="post" as="button">
-                                        <Button variant="ghost" className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50">
-                                            <LogOut className="w-4 h-4 mr-2" />
-                                            Sign Out
-                                        </Button>
-                                    </Link>
+                                    <Button 
+                                        variant="ghost" 
+                                        className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50"
+                                        onClick={handleLogout}
+                                    >
+                                        <LogOut className="w-4 h-4 mr-2" />
+                                        Sign Out
+                                    </Button>
                                 </div>
                             </div>
                         </div>
