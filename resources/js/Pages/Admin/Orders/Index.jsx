@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Eye, Download } from 'lucide-react';
+import { Eye, Download, ShoppingBag } from 'lucide-react';
 
 export default function AdminOrdersIndex({ auth, orders }) {
     const getStatusBadge = (status) => {
@@ -18,14 +18,15 @@ export default function AdminOrdersIndex({ auth, orders }) {
     };
 
     return (
-        <AdminLayout user={auth.user} header="Manage Orders">
+        <AdminLayout 
+            user={auth.user} 
+            header="Manage Orders"
+            headerIcon={<ShoppingBag className="w-8 h-8 text-white" />}
+            headerDescription="View and manage customer orders and payments"
+        >
             <Head title="Manage Orders" />
             
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="mb-8">
-                    <h1 className="text-3xl font-bold">Manage Orders</h1>
-                    <p className="text-gray-600">View and manage customer orders</p>
-                </div>
 
                 <Card>
                     <CardHeader>
@@ -64,10 +65,10 @@ export default function AdminOrdersIndex({ auth, orders }) {
                                         </TableCell>
                                         <TableCell>
                                             <div className="font-medium">
-                                                £{order.total.toLocaleString()}
+                                                ${order.total.toLocaleString()}
                                             </div>
                                             <div className="text-sm text-gray-600">
-                                                {order.currency.toUpperCase()}
+                                                USD
                                             </div>
                                         </TableCell>
                                         <TableCell>{getStatusBadge(order.status)}</TableCell>

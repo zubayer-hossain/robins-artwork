@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Edition;
 use App\Models\Artwork;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -42,7 +44,7 @@ class EditionController extends Controller
     {
         $artworks = Artwork::where('status', 'published')
             ->orderBy('title')
-            ->get(['id', 'title', 'slug']);
+            ->get(['id', 'title', 'slug', 'medium', 'year', 'size_text']);
 
         return Inertia::render('Admin/Editions/Create', [
             'artworks' => $artworks,
@@ -60,10 +62,37 @@ class EditionController extends Controller
             'is_limited' => 'boolean',
         ]);
 
-        $edition = Edition::create($validated);
+        // Ensure is_limited is properly cast to boolean
+        $validated['is_limited'] = (bool) $validated['is_limited'];
+        
+        // If not limited edition, set edition_total to null
+        if (!$validated['is_limited']) {
+            $validated['edition_total'] = null;
+        }
 
-        return redirect()->route('admin.editions.edit', $edition)
-            ->with('success', 'Edition created successfully.');
+        try {
+            DB::beginTransaction();
+
+            $edition = Edition::create($validated);
+
+            DB::commit();
+
+            Log::info('Edition created successfully', ['edition_id' => $edition->id, 'sku' => $edition->sku]);
+
+            return redirect()->route('admin.editions.index')
+                ->with('success', 'Edition created successfully.');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            
+            Log::error('Failed to create edition', [
+                'error' => $e->getMessage(),
+                'data' => $validated
+            ]);
+
+            return back()->withInput()
+                ->with('error', 'Failed to create edition. Please try again.');
+        }
     }
 
     public function edit(Edition $edition): Response
@@ -87,9 +116,39 @@ class EditionController extends Controller
                     'id' => $edition->artwork->id,
                     'title' => $edition->artwork->title,
                     'slug' => $edition->artwork->slug,
+                    'medium' => $edition->artwork->medium,
+                    'year' => $edition->artwork->year,
+                    'size_text' => $edition->artwork->size_text,
                 ] : null,
             ],
             'artworks' => $artworks,
+        ]);
+    }
+
+    public function show(Edition $edition): Response
+    {
+        $edition->load(['artwork']);
+
+        return Inertia::render('Admin/Editions/Show', [
+            'edition' => [
+                'id' => $edition->id,
+                'artwork_id' => $edition->artwork_id,
+                'sku' => $edition->sku,
+                'edition_total' => $edition->edition_total,
+                'price' => $edition->price,
+                'stock' => $edition->stock,
+                'is_limited' => $edition->is_limited,
+                'created_at' => $edition->created_at,
+                'updated_at' => $edition->updated_at,
+                'artwork' => $edition->artwork ? [
+                    'id' => $edition->artwork->id,
+                    'title' => $edition->artwork->title,
+                    'slug' => $edition->artwork->slug,
+                    'medium' => $edition->artwork->medium,
+                    'year' => $edition->artwork->year,
+                    'size_text' => $edition->artwork->size_text,
+                ] : null,
+            ],
         ]);
     }
 
@@ -104,16 +163,66 @@ class EditionController extends Controller
             'is_limited' => 'boolean',
         ]);
 
-        $edition->update($validated);
+        // Ensure is_limited is properly cast to boolean
+        $validated['is_limited'] = (bool) $validated['is_limited'];
+        
+        // If not limited edition, set edition_total to null
+        if (!$validated['is_limited']) {
+            $validated['edition_total'] = null;
+        }
 
-        return back()->with('success', 'Edition updated successfully.');
+        try {
+            DB::beginTransaction();
+
+            $edition->update($validated);
+
+            DB::commit();
+
+            Log::info('Edition updated successfully', ['edition_id' => $edition->id, 'sku' => $edition->sku]);
+
+            return redirect()->route('admin.editions.index')
+                ->with('success', 'Edition updated successfully.');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            
+            Log::error('Failed to update edition', [
+                'edition_id' => $edition->id,
+                'error' => $e->getMessage(),
+                'data' => $validated
+            ]);
+
+            return back()->withInput()
+                ->with('error', 'Failed to update edition. Please try again.');
+        }
     }
 
     public function destroy(Edition $edition)
     {
-        $edition->delete();
+        try {
+            DB::beginTransaction();
 
-        return redirect()->route('admin.editions.index')
-            ->with('success', 'Edition deleted successfully.');
+            $editionSku = $edition->sku;
+            $editionId = $edition->id;
+
+            $edition->delete();
+
+            DB::commit();
+
+            Log::info('Edition deleted successfully', ['edition_id' => $editionId, 'sku' => $editionSku]);
+
+            return redirect()->route('admin.editions.index')
+                ->with('success', 'Edition deleted successfully.');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            
+            Log::error('Failed to delete edition', [
+                'edition_id' => $edition->id,
+                'error' => $e->getMessage()
+            ]);
+
+            return back()->with('error', 'Failed to delete edition. Please try again.');
+        }
     }
 }

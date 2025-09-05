@@ -25,7 +25,6 @@ class OrderSeeder extends Seeder
         }
 
         $orderStatuses = ['pending', 'paid', 'refunded', 'cancelled'];
-        $currencies = ['usd', 'gbp', 'eur'];
 
         foreach ($users as $user) {
             // Get user's default shipping address
@@ -52,7 +51,6 @@ class OrderSeeder extends Seeder
             
             for ($i = 0; $i < $numOrders; $i++) {
                 $status = $orderStatuses[array_rand($orderStatuses)];
-                $currency = $currencies[array_rand($currencies)];
                 
                 // Random order total between $100 and $5000
                 $total = rand(10000, 500000) / 100;
@@ -62,7 +60,7 @@ class OrderSeeder extends Seeder
                     'user_id' => $user->id,
                     'stripe_session_id' => 'seeded_' . time() . '_' . $user->id . '_' . $i,
                     'total' => $total,
-                    'currency' => $currency,
+                    'currency' => 'usd',
                     'status' => $status,
                     'order_notes' => $this->getRandomOrderNotes(),
                     'shipping_address_id' => $shippingAddress->id,

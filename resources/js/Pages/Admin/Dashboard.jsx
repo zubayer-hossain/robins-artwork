@@ -82,24 +82,15 @@ export default function AdminDashboard({ stats, recentOrders, recentMessages, re
     ];
 
     return (
-        <AdminLayout user={user}>
+        <AdminLayout 
+            user={user} 
+            header="Admin Dashboard" 
+            headerIcon={<BarChart3 className="w-8 h-8 text-white" />}
+            headerDescription="Monitor your artwork store, manage sales, and track performance"
+        >
             <Head title="Admin Dashboard" />
 
             <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-purple-50/30">
-                {/* Hero Section */}
-                <div className="bg-white/90 backdrop-blur-sm border-b border-white/20 shadow-sm">
-                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
-                        <div className="text-center sm:text-left">
-                            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-gray-900 via-purple-800 to-blue-900 bg-clip-text text-transparent leading-tight">
-                                Welcome back, {user.name}!
-                            </h1>
-                            <p className="mt-3 sm:mt-4 text-base sm:text-lg text-gray-600 max-w-2xl sm:mx-0 mx-auto">
-                                Manage your artwork store, monitor sales, and engage with customers
-                            </p>
-                        </div>
-                    </div>
-                </div>
-
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                     {/* Stats Grid */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8">
@@ -317,7 +308,7 @@ export default function AdminDashboard({ stats, recentOrders, recentMessages, re
                                                             </div>
                                                             <div className="flex items-center gap-1 sm:gap-2">
                                                                 <span className="font-semibold text-gray-900">
-                                                                    £{order.total}
+                                                                    ${order.total}
                                                                 </span>
                                                             </div>
                                                         </div>

@@ -10,6 +10,7 @@ use App\Http\Controllers\OrderController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\FavoriteController;
 use App\Http\Controllers\AddressController;
+use App\Http\Controllers\AboutController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\ArtworkController as AdminArtworkController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
@@ -27,9 +28,7 @@ use App\Http\Controllers\ContactController;
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/gallery', [ArtworkController::class, 'index'])->name('gallery');
 Route::get('/art/{slug}', [ArtworkController::class, 'show'])->name('artwork.show');
-Route::get('/about', function () {
-    return Inertia::render('About');
-})->name('about');
+Route::get('/about', [AboutController::class, 'index'])->name('about');
 Route::get('/contact', [ContactController::class, 'index'])->name('contact');
 Route::post('/contact', [ContactController::class, 'store'])->name('contact.store');
 
@@ -132,6 +131,7 @@ Route::prefix('admin')->name('admin.')->middleware('web')->group(function () {
         Route::get('/', [AdminDashboardController::class, 'index'])->name('dashboard');
         Route::resource('artworks', AdminArtworkController::class);
         Route::resource('orders', AdminOrderController::class)->only(['index', 'show']);
+        Route::patch('/orders/{order}/status', [AdminOrderController::class, 'updateStatus'])->name('orders.update-status');
         Route::resource('editions', AdminEditionController::class);
         
         // Admin profile management
@@ -148,6 +148,15 @@ Route::prefix('admin')->name('admin.')->middleware('web')->group(function () {
         Route::get('/cms', [AdminCmsController::class, 'index'])->name('cms.index');
         Route::get('/cms/global', [AdminCmsController::class, 'global'])->name('cms.global');
         Route::patch('/cms/global', [AdminCmsController::class, 'updateGlobal'])->name('cms.global.update');
+        
+        // CMS Image Management
+        Route::get('/cms/images', [AdminCmsController::class, 'images'])->name('cms.images');
+        Route::post('/cms/images/upload', [AdminCmsController::class, 'uploadImage'])->name('cms.images.upload');
+        Route::delete('/cms/images/{id}', [AdminCmsController::class, 'deleteImage'])->name('cms.images.delete');
+        Route::patch('/cms/images/{id}', [AdminCmsController::class, 'updateImage'])->name('cms.images.update');
+        Route::post('/cms/images/organize', [AdminCmsController::class, 'organizeImages'])->name('cms.images.organize');
+        
+        // CMS Page Management - Single route with section as query parameter
         Route::get('/cms/{page}', [AdminCmsController::class, 'page'])->name('cms.page');
         Route::patch('/cms/{page}', [AdminCmsController::class, 'updatePage'])->name('cms.page.update');
     });

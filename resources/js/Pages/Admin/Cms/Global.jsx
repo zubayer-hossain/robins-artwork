@@ -5,12 +5,56 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { ChevronRight, Save, Settings } from 'lucide-react';
-import { useState } from 'react';
+import { ChevronRight, Save, Settings, Globe } from 'lucide-react';
+import { useState, useEffect } from 'react';
 import CmsSidebar from '@/Components/CmsSidebar';
 
-export default function CmsGlobal({ auth, settings, breadcrumbs, pageTitle }) {
-    const [activeSection, setActiveSection] = useState(Object.keys(settings)[0] || '');
+export default function CmsGlobal({ auth, settings, breadcrumbs, pageTitle, activeSection: serverActiveSection }) {
+    // Define section order for global settings to match CmsSidebar
+    const getSectionOrder = () => {
+        return ['site', 'contact', 'social', 'images'];
+    };
+    
+    const orderedSections = getSectionOrder();
+    
+    // Get section from URL or server, with fallback to first available section
+    const getInitialSection = () => {
+        // First try to get from server
+        if (serverActiveSection) {
+            return serverActiveSection;
+        }
+        
+        // Then try to get from URL query parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const urlSection = urlParams.get('section');
+        if (urlSection && orderedSections.includes(urlSection)) {
+            return urlSection;
+        }
+        
+        // Finally fall back to first available section
+        return orderedSections.find(section => settings[section]) || Object.keys(settings)[0] || '';
+    };
+    
+    const [activeSection, setActiveSection] = useState(getInitialSection);
+    
+    // Sync with URL changes
+    useEffect(() => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const urlSection = urlParams.get('section');
+        if (urlSection && urlSection !== activeSection && orderedSections.includes(urlSection)) {
+            setActiveSection(urlSection);
+        }
+    }, [window.location.search]);
+    
+    // Handle section transitions with URL updates
+    const handleSectionChange = (newSection) => {
+        if (newSection !== activeSection) {
+            setActiveSection(newSection);
+            // Update URL to reflect the section change using query parameters
+            const newUrl = route('admin.cms.global') + `?section=${newSection}`;
+            window.history.pushState({}, '', newUrl);
+        }
+    };
     
     const { data, setData, patch, processing, errors, recentlySuccessful } = useForm({
         settings: Object.entries(settings).flatMap(([section, sectionSettings]) =>
@@ -47,9 +91,29 @@ export default function CmsGlobal({ auth, settings, breadcrumbs, pageTitle }) {
                         id={setting.id}
                         value={value}
                         onChange={(e) => updateSettingValue(setting.id, e.target.value)}
-                        className="min-h-[100px] transition-all duration-200 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                        className="min-h-[100px] transition-all duration-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                         placeholder={setting.description}
                     />
+                );
+            case 'boolean':
+                return (
+                    <div className="space-y-2">
+                        <div className="flex items-center space-x-3">
+                            <input
+                                type="checkbox"
+                                id={setting.id}
+                                checked={value === '1' || value === 'true'}
+                                onChange={(e) => updateSettingValue(setting.id, e.target.checked ? '1' : '0')}
+                                className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 transition-colors"
+                            />
+                            <Label htmlFor={setting.id} className="text-sm font-medium text-gray-900 cursor-pointer">
+                                {setting.key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                            </Label>
+                        </div>
+                        {setting.description && (
+                            <p className="text-xs text-gray-500 ml-7">{setting.description}</p>
+                        )}
+                    </div>
                 );
             default:
                 return (
@@ -58,7 +122,7 @@ export default function CmsGlobal({ auth, settings, breadcrumbs, pageTitle }) {
                         id={setting.id}
                         value={value}
                         onChange={(e) => updateSettingValue(setting.id, e.target.value)}
-                        className="transition-all duration-200 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                        className="transition-all duration-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                         placeholder={setting.description}
                     />
                 );
@@ -66,25 +130,30 @@ export default function CmsGlobal({ auth, settings, breadcrumbs, pageTitle }) {
     };
 
     return (
-        <AdminLayout user={auth.user} header={pageTitle}>
-            <Head title={`CMS - ${pageTitle}`} />
+        <AdminLayout 
+            user={auth.user} 
+            header={pageTitle}
+            headerIcon={<Globe className="w-8 h-8 text-white" />}
+            headerDescription="Configure site-wide settings and information"
+        >
+            <Head title={`${pageTitle} - CMS`} />
             
-            <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white">
+            <div className="min-h-screen bg-gray-50">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                     {/* Breadcrumbs */}
                     <nav className="flex items-center space-x-2 text-sm text-gray-600 mb-8">
-                        <Link href={route('admin.dashboard')} className="hover:text-purple-600 transition-colors font-medium">
+                        <Link href={route('admin.dashboard')} className="hover:text-blue-600 transition-colors font-medium">
                             Admin
                         </Link>
                         <ChevronRight className="w-4 h-4 text-gray-400" />
-                        <Link href={route('admin.cms.index')} className="hover:text-purple-600 transition-colors font-medium">
+                        <Link href={route('admin.cms.index')} className="hover:text-blue-600 transition-colors font-medium">
                             CMS
                         </Link>
                         <ChevronRight className="w-4 h-4 text-gray-400" />
                         {breadcrumbs.filter(crumb => crumb.label.toLowerCase() !== 'cms').map((crumb, index) => (
                             <div key={index} className="flex items-center space-x-2">
                                 {crumb.url ? (
-                                    <Link href={crumb.url} className="hover:text-purple-600 transition-colors font-medium">
+                                    <Link href={crumb.url} className="hover:text-blue-600 transition-colors font-medium">
                                         {crumb.label}
                                     </Link>
                                 ) : (
@@ -97,129 +166,85 @@ export default function CmsGlobal({ auth, settings, breadcrumbs, pageTitle }) {
                         ))}
                     </nav>
 
-                    {/* Header */}
-                    <div className="flex items-center justify-between mb-8">
-                        <div className="flex items-center gap-4">
-                            <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-indigo-600 rounded-2xl flex items-center justify-center shadow-xl">
-                                <Settings className="w-8 h-8 text-white" />
-                            </div>
-                            <div>
-                                <h1 className="text-4xl font-bold text-gray-900 mb-2">{pageTitle}</h1>
-                                <p className="text-lg text-gray-600">Configure site-wide settings and information</p>
-                            </div>
-                        </div>
-                    </div>
-
                     <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
                         {/* CMS Sidebar */}
                         <div className="lg:col-span-1">
                             <CmsSidebar 
                                 currentPage="global" 
                                 currentSection={activeSection}
-                                onSectionChange={setActiveSection}
+                                onSectionChange={handleSectionChange}
                             />
                         </div>
 
                         {/* Main Content */}
                         <div className="lg:col-span-4">
                             <form onSubmit={handleSubmit}>
-                                {Object.entries(settings).map(([section, sectionSettings]) => (
-                                    <Card 
-                                        key={section} 
-                                        className={`border-0 shadow-xl mb-6 transition-all duration-300 hover:shadow-2xl ${
-                                            activeSection === section ? 'transform scale-[1.01]' : ''
-                                        }`}
-                                        style={{ display: activeSection === section ? 'block' : 'none' }}
-                                    >
-                                        <CardHeader className="bg-gradient-to-r from-white to-gray-50 border-b border-gray-100 pb-6">
-                                            <div className="flex items-center gap-4">
-                                                <div className="w-14 h-14 bg-gradient-to-r from-purple-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
-                                                    <span className="text-3xl">
-                                                        {section === 'site' && '🌐'}
-                                                        {section === 'contact' && '📞'}
-                                                        {section === 'social' && '📱'}
-                                                        {!['site', 'contact', 'social'].includes(section) && '⚙️'}
-                                                    </span>
+                                {orderedSections.filter(section => settings[section]).map((section) => {
+                                    const sectionSettings = settings[section];
+                                    return (
+                                        <Card 
+                                            key={section} 
+                                            className={`bg-white border-0 shadow-sm mb-6 transition-all duration-300 ${
+                                                activeSection === section ? 'opacity-100' : 'opacity-0'
+                                            }`}
+                                            style={{ 
+                                                display: activeSection === section ? 'block' : 'none'
+                                            }}
+                                        >
+                                            <CardHeader className="border-b border-gray-100 pb-6">
+                                                <div className="flex items-center gap-4">
+                                                    <div className="w-12 h-12 bg-blue-100 rounded-lg border-2 border-blue-200 flex items-center justify-center">
+                                                        <Settings className="w-5 h-5 text-blue-700" />
+                                                    </div>
+                                                    <div>
+                                                        <CardTitle className="text-xl font-semibold text-gray-900 capitalize">
+                                                            {section === 'site' ? 'Website Information' : 
+                                                             section === 'contact' ? 'Contact Information' : 
+                                                             section === 'social' ? 'Social Media' : 
+                                                             section.replace('_', ' ')}
+                                                        </CardTitle>
+                                                        <p className="text-sm text-gray-600 mt-1">
+                                                            {section === 'site' ? 'General website settings and branding' : 
+                                                             section === 'contact' ? 'Primary contact details displayed across the site' : 
+                                                             section === 'social' ? 'Social media links and profiles' : 
+                                                             `Configure settings for ${section.replace('_', ' ')}`}
+                                                        </p>
+                                                    </div>
                                                 </div>
-                                                <div>
-                                                    <CardTitle className="text-2xl font-bold text-gray-900 capitalize">
-                                                        {section === 'site' && 'Website Information'}
-                                                        {section === 'contact' && 'Contact Information'}
-                                                        {section === 'social' && 'Social Media'}
-                                                        {!['site', 'contact', 'social'].includes(section) && section.replace('_', ' ')}
-                                                    </CardTitle>
-                                                    <p className="text-gray-600 mt-1">
-                                                        {section === 'site' && 'General website settings and branding'}
-                                                        {section === 'contact' && 'Primary contact details displayed across the site'}
-                                                        {section === 'social' && 'Social media links and profiles'}
-                                                        {!['site', 'contact', 'social'].includes(section) && 'Configure settings for this section'}
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        </CardHeader>
-                                        <CardContent className="p-8 space-y-6">
-                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                                {sectionSettings.map((setting) => (
-                                                    <div key={setting.id} className={`space-y-3 ${setting.type === 'textarea' ? 'md:col-span-2' : ''}`}>
-                                                        <Label htmlFor={setting.id} className="text-sm font-semibold text-gray-800 capitalize flex items-center gap-2">
-                                                            <span className="w-2 h-2 bg-purple-500 rounded-full"></span>
-                                                            {setting.key.replace('_', ' ')}
-                                                        </Label>
-                                                        <div className="relative">
+                                            </CardHeader>
+                                            
+                                            <CardContent className="p-6">
+                                                <div className="space-y-6">
+                                                    {sectionSettings.map((setting) => (
+                                                        <div key={setting.id} className="space-y-2">
+                                                            {setting.type !== 'boolean' && (
+                                                                <Label htmlFor={setting.id} className="text-sm font-medium text-gray-900">
+                                                                    {setting.key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                                                                </Label>
+                                                            )}
                                                             {renderInput(setting)}
-                                                            {errors[`settings.${setting.id}`] && (
-                                                                <div className="absolute -bottom-6 left-0">
-                                                                    <p className="text-sm text-red-600 font-medium">{errors[`settings.${setting.id}`]}</p>
-                                                                </div>
+                                                            {/* Only show description for non-checkbox inputs since checkbox inputs already show description */}
+                                                            {setting.description && setting.type !== 'boolean' && (
+                                                                <p className="text-xs text-gray-500">{setting.description}</p>
                                                             )}
                                                         </div>
-                                                        {setting.description && (
-                                                            <p className="text-xs text-gray-500 italic">{setting.description}</p>
-                                                        )}
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </CardContent>
-                                    </Card>
-                                ))}
+                                                    ))}
+                                                </div>
+                                            </CardContent>
+                                        </Card>
+                                    );
+                                })}
 
                                 {/* Save Button */}
-                                <div className="sticky bottom-6 z-10">
-                                    <Card className="border-0 shadow-2xl">
-                                        <CardContent className="p-6">
-                                            <div className="flex items-center justify-between">
-                                                <div className="flex items-center gap-4">
-                                                    {recentlySuccessful && (
-                                                        <div className="flex items-center gap-2 text-green-600">
-                                                            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                                                            <span className="text-sm font-medium">Global settings saved successfully!</span>
-                                                        </div>
-                                                    )}
-                                                    <div className="flex items-center gap-2 text-gray-600">
-                                                        <div className="w-2 h-2 bg-gray-400 rounded-full animate-pulse"></div>
-                                                        <span className="text-sm font-medium">Auto-save enabled</span>
-                                                    </div>
-                                                </div>
-                                                <Button 
-                                                    type="submit" 
-                                                    disabled={processing}
-                                                    className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white px-8 py-3 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
-                                                >
-                                                    {processing ? (
-                                                        <>
-                                                            <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-3"></div>
-                                                            Saving Changes...
-                                                        </>
-                                                    ) : (
-                                                        <>
-                                                            <Save className="w-5 h-5 mr-3" />
-                                                            Save Changes
-                                                        </>
-                                                    )}
-                                                </Button>
-                                            </div>
-                                        </CardContent>
-                                    </Card>
+                                <div className="flex justify-end">
+                                    <Button 
+                                        type="submit" 
+                                        disabled={processing}
+                                        className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 transition-colors duration-200"
+                                    >
+                                        {processing ? 'Saving...' : 'Save Changes'}
+                                        <Save className="w-4 h-4 ml-2" />
+                                    </Button>
                                 </div>
                             </form>
                         </div>

@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useCart } from '@/Contexts/CartContext';
 import { ShoppingCart, Trash2, Eye, ShoppingBag } from 'lucide-react';
+import axios from 'axios';
 
 export default function CartDropdown({ isOpen, onClose, triggerRef }) {
     const [cartItems, setCartItems] = useState([]);
@@ -36,21 +37,16 @@ export default function CartDropdown({ isOpen, onClose, triggerRef }) {
     const fetchCartItems = async () => {
         setIsLoading(true);
         try {
-            const response = await fetch(route('cart'), {
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json',
-                }
-            });
-            
-            if (response.ok) {
-                const data = await response.json();
-                setCartItems(data.cartItems || []);
-                setTotalPrice(data.totalPrice || 0);
-            }
+            const response = await axios.get(route('cart'));
+            setCartItems(response.data.cartItems || []);
+            setTotalPrice(response.data.totalPrice || 0);
         } catch (error) {
             console.error('Error fetching cart items:', error);
+            if (error.response?.status === 403) {
+                console.log('Access denied to cart - user may not have customer role');
+            } else if (error.response?.status === 419) {
+                console.log('CSRF token expired');
+            }
             setCartItems([]);
             setTotalPrice(0);
         } finally {
@@ -60,25 +56,21 @@ export default function CartDropdown({ isOpen, onClose, triggerRef }) {
 
     const handleRemoveItem = async (cartItemId) => {
         try {
-            const response = await fetch(route('cart.destroy', cartItemId), {
-                method: 'POST',
-                headers: {
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content'),
-                    'X-Requested-With': 'XMLHttpRequest',
-                },
-            });
+            const response = await axios.post(route('cart.destroy', cartItemId));
 
-            const data = await response.json();
-
-            if (data.success) {
+            if (response.data.success) {
                 window.toast?.success('Item removed from cart', 'Cart Updated');
                 fetchCartItems(); // Refresh dropdown items
                 refreshCartCount(); // Update cart badge
             } else {
-                window.toast?.error(data.message || 'Failed to remove item', 'Error');
+                window.toast?.error(response.data.message || 'Failed to remove item', 'Error');
             }
         } catch (error) {
-            window.toast?.error('Network error occurred', 'Connection Error');
+            if (error.response?.status === 419) {
+                window.toast?.error('Session expired. Please refresh the page.', 'Session Error');
+            } else {
+                window.toast?.error('Network error occurred', 'Connection Error');
+            }
         }
     };
 

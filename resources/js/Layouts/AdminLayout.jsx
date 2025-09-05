@@ -1,13 +1,34 @@
 import { useState } from 'react';
-import { Link, usePage } from '@inertiajs/react';
+import { Link, usePage, router } from '@inertiajs/react';
+import axios from 'axios';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Settings } from 'lucide-react';
 
-export default function AdminLayout({ user, header, children }) {
+export default function AdminLayout({ user, header, headerIcon, headerDescription, headerActions, children }) {
     const [showingNavigationDropdown, setShowingNavigationDropdown] = useState(false);
 
+    // Custom logout function using axios
+    const handleLogout = async (e) => {
+        e.preventDefault();
+        
+        // Disable the button to prevent double clicks
+        const button = e.target;
+        button.disabled = true;
+        
+        try {
+            await axios.post(route('admin.logout'));
+            // Redirect to admin login page after successful logout
+            router.visit(route('admin.login'));
+        } catch (error) {
+            console.error('Logout error:', error);
+            // For any error, redirect to admin login page
+            router.visit(route('admin.login'));
+        }
+    };
+
     return (
-        <div className="min-h-screen bg-gray-100" data-admin-context="true">
+        <div className="min-h-screen bg-gray-100 flex flex-col" data-admin-context="true">
             {/* Admin Header */}
             <nav className="bg-white border-b border-gray-200 shadow-sm">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -69,14 +90,12 @@ export default function AdminLayout({ user, header, children }) {
                                         <Link href={route('admin.profile.edit')}>Profile</Link>
                                     </DropdownMenuItem>
                                     <DropdownMenuItem>
-                                        <Link 
-                                            href={route('logout')} 
-                                            method="post" 
-                                            as="button"
-                                            className="w-full text-left"
+                                        <button 
+                                            onClick={handleLogout}
+                                            className="w-full text-left py-1.5 text-sm"
                                         >
                                             Log Out
-                                        </Link>
+                                        </button>
                                     </DropdownMenuItem>
                                 </DropdownMenuContent>
                             </DropdownMenu>
@@ -86,10 +105,27 @@ export default function AdminLayout({ user, header, children }) {
             </nav>
 
             {/* Page Content */}
-            <main className="py-8">
+            <main className="flex-1 py-8">
                 {header && (
                     <header className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8">
-                        <h2 className="text-2xl font-bold text-gray-900">{header}</h2>
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-4">
+                                <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-indigo-600 rounded-2xl flex items-center justify-center shadow-xl">
+                                    {headerIcon || <Settings className="w-8 h-8 text-white" />}
+                                </div>
+                                <div>
+                                    <h1 className="text-4xl font-bold text-gray-900 mb-2">{header}</h1>
+                                    {headerDescription && (
+                                        <p className="text-lg text-gray-600">{headerDescription}</p>
+                                    )}
+                                </div>
+                            </div>
+                            {headerActions && (
+                                <div className="flex items-center gap-3">
+                                    {headerActions}
+                                </div>
+                            )}
+                        </div>
                     </header>
                 )}
 
@@ -97,7 +133,7 @@ export default function AdminLayout({ user, header, children }) {
             </main>
 
             {/* Admin Footer */}
-            <footer className="bg-gray-900 text-white mt-auto">
+            <footer className="bg-gray-900 text-white">
                 <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
                     <div className="border-gray-800 text-center">
                         <p className="text-gray-400 text-sm">

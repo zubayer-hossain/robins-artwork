@@ -1,10 +1,11 @@
-import { useState, useRef } from 'react';
-import { Link, usePage } from '@inertiajs/react';
+import { useState, useRef, useEffect } from 'react';
+import { Link, usePage, router } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Badge } from '@/components/ui/badge';
 import { useCart } from '@/Contexts/CartContext';
 import CartDropdown from '@/Components/CartDropdown';
+import axios from 'axios';
 import { 
     User, 
     Settings, 
@@ -25,10 +26,40 @@ export default function PublicLayout({ children }) {
     const [showingNavigationDropdown, setShowingNavigationDropdown] = useState(false);
     const [isCartDropdownOpen, setIsCartDropdownOpen] = useState(false);
     const cartButtonRef = useRef(null);
-    const { cartCount } = useCart();
+    const { cartCount, updateCartForUser } = useCart();
     
     const user = auth.user;
     const isAdmin = user && user.roles && user.roles.includes('admin');
+
+    // Update cart when user changes
+    useEffect(() => {
+        // console.log('PublicLayout: User changed, updating cart:', user);
+        updateCartForUser(user);
+    }, [user, updateCartForUser]);
+
+    // Custom logout function using axios
+    const handleLogout = async (e) => {
+        e.preventDefault();
+        
+        // Disable the button to prevent double clicks
+        const button = e.target;
+        button.disabled = true;
+        
+        try {
+            await axios.post(route('logout'));
+            // Stay on current page after successful logout
+            router.reload();
+        } catch (error) {
+            console.error('Logout error:', error);
+            // If 419 error, try once more with a fresh page reload
+            if (error.response?.status === 419) {
+                window.location.reload();
+            } else {
+                // For other errors, just reload the current page
+                router.reload();
+            }
+        }
+    };
 
     return (
         <div className="min-h-screen bg-white">
@@ -217,10 +248,10 @@ export default function PublicLayout({ children }) {
 
                                             <DropdownMenuSeparator />
                                             <DropdownMenuItem>
-                                                <Link href={route('logout')} method="post" as="button" className="flex items-center space-x-2 w-full text-red-600 hover:text-red-700 hover:bg-red-50">
+                                                <button onClick={handleLogout} className="flex items-center space-x-2 w-full text-red-600 hover:text-red-700 hover:bg-red-50 px-2 py-1.5 text-sm">
                                                     <LogOut className="w-4 h-4" />
                                                     <span>Sign Out</span>
-                                                </Link>
+                                                </button>
                                             </DropdownMenuItem>
                                         </DropdownMenuContent>
                                         </DropdownMenu>
@@ -394,12 +425,14 @@ export default function PublicLayout({ children }) {
                                         {/* Separator before logout */}
                                         <div className="border-t border-gray-100 my-2"></div>
                                         
-                                        <Link href={route('logout')} method="post" as="button">
-                                            <Button variant="ghost" className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50">
-                                                <LogOut className="w-4 h-4 mr-2" />
-                                                Sign Out
-                                            </Button>
-                                        </Link>
+                                        <Button 
+                                            variant="ghost" 
+                                            className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50"
+                                            onClick={handleLogout}
+                                        >
+                                            <LogOut className="w-4 h-4 mr-2" />
+                                            Sign Out
+                                        </Button>
                                     </div>
                                 </div>
                             )}

@@ -162,7 +162,7 @@
                 <th>Payment Method</th>
                 <td>{{ $order->payment_method ?? '—' }}</td>
                 <th>Currency</th>
-                <td>{{ strtoupper($order->currency ?? 'USD') }}</td>
+                <td>USD</td>
             </tr>
         </table>
 
@@ -214,7 +214,7 @@
             </thead>
             <tbody>
             @php
-                $currency = strtoupper($order->currency ?? 'USD');
+                $currency = 'USD';
                 $idx = 1;
             @endphp
             @foreach($order->items as $item)

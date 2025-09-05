@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { router, Link } from '@inertiajs/react';
 import { useCart } from '@/Contexts/CartContext';
+import axios from 'axios';
 
 // Complete artwork card actions - includes favorite, add to cart, and view details
 export function ArtworkCardActions({ artwork, edition = null, isFavorite = false, showFavoriteButton = true }) {
@@ -32,17 +33,8 @@ export function ArtworkCardActions({ artwork, edition = null, isFavorite = false
                 ? { edition_id: edition.id, type: 'edition' }
                 : { artwork_id: artwork.id, type: 'original' };
 
-            const response = await fetch(route('cart.store'), {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content'),
-                    'X-Requested-With': 'XMLHttpRequest',
-                },
-                body: JSON.stringify(payload),
-            });
-
-            const data = await response.json();
+            const response = await axios.post(route('cart.store'), payload);
+            const data = response.data;
 
             if (data.success) {
                 const itemName = edition ? 'Limited Edition Print' : 'Original Artwork';
@@ -54,7 +46,11 @@ export function ArtworkCardActions({ artwork, edition = null, isFavorite = false
                 window.toast?.error(data.message || 'Failed to add to cart', 'Error');
             }
         } catch (error) {
-            window.toast?.error('Network error occurred', 'Connection Error');
+            if (error.response?.status === 419) {
+                window.toast?.error('Session expired. Please refresh the page.', 'Session Error');
+            } else {
+                window.toast?.error('Network error occurred', 'Connection Error');
+            }
         } finally {
             setIsAddingToCart(false);
         }
@@ -79,17 +75,8 @@ export function ArtworkCardActions({ artwork, edition = null, isFavorite = false
         setIsFavoriteLoading(true);
         
         try {
-            const response = await fetch(route('favorites.toggle'), {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content'),
-                    'X-Requested-With': 'XMLHttpRequest',
-                },
-                body: JSON.stringify({ artwork_id: artwork.id }),
-            });
-
-            const data = await response.json();
+            const response = await axios.post(route('favorites.toggle'), { artwork_id: artwork.id });
+            const data = response.data;
 
             if (data.success) {
                 setIsFavorited(data.is_favorite);
@@ -105,7 +92,11 @@ export function ArtworkCardActions({ artwork, edition = null, isFavorite = false
                 window.toast?.error(data.message || 'Failed to toggle favorite', 'Error');
             }
         } catch (error) {
-            window.toast?.error('Network error occurred', 'Connection Error');
+            if (error.response?.status === 419) {
+                window.toast?.error('Session expired. Please refresh the page.', 'Session Error');
+            } else {
+                window.toast?.error('Network error occurred', 'Connection Error');
+            }
         } finally {
             setIsFavoriteLoading(false);
         }
@@ -235,17 +226,8 @@ export function AddToCartButton({
                 ? { edition_id: edition.id, type: 'edition' }
                 : { artwork_id: artwork.id, type: 'original' };
 
-            const response = await fetch(route('cart.store'), {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content'),
-                    'X-Requested-With': 'XMLHttpRequest',
-                },
-                body: JSON.stringify(payload),
-            });
-
-            const data = await response.json();
+            const response = await axios.post(route('cart.store'), payload);
+            const data = response.data;
 
             if (data.success) {
                 window.toast?.success('Added to cart successfully!', 'Cart Updated');
@@ -261,7 +243,11 @@ export function AddToCartButton({
                 window.toast?.error(data.message || 'Failed to add to cart', 'Error');
             }
         } catch (error) {
-            window.toast?.error('Network error occurred', 'Connection Error');
+            if (error.response?.status === 419) {
+                window.toast?.error('Session expired. Please refresh the page.', 'Session Error');
+            } else {
+                window.toast?.error('Network error occurred', 'Connection Error');
+            }
         } finally {
             setIsLoading(false);
         }
@@ -341,17 +327,8 @@ export function FavoriteButton({
         setIsLoading(true);
         
         try {
-            const response = await fetch(route('favorites.toggle'), {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content'),
-                    'X-Requested-With': 'XMLHttpRequest',
-                },
-                body: JSON.stringify({ artwork_id: artwork.id }),
-            });
-
-            const data = await response.json();
+            const response = await axios.post(route('favorites.toggle'), { artwork_id: artwork.id });
+            const data = response.data;
 
             if (data.success) {
                 setIsFavorite(data.is_favorite);
@@ -367,7 +344,11 @@ export function FavoriteButton({
                 window.toast?.error(data.message || 'Failed to toggle favorite', 'Error');
             }
         } catch (error) {
-            window.toast?.error('Network error occurred', 'Connection Error');
+            if (error.response?.status === 419) {
+                window.toast?.error('Session expired. Please refresh the page.', 'Session Error');
+            } else {
+                window.toast?.error('Network error occurred', 'Connection Error');
+            }
         } finally {
             setIsLoading(false);
         }

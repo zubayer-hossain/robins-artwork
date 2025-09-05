@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\ContactMessage;
+use App\Models\CmsSetting;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -14,7 +15,12 @@ class ContactController extends Controller
      */
     public function index(): Response
     {
-        return Inertia::render('Contact');
+        // Get all Contact page CMS settings
+        $cmsSettings = CmsSetting::getPageSettings('contact');
+
+        return Inertia::render('Contact', [
+            'cmsSettings' => $cmsSettings
+        ]);
     }
 
     /**

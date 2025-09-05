@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Artwork;
 use App\Models\Edition;
 use App\Models\UserFavorite;
+use App\Models\CmsSetting;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -34,6 +35,9 @@ class HomeController extends Controller
                 ->toArray();
         }
 
+        // Get all Home page CMS settings
+        $cmsSettings = CmsSetting::getPageSettings('home');
+
         return Inertia::render('Home', [
             'featuredArtworks' => $featuredArtworks->map(function ($artwork) use ($userFavorites) {
                 return [
@@ -55,6 +59,7 @@ class HomeController extends Controller
                 ];
             }),
             'stats' => $stats,
+            'cmsSettings' => $cmsSettings,
         ]);
     }
 }

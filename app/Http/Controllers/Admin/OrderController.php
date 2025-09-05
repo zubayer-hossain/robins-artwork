@@ -4,6 +4,11 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Order;
+use Illuminate\Http\Request;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -37,7 +42,7 @@ class OrderController extends Controller
 
     public function show(Order $order): Response
     {
-        $order->load(['user', 'orderItems.artwork', 'orderItems.edition.artwork']);
+        $order->load(['user', 'items.artwork', 'items.edition.artwork']);
 
         return Inertia::render('Admin/Orders/Show', [
             'order' => [
@@ -47,11 +52,11 @@ class OrderController extends Controller
                 'status' => $order->status,
                 'stripe_session_id' => $order->stripe_session_id,
                 'customer_name' => $order->user?->name ?? 'Guest',
-                'customer_email' => $order->email,
+                'customer_email' => $order->user?->email ?? 'N/A',
                 'meta' => $order->meta,
                 'created_at' => $order->created_at->format('M j, Y H:i'),
                 'updated_at' => $order->updated_at->format('M j, Y H:i'),
-                'items' => $order->orderItems->map(function ($item) {
+                'items' => $order->items->map(function ($item) {
                     return [
                         'id' => $item->id,
                         'qty' => $item->qty,
@@ -71,5 +76,31 @@ class OrderController extends Controller
                 }),
             ],
         ]);
+    }
+
+    public function updateStatus(Request $request, Order $order): RedirectResponse
+    {
+        try {
+            $request->validate([
+                'status' => 'required|in:pending,paid,refunded,cancelled',
+            ]);
+
+            DB::transaction(function () use ($order, $request) {
+                $order->update([
+                    'status' => $request->status,
+                ]);
+            });
+
+            return back()->with('success', 'Order status updated successfully!');
+
+        } catch (\Exception $e) {
+            Log::error('Order status update failed', [
+                'order_id' => $order->id,
+                'error' => $e->getMessage(),
+                'request_data' => $request->all()
+            ]);
+
+            return back()->with('error', 'Failed to update order status. Please try again.');
+        }
     }
 }

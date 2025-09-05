@@ -117,7 +117,7 @@
                 <p><strong>Order #:</strong> <span>{{ $order->id }}</span></p>
                 <p><strong>Date:</strong> <span>{{ $order->created_at->format('F j, Y') }}</span></p>
                 <p><strong>Status:</strong> <span style="color: #28a745; font-weight: 600;">{{ ucfirst($order->status) }}</span></p>
-                <p><strong>Total:</strong> <span style="font-weight: 600;">${{ number_format($order->total, 2) }} {{ strtoupper($order->currency) }}</span></p>
+                <p><strong>Total:</strong> <span style="font-weight: 600;">${{ number_format($order->total, 2) }}</span></p>
             </div>
 
             <div class="items-section">
@@ -131,7 +131,7 @@
             </div>
 
             <div class="total">
-                Total: ${{ number_format($order->total, 2) }} {{ strtoupper($order->currency) }}
+                Total: ${{ number_format($order->total, 2) }}
             </div>
         </div>
 

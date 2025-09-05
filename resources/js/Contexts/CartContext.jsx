@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import axios from 'axios';
 
 const CartContext = createContext();
 
@@ -14,7 +15,7 @@ export function CartProvider({ children }) {
     const [cartCount, setCartCount] = useState(0);
     const [isLoading, setIsLoading] = useState(true);
 
-    // Fetch cart count on mount only if user is authenticated AND not in admin context
+    // Fetch cart count on mount and when user changes
     useEffect(() => {
         // Check if we're in admin context
         const isAdminContext = window.location.pathname.startsWith('/admin') || 
@@ -27,21 +28,76 @@ export function CartProvider({ children }) {
             return;
         }
         
-        // Check if user is authenticated by looking for auth-related elements
-        const isAuthenticated = document.querySelector('[data-auth="true"]') || 
-                               document.querySelector('meta[name="auth-status"]')?.content === 'authenticated' ||
-                               window.authUser;
+        // Check if user is authenticated and has customer role using DOM attributes
+        const isAuthenticated = document.querySelector('[data-auth="true"]') !== null;
+        const userRoles = document.querySelector('[data-user-roles]')?.getAttribute('data-user-roles') || '';
+        const hasCustomerRole = userRoles.includes('customer');
         
-        if (isAuthenticated) {
+        if (isAuthenticated && hasCustomerRole) {
             fetchCartCount();
         } else {
-            // User not authenticated, set cart count to 0 and don't make API calls
+            // User not authenticated or doesn't have customer role, set cart count to 0 and don't make API calls
             setCartCount(0);
             setIsLoading(false);
         }
     }, []);
 
-    const fetchCartCount = async () => {
+    // Listen for user changes via custom events or DOM mutations
+    useEffect(() => {
+        const handleUserChange = () => {
+            // Small delay to ensure DOM is updated
+            setTimeout(() => {
+                const isAdminContext = window.location.pathname.startsWith('/admin') || 
+                                       document.querySelector('[data-admin-context="true"]') ||
+                                       window.route?.current?.()?.startsWith('admin.');
+                
+                if (isAdminContext) {
+                    setCartCount(0);
+                    setIsLoading(false);
+                    return;
+                }
+                
+                const authElement = document.body;
+                const isAuthenticated = authElement?.getAttribute('data-auth') === 'true';
+                const userRoles = authElement?.getAttribute('data-user-roles') || '';
+                const hasCustomerRole = userRoles.includes('customer');
+                
+                if (isAuthenticated && hasCustomerRole) {
+                    fetchCartCount();
+                } else {
+                    setCartCount(0);
+                    setIsLoading(false);
+                }
+            }, 100);
+        };
+
+        // Listen for custom events that might indicate user changes
+        window.addEventListener('user-logged-in', handleUserChange);
+        window.addEventListener('user-logged-out', handleUserChange);
+        
+        // Also listen for DOM mutations on the body element (when auth attributes change)
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                if (mutation.type === 'attributes' && 
+                    (mutation.attributeName === 'data-auth' || mutation.attributeName === 'data-user-roles')) {
+                    handleUserChange();
+                }
+            });
+        });
+        
+        observer.observe(document.body, {
+            attributes: true,
+            attributeFilter: ['data-auth', 'data-user-roles']
+        });
+
+        return () => {
+            window.removeEventListener('user-logged-in', handleUserChange);
+            window.removeEventListener('user-logged-out', handleUserChange);
+            observer.disconnect();
+        };
+    }, []);
+
+    const fetchCartCount = useCallback(async () => {
         try {
             // Check if we're in admin context first
             const isAdminContext = window.location.pathname.startsWith('/admin') || 
@@ -56,12 +112,13 @@ export function CartProvider({ children }) {
             }
             
             // Double-check if user is authenticated
-            const isAuthenticated = document.querySelector('[data-auth="true"]') || 
+            const authElement = document.body;
+            const isAuthenticated = authElement?.getAttribute('data-auth') === 'true' ||
                                    document.querySelector('meta[name="auth-status"]')?.content === 'authenticated' ||
                                    window.authUser;
             
             if (!isAuthenticated) {
-                console.log('User not authenticated, skipping cart count fetch');
+                console.log('User not authenticated, skipping cart count fetch. data-auth:', authElement?.getAttribute('data-auth'));
                 setCartCount(0);
                 setIsLoading(false);
                 return;
@@ -75,27 +132,24 @@ export function CartProvider({ children }) {
                 return;
             }
 
-            const response = await fetch(route('cart.count'), {
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                }
-            });
-            
-            if (response.ok) {
-                const data = await response.json();
-                console.log('Fetched cart count:', data.count, 'Response:', data); // Debug log
-                setCartCount(data.count || 0);
+            const response = await axios.get(route('cart.count'));
+            setCartCount(response.data.count || 0);
+        } catch (error) {
+            // Handle axios errors gracefully
+            if (error.response?.status === 419) {
+                console.log('CSRF token expired, cart count set to 0');
+                setCartCount(0);
+            } else if (error.response?.status === 401 || error.response?.status === 403) {
+                console.log('User not authenticated or lacks permission, cart count set to 0');
+                setCartCount(0);
             } else {
-                console.log('Cart count fetch failed with status:', response.status);
+                console.error('Error fetching cart count:', error);
                 setCartCount(0);
             }
-        } catch (error) {
-            console.error('Error fetching cart count:', error);
-            setCartCount(0);
         } finally {
             setIsLoading(false);
         }
-    };
+    }, []);
 
     const updateCartCount = (newCount) => {
         setCartCount(newCount);
@@ -120,15 +174,58 @@ export function CartProvider({ children }) {
             return;
         }
         
-        // Only refresh if user is authenticated
-        const isAuthenticated = document.querySelector('[data-auth="true"]') || 
-                               document.querySelector('meta[name="auth-status"]')?.content === 'authenticated' ||
-                               window.authUser;
+        // Only refresh if user is authenticated and has customer role using DOM attributes
+        const isAuthenticated = document.querySelector('[data-auth="true"]') !== null;
+        const userRoles = document.querySelector('[data-user-roles]')?.getAttribute('data-user-roles') || '';
+        const hasCustomerRole = userRoles.includes('customer');
         
-        if (isAuthenticated) {
+        if (isAuthenticated && hasCustomerRole) {
             fetchCartCount();
         }
     };
+
+    // Function to update cart count based on user status (can be called from components with Inertia access)
+    const updateCartForUser = useCallback((user) => {
+        const isAuthenticated = user !== null;
+        const hasCustomerRole = user?.roles?.includes('customer');
+        
+        // console.log('updateCartForUser called:', { isAuthenticated, hasCustomerRole, user });
+        
+        if (isAuthenticated && hasCustomerRole) {
+            // Force refresh cart count for logged-in customers
+            setIsLoading(true);
+            fetchCartCount();
+        } else {
+            setCartCount(0);
+            setIsLoading(false);
+        }
+    }, [fetchCartCount]);
+
+    // Function to force refresh cart count (useful for after login)
+    const forceRefreshCart = useCallback(() => {
+        // console.log('forceRefreshCart called');
+        const isAdminContext = window.location.pathname.startsWith('/admin') || 
+                               document.querySelector('[data-admin-context="true"]') ||
+                               window.route?.current?.()?.startsWith('admin.');
+        
+        if (isAdminContext) {
+            setCartCount(0);
+            setIsLoading(false);
+            return;
+        }
+        
+        const isAuthenticated = document.querySelector('[data-auth="true"]') !== null;
+        const userRoles = document.querySelector('[data-user-roles]')?.getAttribute('data-user-roles') || '';
+        const hasCustomerRole = userRoles.includes('customer');
+        
+        if (isAuthenticated && hasCustomerRole) {
+            setIsLoading(true);
+            fetchCartCount();
+        } else {
+            setCartCount(0);
+            setIsLoading(false);
+        }
+    }, [fetchCartCount]);
 
     const value = {
         cartCount,
@@ -137,7 +234,9 @@ export function CartProvider({ children }) {
         incrementCartCount,
         decrementCartCount,
         refreshCartCount,
-        fetchCartCount
+        fetchCartCount,
+        updateCartForUser,
+        forceRefreshCart
     };
 
     return (

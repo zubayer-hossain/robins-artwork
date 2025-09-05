@@ -97,4 +97,142 @@ class CmsSetting extends Model
             Cache::flush();
         }
     }
+
+    /**
+     * Get uploaded images data
+     */
+    public static function getUploadedImages(): array
+    {
+        $setting = self::where('page', 'global')
+            ->where('section', 'images')
+            ->where('key', 'uploaded_images')
+            ->where('is_active', true)
+            ->first();
+            
+        if (!$setting || !$setting->value) {
+            return [];
+        }
+        
+        $images = json_decode($setting->value, true);
+        return is_array($images) ? $images : [];
+    }
+
+    /**
+     * Store uploaded images data
+     */
+    public static function setUploadedImages(array $images): void
+    {
+        self::updateOrCreate(
+            [
+                'page' => 'global',
+                'section' => 'images',
+                'key' => 'uploaded_images'
+            ],
+            [
+                'value' => json_encode($images),
+                'type' => 'json',
+                'description' => 'Uploaded images data for CMS image management',
+                'sort_order' => 1,
+                'is_active' => true
+            ]
+        );
+        
+        // Clear cache
+        self::clearCache('global');
+    }
+
+    /**
+     * Get images by category
+     */
+    public static function getImagesByCategory(string $category = null): array
+    {
+        $allImages = self::getUploadedImages();
+        
+        if (!$category) {
+            return $allImages;
+        }
+        
+        return array_filter($allImages, function ($image) use ($category) {
+            return isset($image['category']) && $image['category'] === $category;
+        });
+    }
+
+    /**
+     * Get image by filename
+     */
+    public static function getImageByFilename(string $filename): ?array
+    {
+        $images = self::getUploadedImages();
+        
+        foreach ($images as $image) {
+            if (isset($image['filename']) && $image['filename'] === $filename) {
+                return $image;
+            }
+        }
+        
+        return null;
+    }
+
+    /**
+     * Add new image to the collection
+     */
+    public static function addImage(array $imageData): void
+    {
+        $images = self::getUploadedImages();
+        $images[] = $imageData;
+        self::setUploadedImages($images);
+    }
+
+    /**
+     * Remove image from the collection
+     */
+    public static function removeImage(string $filename): bool
+    {
+        $images = self::getUploadedImages();
+        $imageIndex = array_search($filename, array_column($images, 'filename'));
+        
+        if ($imageIndex === false) {
+            return false;
+        }
+        
+        unset($images[$imageIndex]);
+        $images = array_values($images); // Re-index array
+        
+        self::setUploadedImages($images);
+        return true;
+    }
+
+    /**
+     * Update image in the collection
+     */
+    public static function updateImage(string $filename, array $updateData): bool
+    {
+        $images = self::getUploadedImages();
+        $imageIndex = array_search($filename, array_column($images, 'filename'));
+        
+        if ($imageIndex === false) {
+            return false;
+        }
+        
+        // Merge update data with existing image data
+        $images[$imageIndex] = array_merge($images[$imageIndex], $updateData);
+        $images[$imageIndex]['updated_at'] = now()->toISOString();
+        
+        self::setUploadedImages($images);
+        return true;
+    }
+
+    /**
+     * Get image management settings
+     */
+    public static function getImageSettings(): array
+    {
+        return [
+            'max_file_size' => self::getValue('global', 'images', 'max_file_size', '10240'), // 10MB default
+            'allowed_types' => self::getValue('global', 'images', 'allowed_types', 'jpeg,png,jpg,gif,webp'),
+            'thumbnail_sizes' => self::getValue('global', 'images', 'thumbnail_sizes', '150x150,400x400'),
+            'auto_optimize' => self::getValue('global', 'images', 'auto_optimize', '1'),
+            'storage_disk' => self::getValue('global', 'images', 'storage_disk', 'public'),
+        ];
+    }
 }
