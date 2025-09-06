@@ -87,15 +87,15 @@ export default function AdminArtworkShow({ auth, artwork, flash }) {
             headerIcon={<Eye className="w-8 h-8 text-white" />}
             headerDescription="View artwork details"
             headerActions={
-                <div className="flex items-center gap-3">
+                <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
                     <Link href={route('admin.artworks.edit', artwork.id)}>
-                        <Button variant="outline" className="border-gray-300 text-gray-700 hover:bg-gray-50 transition-all duration-200">
+                        <Button variant="outline" className="w-full sm:w-auto border-gray-300 text-gray-700 hover:bg-gray-50 transition-all duration-200">
                             <Edit className="w-4 h-4 mr-2" />
                             Edit Artwork
                         </Button>
                     </Link>
                     <Link href={route('admin.artworks.index')}>
-                        <Button variant="outline" className="border-gray-300 text-gray-700 hover:bg-gray-50 transition-all duration-200">
+                        <Button variant="outline" className="w-full sm:w-auto border-gray-300 text-gray-700 hover:bg-gray-50 transition-all duration-200">
                             <ArrowLeft className="w-4 h-4 mr-2" />
                             Back to Artworks
                         </Button>
