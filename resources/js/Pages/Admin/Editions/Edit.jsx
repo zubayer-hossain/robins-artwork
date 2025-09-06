@@ -63,15 +63,15 @@ export default function AdminEditionEdit({ auth, edition, artworks, flash }) {
             headerIcon={<Package className="w-8 h-8 text-white" />}
             headerDescription="Update edition details and pricing"
             headerActions={
-                <div className="flex gap-3">
+                <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
                     <Link href={route('admin.editions.index')}>
-                        <Button variant="outline" size="sm">
+                        <Button variant="outline" className="w-full sm:w-auto">
                             <ArrowLeft className="w-4 h-4 mr-2" />
                             Back to Editions
                         </Button>
                     </Link>
                     <Link href={route('admin.editions.show', edition.id)}>
-                        <Button variant="outline" size="sm">
+                        <Button variant="outline" className="w-full sm:w-auto">
                             <Eye className="w-4 h-4 mr-2" />
                             View Edition
                         </Button>
