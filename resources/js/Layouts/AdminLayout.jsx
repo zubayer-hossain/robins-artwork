@@ -3,7 +3,7 @@ import { Link, usePage, router } from '@inertiajs/react';
 import axios from 'axios';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Settings, Menu, X, Home, LayoutDashboard, Palette, ShoppingBag, Layers, Settings as SettingsIcon, User, LogOut } from 'lucide-react';
+import { Settings, Menu, X, Home, LayoutDashboard, Palette, ShoppingBag, Layers, Settings as SettingsIcon, User, LogOut, BarChart3 } from 'lucide-react';
 
 export default function AdminLayout({ user, header, headerIcon, headerDescription, headerActions, children }) {
     const [showingNavigationDropdown, setShowingNavigationDropdown] = useState(false);
@@ -61,6 +61,9 @@ export default function AdminLayout({ user, header, headerIcon, headerDescriptio
                                 </NavLink>
                                 <NavLink href={route('admin.cms.index')} active={route().current('admin.cms.*')}>
                                     CMS
+                                </NavLink>
+                                <NavLink href="/analytics" active={window.location.pathname === '/analytics'}>
+                                    Analytics
                                 </NavLink>
                             </div>
                         </div>
@@ -141,6 +144,9 @@ export default function AdminLayout({ user, header, headerIcon, headerDescriptio
                                 </MobileNavLink>
                                 <MobileNavLink href={route('admin.cms.index')} active={route().current('admin.cms.*')} icon={<SettingsIcon className="w-4 h-4" />}>
                                     CMS
+                                </MobileNavLink>
+                                <MobileNavLink href="/analytics" active={window.location.pathname === '/analytics'} icon={<BarChart3 className="w-4 h-4" />}>
+                                    Analytics
                                 </MobileNavLink>
                                 
                                 {/* Mobile Back to Store */}

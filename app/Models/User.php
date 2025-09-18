@@ -8,8 +8,9 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Cashier\Billable;
 use Spatie\Permission\Traits\HasRoles;
+use MeShaon\RequestAnalytics\Contracts\CanAccessAnalyticsDashboard;
 
-class User extends Authenticatable
+class User extends Authenticatable implements CanAccessAnalyticsDashboard
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable, Billable, HasRoles;
@@ -81,5 +82,16 @@ class User extends Authenticatable
     public function defaultBillingAddress()
     {
         return $this->hasOne(Address::class)->where('type', 'billing')->where('is_default', true);
+    }
+
+    /**
+     * Determine if the user can access the analytics dashboard.
+     * Only users with the 'admin' role can access analytics.
+     *
+     * @return bool
+     */
+    public function canAccessAnalyticsDashboard(): bool
+    {
+        return $this->hasRole('admin');
     }
 }
