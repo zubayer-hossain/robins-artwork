@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\CmsSetting;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -31,6 +32,9 @@ class HandleInertiaRequests extends Middleware
     {
         $user = $request->user();
         
+        // Get global CMS settings for use across all pages (header, footer, etc.)
+        $globalSettings = CmsSetting::getPageSettings('global');
+        
         return [
             ...parent::share($request),
             'auth' => [
@@ -41,6 +45,7 @@ class HandleInertiaRequests extends Middleware
                     'roles' => $user->roles ? $user->roles->pluck('name')->toArray() : [],
                 ] : null,
             ],
+            'globalSettings' => $globalSettings,
         ];
     }
 }

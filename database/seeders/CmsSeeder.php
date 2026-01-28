@@ -140,20 +140,11 @@ class CmsSeeder extends Seeder
             [
                 'page' => 'home',
                 'section' => 'about',
-                'key' => 'paragraph1',
-                'value' => 'Robin Aitken is a passionate artist who has rediscovered his love for painting after a distinguished 25-year career in eCommerce technology. Now retired and based in the stunning Cairngorms National Park in Scotland, Robin combines his artistic vision with the breathtaking natural beauty of the Scottish Highlands.',
+                'key' => 'content',
+                'value' => '<p>Robin Aitken is a passionate artist who has rediscovered his love for painting after a distinguished 25-year career in eCommerce technology. Now retired and based in the stunning Cairngorms National Park in Scotland, Robin combines his artistic vision with the breathtaking natural beauty of the Scottish Highlands.</p><p>Every artwork in this collection represents Robin\'s unique perspective, combining his technical background with artistic creativity. Whether you\'re a seasoned collector or just beginning your art journey, Robin\'s pieces capture the timeless beauty of Scotland\'s landscapes and are designed to resonate with your soul and transform your space.</p>',
                 'type' => 'textarea',
-                'description' => 'First about paragraph',
+                'description' => 'About section content (supports rich text formatting)',
                 'sort_order' => 2
-            ],
-            [
-                'page' => 'home',
-                'section' => 'about',
-                'key' => 'paragraph2',
-                'value' => 'Every artwork in this collection represents Robin\'s unique perspective, combining his technical background with artistic creativity. Whether you\'re a seasoned collector or just beginning your art journey, Robin\'s pieces capture the timeless beauty of Scotland\'s landscapes and are designed to resonate with your soul and transform your space.',
-                'type' => 'textarea',
-                'description' => 'Second about paragraph',
-                'sort_order' => 3
             ],
             [
                 'page' => 'home',
@@ -162,7 +153,25 @@ class CmsSeeder extends Seeder
                 'value' => 'Get in Touch',
                 'type' => 'text',
                 'description' => 'About section CTA button text',
+                'sort_order' => 3
+            ],
+            [
+                'page' => 'home',
+                'section' => 'about',
+                'key' => 'image_url',
+                'value' => 'https://picsum.photos/600/600?random=robin-art',
+                'type' => 'text',
+                'description' => 'About section image URL',
                 'sort_order' => 4
+            ],
+            [
+                'page' => 'home',
+                'section' => 'about',
+                'key' => 'image_alt',
+                'value' => 'Robin\'s Artwork Sample',
+                'type' => 'text',
+                'description' => 'About section image alt text',
+                'sort_order' => 5
             ],
 
             // HOME CONTACT CTA SECTION
@@ -299,7 +308,7 @@ class CmsSeeder extends Seeder
                 'sort_order' => 4
             ],
 
-            // GALLERY CTA SECTION
+            // GALLERY CTA SECTION (includes features and footer info)
             [
                 'page' => 'gallery',
                 'section' => 'cta',
@@ -336,90 +345,88 @@ class CmsSeeder extends Seeder
                 'description' => 'Gallery CTA button text',
                 'sort_order' => 4
             ],
-
-            // GALLERY FEATURES SECTION
+            // Feature cards (moved from features section)
             [
                 'page' => 'gallery',
-                'section' => 'features',
+                'section' => 'cta',
                 'key' => 'feature1_title',
                 'value' => 'Custom Commissions',
                 'type' => 'text',
                 'description' => 'First feature card title',
-                'sort_order' => 1
-            ],
-            [
-                'page' => 'gallery',
-                'section' => 'features',
-                'key' => 'feature1_description',
-                'value' => 'Personalized artwork tailored to your vision',
-                'type' => 'text',
-                'description' => 'First feature card description',
-                'sort_order' => 2
-            ],
-            [
-                'page' => 'gallery',
-                'section' => 'features',
-                'key' => 'feature2_title',
-                'value' => 'Scottish Landscapes',
-                'type' => 'text',
-                'description' => 'Second feature card title',
-                'sort_order' => 3
-            ],
-            [
-                'page' => 'gallery',
-                'section' => 'features',
-                'key' => 'feature2_description',
-                'value' => 'Inspired by the beautiful Cairngorms',
-                'type' => 'text',
-                'description' => 'Second feature card description',
-                'sort_order' => 4
-            ],
-            [
-                'page' => 'gallery',
-                'section' => 'features',
-                'key' => 'feature3_title',
-                'value' => 'Studio Visits',
-                'type' => 'text',
-                'description' => 'Third feature card title',
                 'sort_order' => 5
             ],
             [
                 'page' => 'gallery',
-                'section' => 'features',
+                'section' => 'cta',
+                'key' => 'feature1_description',
+                'value' => 'Personalized artwork tailored to your vision',
+                'type' => 'text',
+                'description' => 'First feature card description',
+                'sort_order' => 6
+            ],
+            [
+                'page' => 'gallery',
+                'section' => 'cta',
+                'key' => 'feature2_title',
+                'value' => 'Scottish Landscapes',
+                'type' => 'text',
+                'description' => 'Second feature card title',
+                'sort_order' => 7
+            ],
+            [
+                'page' => 'gallery',
+                'section' => 'cta',
+                'key' => 'feature2_description',
+                'value' => 'Inspired by the beautiful Cairngorms',
+                'type' => 'text',
+                'description' => 'Second feature card description',
+                'sort_order' => 8
+            ],
+            [
+                'page' => 'gallery',
+                'section' => 'cta',
+                'key' => 'feature3_title',
+                'value' => 'Studio Visits',
+                'type' => 'text',
+                'description' => 'Third feature card title',
+                'sort_order' => 9
+            ],
+            [
+                'page' => 'gallery',
+                'section' => 'cta',
                 'key' => 'feature3_description',
                 'value' => 'Visit Robin\'s studio in the Highlands',
                 'type' => 'text',
                 'description' => 'Third feature card description',
-                'sort_order' => 6
+                'sort_order' => 10
             ],
-
-            // GALLERY FOOTER INFO SECTION
+            // Footer info items (moved from footer_info section)
             [
                 'page' => 'gallery',
-                'section' => 'footer_info',
+                'section' => 'cta',
                 'key' => 'info1_text',
                 'value' => 'Free consultation',
                 'type' => 'text',
                 'description' => 'First footer info text',
-                'sort_order' => 1
+                'sort_order' => 11
             ],
             [
                 'page' => 'gallery',
-                'section' => 'footer_info',
+                'section' => 'cta',
                 'key' => 'info2_text',
                 'value' => 'Worldwide shipping',
                 'type' => 'text',
                 'description' => 'Second footer info text',
-                'sort_order' => 2
+                'sort_order' => 12
             ],
             [
                 'page' => 'gallery',
-                'section' => 'footer_info',
+                'section' => 'cta',
                 'key' => 'info3_text',
                 'value' => 'Secure payments',
                 'type' => 'text',
                 'description' => 'Third footer info text',
-                'sort_order' => 3
+                'sort_order' => 13
             ],
 
             // ABOUT PAGE SETTINGS
@@ -473,29 +480,11 @@ class CmsSeeder extends Seeder
             [
                 'page' => 'about',
                 'section' => 'story',
-                'key' => 'paragraph1',
-                'value' => 'Robin Aitken\'s artistic journey is a beautiful story of rediscovery and passion. After a distinguished 25-year career in eCommerce technology, working with major retailers and leading innovative search solutions, Robin has embraced retirement as an opportunity to return to his artistic roots.',
+                'key' => 'content',
+                'value' => '<p>Robin Aitken\'s artistic journey is a beautiful story of rediscovery and passion. After a distinguished 25-year career in eCommerce technology, working with major retailers and leading innovative search solutions, Robin has embraced retirement as an opportunity to return to his artistic roots.</p><p>Now based in the stunning Cairngorms National Park in Cromdale, Scotland, Robin combines his love for painting with running a charming Bed & Breakfast. The breathtaking Scottish landscapes and serene Highland atmosphere provide endless inspiration for his artwork.</p><p>Robin\'s technical background and "can do" attitude from his professional life translates beautifully into his artistic practice, where he approaches each canvas with the same dedication and problem-solving mindset that made him successful in eCommerce solutions.</p>',
                 'type' => 'textarea',
-                'description' => 'First paragraph of artist story',
-                'sort_order' => 2
-            ],
-            [
-                'page' => 'about',
-                'section' => 'story',
-                'key' => 'paragraph2',
-                'value' => 'Now based in the stunning Cairngorms National Park in Cromdale, Scotland, Robin combines his love for painting with running a charming Bed & Breakfast. The breathtaking Scottish landscapes and serene Highland atmosphere provide endless inspiration for his artwork.',
-                'type' => 'textarea',
-                'description' => 'Second paragraph of artist story',
+                'description' => 'Story section content (supports rich text formatting)',
                 'sort_order' => 3
-            ],
-            [
-                'page' => 'about',
-                'section' => 'story',
-                'key' => 'paragraph3',
-                'value' => 'Robin\'s technical background and "can do" attitude from his professional life translates beautifully into his artistic practice, where he approaches each canvas with the same dedication and problem-solving mindset that made him successful in eCommerce solutions.',
-                'type' => 'textarea',
-                'description' => 'Third paragraph of artist story',
-                'sort_order' => 4
             ],
             [
                 'page' => 'about',
@@ -504,7 +493,7 @@ class CmsSeeder extends Seeder
                 'value' => 'https://picsum.photos/600/600?random=robin-portrait',
                 'type' => 'text',
                 'description' => 'Story section image URL',
-                'sort_order' => 5
+                'sort_order' => 4
             ],
             [
                 'page' => 'about',
@@ -513,7 +502,7 @@ class CmsSeeder extends Seeder
                 'value' => 'Robin\'s Studio in the Cairngorms',
                 'type' => 'text',
                 'description' => 'Story section image alt text',
-                'sort_order' => 6
+                'sort_order' => 5
             ],
 
             // ABOUT PHILOSOPHY SECTION
@@ -621,29 +610,11 @@ class CmsSeeder extends Seeder
             [
                 'page' => 'about',
                 'section' => 'process',
-                'key' => 'paragraph1',
-                'value' => 'Robin\'s creative process is uniquely influenced by his technical background in eCommerce solutions. He approaches each artwork with the same systematic thinking and attention to detail that made him successful in product management and sales.',
+                'key' => 'content',
+                'value' => '<p>Robin\'s creative process is uniquely influenced by his technical background in eCommerce solutions. He approaches each artwork with the same systematic thinking and attention to detail that made him successful in product management and sales.</p><p>Living in the Cairngorms National Park provides Robin with endless natural inspiration - from the dramatic mountain landscapes to the changing seasons and wildlife. His paintings capture the essence of Scotland\'s natural beauty, combining traditional techniques with contemporary perspectives.</p><p>Robin\'s "can do" attitude from his professional life translates into his artistic practice, where he\'s not afraid to experiment with new techniques and push creative boundaries. Each piece reflects his deep connection to the Scottish Highlands and his passion for capturing its timeless beauty.</p>',
                 'type' => 'textarea',
-                'description' => 'First paragraph of process section',
-                'sort_order' => 2
-            ],
-            [
-                'page' => 'about',
-                'section' => 'process',
-                'key' => 'paragraph2',
-                'value' => 'Living in the Cairngorms National Park provides Robin with endless natural inspiration - from the dramatic mountain landscapes to the changing seasons and wildlife. His paintings capture the essence of Scotland\'s natural beauty, combining traditional techniques with contemporary perspectives.',
-                'type' => 'textarea',
-                'description' => 'Second paragraph of process section',
+                'description' => 'Process section content (supports rich text formatting)',
                 'sort_order' => 3
-            ],
-            [
-                'page' => 'about',
-                'section' => 'process',
-                'key' => 'paragraph3',
-                'value' => 'Robin\'s "can do" attitude from his professional life translates into his artistic practice, where he\'s not afraid to experiment with new techniques and push creative boundaries. Each piece reflects his deep connection to the Scottish Highlands and his passion for capturing its timeless beauty.',
-                'type' => 'textarea',
-                'description' => 'Third paragraph of process section',
-                'sort_order' => 4
             ],
             [
                 'page' => 'about',
@@ -652,7 +623,7 @@ class CmsSeeder extends Seeder
                 'value' => 'https://picsum.photos/600/600?random=robin-process',
                 'type' => 'text',
                 'description' => 'Process section image URL',
-                'sort_order' => 5
+                'sort_order' => 4
             ],
             [
                 'page' => 'about',
@@ -661,7 +632,7 @@ class CmsSeeder extends Seeder
                 'value' => 'Artistic Process',
                 'type' => 'text',
                 'description' => 'Process section image alt text',
-                'sort_order' => 6
+                'sort_order' => 5
             ],
 
             // ABOUT CTA SECTION
@@ -770,6 +741,8 @@ class CmsSeeder extends Seeder
             ],
 
             // CONTACT INFO SECTION
+            // Note: Email, phone, and social URLs are managed in Global Settings
+            // This section only contains page-specific titles and notes
             [
                 'page' => 'contact',
                 'section' => 'info',
@@ -792,7 +765,7 @@ class CmsSeeder extends Seeder
                 'page' => 'contact',
                 'section' => 'info',
                 'key' => 'studio_details',
-                'value' => 'By appointment only<br />Robin\'s Art Studio & B&B<br />Cromdale, Cairngorms National Park<br />Scotland, United Kingdom',
+                'value' => "By appointment only\nRobin's Art Studio & B&B\nCromdale, Cairngorms National Park\nScotland, United Kingdom",
                 'type' => 'textarea',
                 'description' => 'Studio location and visit details',
                 'sort_order' => 3
@@ -809,20 +782,11 @@ class CmsSeeder extends Seeder
             [
                 'page' => 'contact',
                 'section' => 'info',
-                'key' => 'email_address',
-                'value' => 'hello@robinsartwork.com',
-                'type' => 'text',
-                'description' => 'Main contact email address',
-                'sort_order' => 5
-            ],
-            [
-                'page' => 'contact',
-                'section' => 'info',
                 'key' => 'email_note',
                 'value' => 'We typically respond within 24 hours',
                 'type' => 'text',
                 'description' => 'Email response time note',
-                'sort_order' => 6
+                'sort_order' => 5
             ],
             [
                 'page' => 'contact',
@@ -831,16 +795,7 @@ class CmsSeeder extends Seeder
                 'value' => 'Phone',
                 'type' => 'text',
                 'description' => 'Phone section title',
-                'sort_order' => 7
-            ],
-            [
-                'page' => 'contact',
-                'section' => 'info',
-                'key' => 'phone_number',
-                'value' => '(123) 456-7890',
-                'type' => 'text',
-                'description' => 'Contact phone number',
-                'sort_order' => 8
+                'sort_order' => 6
             ],
             [
                 'page' => 'contact',
@@ -849,43 +804,7 @@ class CmsSeeder extends Seeder
                 'value' => 'Available Tue-Sat, 10 AM - 6 PM',
                 'type' => 'text',
                 'description' => 'Phone availability hours',
-                'sort_order' => 9
-            ],
-            [
-                'page' => 'contact',
-                'section' => 'info',
-                'key' => 'social_title',
-                'value' => 'Social Media',
-                'type' => 'text',
-                'description' => 'Social media section title',
-                'sort_order' => 10
-            ],
-            [
-                'page' => 'contact',
-                'section' => 'info',
-                'key' => 'social_description',
-                'value' => 'Follow Robin\'s artistic journey',
-                'type' => 'text',
-                'description' => 'Social media section description',
-                'sort_order' => 11
-            ],
-            [
-                'page' => 'contact',
-                'section' => 'info',
-                'key' => 'linkedin_url',
-                'value' => 'https://www.linkedin.com/in/robin-aitken-56180410/',
-                'type' => 'text',
-                'description' => 'LinkedIn profile URL',
-                'sort_order' => 12
-            ],
-            [
-                'page' => 'contact',
-                'section' => 'info',
-                'key' => 'facebook_url',
-                'value' => 'https://www.facebook.com/robin.aitken.woodley',
-                'type' => 'text',
-                'description' => 'Facebook profile URL',
-                'sort_order' => 13
+                'sort_order' => 7
             ],
 
             // CONTACT FAQ SECTION
@@ -1121,51 +1040,16 @@ class CmsSeeder extends Seeder
                 'sort_order' => 6
             ],
             
-            // IMAGE MANAGEMENT SETTINGS
-            [
-                'page' => 'global',
-                'section' => 'images',
-                'key' => 'max_file_size',
-                'value' => '10240',
-                'type' => 'number',
-                'description' => 'Maximum file size for image uploads in KB (10MB = 10240KB)',
-                'sort_order' => 1
-            ],
-            [
-                'page' => 'global',
-                'section' => 'images',
-                'key' => 'allowed_types',
-                'value' => 'jpeg,png,jpg,gif,webp',
-                'type' => 'text',
-                'description' => 'Allowed image file types (comma-separated)',
-                'sort_order' => 2
-            ],
-            [
-                'page' => 'global',
-                'section' => 'images',
-                'key' => 'auto_optimize',
-                'value' => '1',
-                'type' => 'boolean',
-                'description' => 'Automatically optimize images on upload',
-                'sort_order' => 3
-            ],
-            [
-                'page' => 'global',
-                'section' => 'images',
-                'key' => 'create_thumbnails',
-                'value' => '1',
-                'type' => 'boolean',
-                'description' => 'Create thumbnail versions of uploaded images',
-                'sort_order' => 4
-            ],
+            // Note: Image settings (max_file_size, allowed_types, etc.) are handled in config/filesystems.php
+            // The uploaded_images data is stored separately in the CMS images system
             [
                 'page' => 'global',
                 'section' => 'images',
                 'key' => 'uploaded_images',
                 'value' => '[]',
                 'type' => 'json',
-                'description' => 'Uploaded images data for CMS image management',
-                'sort_order' => 5
+                'description' => 'Uploaded images data for CMS image management (system managed)',
+                'sort_order' => 1
             ]
         ];
 

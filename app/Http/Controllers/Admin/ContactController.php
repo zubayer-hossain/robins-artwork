@@ -21,7 +21,7 @@ class ContactController extends Controller
                     'subject' => $message->subject,
                     'message' => $message->message,
                     'status' => $message->status ?? 'unread',
-                    'created_at' => $message->created_at->format('M j, Y H:i'),
+                    'created_at' => $message->created_at?->format('M j, Y H:i') ?? 'N/A',
                 ];
             });
 
@@ -44,9 +44,9 @@ class ContactController extends Controller
                 'email' => $contactMessage->email,
                 'subject' => $contactMessage->subject,
                 'message' => $contactMessage->message,
-                'status' => $contactMessage->status,
-                'created_at' => $contactMessage->created_at->format('M j, Y H:i'),
-                'updated_at' => $contactMessage->updated_at->format('M j, Y H:i'),
+                'status' => $contactMessage->status ?? 'unread',
+                'created_at' => $contactMessage->created_at?->format('M j, Y H:i') ?? 'N/A',
+                'updated_at' => $contactMessage->updated_at?->format('M j, Y H:i') ?? 'N/A',
             ],
         ]);
     }

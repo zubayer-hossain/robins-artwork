@@ -18,6 +18,7 @@ use App\Http\Controllers\Admin\EditionController as AdminEditionController;
 use App\Http\Controllers\Admin\ContactController as AdminContactController;
 use App\Http\Controllers\Admin\CmsController as AdminCmsController;
 use App\Http\Controllers\Admin\AuthController as AdminAuthController;
+use App\Http\Controllers\Admin\AnalyticsController as AdminAnalyticsController;
 
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -130,6 +131,13 @@ Route::prefix('admin')->name('admin.')->middleware('web')->group(function () {
     Route::middleware(['admin'])->group(function () {
         Route::get('/', [AdminDashboardController::class, 'index'])->name('dashboard');
         Route::resource('artworks', AdminArtworkController::class);
+        
+        // Artwork Image Management
+        Route::post('/artworks/{artwork}/images', [AdminArtworkController::class, 'uploadImages'])->name('artworks.images.upload');
+        Route::delete('/artworks/{artwork}/images/{media}', [AdminArtworkController::class, 'deleteImage'])->name('artworks.images.delete');
+        Route::post('/artworks/{artwork}/images/{media}/primary', [AdminArtworkController::class, 'setPrimaryImage'])->name('artworks.images.primary');
+        Route::post('/artworks/{artwork}/images/reorder', [AdminArtworkController::class, 'reorderImages'])->name('artworks.images.reorder');
+        
         Route::resource('orders', AdminOrderController::class)->only(['index', 'show']);
         Route::patch('/orders/{order}/status', [AdminOrderController::class, 'updateStatus'])->name('orders.update-status');
         Route::resource('editions', AdminEditionController::class);
@@ -151,14 +159,22 @@ Route::prefix('admin')->name('admin.')->middleware('web')->group(function () {
         
         // CMS Image Management
         Route::get('/cms/images', [AdminCmsController::class, 'images'])->name('cms.images');
+        Route::get('/cms/images/list', [AdminCmsController::class, 'listImages'])->name('cms.images.list');
         Route::post('/cms/images/upload', [AdminCmsController::class, 'uploadImage'])->name('cms.images.upload');
-        Route::delete('/cms/images/{id}', [AdminCmsController::class, 'deleteImage'])->name('cms.images.delete');
-        Route::patch('/cms/images/{id}', [AdminCmsController::class, 'updateImage'])->name('cms.images.update');
+        Route::delete('/cms/images/{filename}', [AdminCmsController::class, 'deleteImage'])->name('cms.images.delete');
+        Route::patch('/cms/images/{filename}', [AdminCmsController::class, 'updateImage'])->name('cms.images.update');
         Route::post('/cms/images/organize', [AdminCmsController::class, 'organizeImages'])->name('cms.images.organize');
         
         // CMS Page Management - Single route with section as query parameter
         Route::get('/cms/{page}', [AdminCmsController::class, 'page'])->name('cms.page');
         Route::patch('/cms/{page}', [AdminCmsController::class, 'updatePage'])->name('cms.page.update');
+        
+        // CMS FAQ CRUD
+        Route::post('/cms/{page}/{section}/faq', [AdminCmsController::class, 'addFaq'])->name('cms.faq.add');
+        Route::delete('/cms/{page}/{section}/faq/{faqNum}', [AdminCmsController::class, 'deleteFaq'])->name('cms.faq.delete');
+
+        // Analytics
+        Route::get('/analytics', [AdminAnalyticsController::class, 'index'])->name('analytics.index');
     });
 });
 

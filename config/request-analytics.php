@@ -8,7 +8,7 @@ return [
 
     'route' => [
         'name' => 'request.analytics',
-        'pathname' => env('REQUEST_ANALYTICS_PATHNAME', 'analytics'),
+        'pathname' => env('REQUEST_ANALYTICS_PATHNAME', 'old-analytics-disabled'),
     ],
 
     'capture' => [
@@ -35,7 +35,8 @@ return [
     ],
 
     'ignore-paths' => [
-        env('REQUEST_ANALYTICS_PATHNAME', 'analytics'),
+        'admin/analytics',
+        'old-analytics-disabled',
         'broadcasting/auth',
         'livewire/*',
     ],

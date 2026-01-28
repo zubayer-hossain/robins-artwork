@@ -1,4 +1,4 @@
-﻿﻿﻿import { Head } from '@inertiajs/react';
+﻿﻿import { Head } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
 import PublicLayout from '@/Layouts/PublicLayout';
 import { Link } from '@inertiajs/react';
@@ -131,27 +131,24 @@ export default function Home({ featuredArtworks, stats, cmsSettings = {} }) {
                             <h2 className="text-4xl md:text-5xl font-bold mb-6 text-gray-900">
                                 {getCmsValue('about', 'title')}
                             </h2>
-                            <p className="text-lg text-gray-600 mb-6 leading-relaxed">
-                                {getCmsValue('about', 'paragraph1')}
-                            </p>
-                            <p className="text-lg text-gray-600 mb-8 leading-relaxed">
-                                {getCmsValue('about', 'paragraph2')}
-                            </p>
+                            <div 
+                                className="text-lg text-gray-600 mb-8 leading-relaxed cms-content"
+                                dangerouslySetInnerHTML={{ 
+                                    __html: getCmsValue('about', 'content', '<p>Robin Aitken is a passionate artist who has rediscovered his love for painting after a distinguished 25-year career in eCommerce technology.</p>') 
+                                }}
+                            />
                             <Link href={route('contact')}>
                                 <Button size="lg" className="bg-purple-600 hover:bg-purple-700 px-8 py-4 text-lg font-semibold">
                                     {getCmsValue('about', 'button_text')}
                                 </Button>
                             </Link>
                         </div>
-                        <div className="relative">
-                            <div className="aspect-square overflow-hidden rounded-2xl shadow-2xl">
-                                <img
-                                    src="https://picsum.photos/600/600?random=robin-art"
-                                    alt="Robin's Artwork Sample"
-                                    className="w-full h-full object-cover"
-                                />
-                            </div>
-                            <div className="absolute inset-0 bg-gradient-to-br from-purple-400/20 to-pink-400/20 rounded-2xl"></div>
+                        <div className="aspect-square overflow-hidden rounded-2xl shadow-2xl">
+                            <img
+                                src={getCmsValue('about', 'image_url', 'https://picsum.photos/600/600?random=robin-art')}
+                                alt={getCmsValue('about', 'image_alt', 'Robin\'s Artwork Sample')}
+                                className="w-full h-full object-cover"
+                            />
                         </div>
                     </div>
                 </div>

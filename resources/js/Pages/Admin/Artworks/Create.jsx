@@ -9,7 +9,8 @@ import { Textarea } from '@/Components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import { Checkbox } from '@/Components/ui/checkbox';
 import { Badge } from '@/Components/ui/badge';
-import { ArrowLeft, Save, Palette, X } from 'lucide-react';
+import { ArrowLeft, Save, Palette, X, Image as ImageIcon, AlertCircle } from 'lucide-react';
+import ImageUploader from '@/Components/ImageUploader';
 
 export default function AdminArtworkCreate({ auth, mediums, statuses, flash }) {
     const [newTagInput, setNewTagInput] = useState('');
@@ -254,6 +255,28 @@ export default function AdminArtworkCreate({ auth, mediums, statuses, flash }) {
                                             </Button>
                                         </div>
                                         {errors.tags && <p className="text-sm text-red-600 mt-1">{errors.tags}</p>}
+                                    </div>
+                                </CardContent>
+                            </Card>
+
+                            {/* Images Section - Shows prompt to save first */}
+                            <Card className="border-0 shadow-sm">
+                                <CardHeader className="bg-gradient-to-r from-purple-50 to-pink-50 border-b">
+                                    <CardTitle className="flex items-center gap-2 text-purple-900">
+                                        <ImageIcon className="w-5 h-5" />
+                                        Artwork Images
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent className="p-6">
+                                    <div className="text-center py-8 bg-gray-50 rounded-xl border-2 border-dashed border-gray-200">
+                                        <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                            <AlertCircle className="w-8 h-8 text-gray-400" />
+                                        </div>
+                                        <h3 className="text-lg font-semibold text-gray-700 mb-2">Save Artwork First</h3>
+                                        <p className="text-gray-500 max-w-md mx-auto">
+                                            Create and save the artwork first, then you'll be able to upload images.
+                                            You'll be redirected to the edit page where you can add images.
+                                        </p>
                                     </div>
                                 </CardContent>
                             </Card>

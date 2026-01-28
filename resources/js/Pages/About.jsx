@@ -55,25 +55,19 @@ export default function About({ cmsSettings = {} }) {
                                 <h2 className="text-4xl md:text-5xl font-bold mb-6 text-gray-900">
                                     {getCmsValue('story', 'title', 'The Artist\'s Journey')}
                                 </h2>
-                                <p className="text-lg text-gray-600 mb-6 leading-relaxed">
-                                    {getCmsValue('story', 'paragraph1', 'Robin Aitken\'s artistic journey is a beautiful story of rediscovery and passion. After a distinguished 25-year career in eCommerce technology, working with major retailers and leading innovative search solutions, Robin has embraced retirement as an opportunity to return to his artistic roots.')}
-                                </p>
-                                <p className="text-lg text-gray-600 mb-6 leading-relaxed">
-                                    {getCmsValue('story', 'paragraph2', 'Now based in the stunning Cairngorms National Park in Cromdale, Scotland, Robin combines his love for painting with running a charming Bed & Breakfast. The breathtaking Scottish landscapes and serene Highland atmosphere provide endless inspiration for his artwork.')}
-                                </p>
-                                <p className="text-lg text-gray-600 mb-8 leading-relaxed">
-                                    {getCmsValue('story', 'paragraph3', 'Robin\'s technical background and "can do" attitude from his professional life translates beautifully into his artistic practice, where he approaches each canvas with the same dedication and problem-solving mindset that made him successful in eCommerce solutions.')}
-                                </p>
+                                <div 
+                                    className="text-lg text-gray-600 leading-relaxed cms-content"
+                                    dangerouslySetInnerHTML={{ 
+                                        __html: getCmsValue('story', 'content', '<p>Robin Aitken\'s artistic journey is a beautiful story of rediscovery and passion. After a distinguished 25-year career in eCommerce technology, working with major retailers and leading innovative search solutions, Robin has embraced retirement as an opportunity to return to his artistic roots.</p><p>Now based in the stunning Cairngorms National Park in Cromdale, Scotland, Robin combines his love for painting with running a charming Bed & Breakfast. The breathtaking Scottish landscapes and serene Highland atmosphere provide endless inspiration for his artwork.</p><p>Robin\'s technical background and "can do" attitude from his professional life translates beautifully into his artistic practice, where he approaches each canvas with the same dedication and problem-solving mindset that made him successful in eCommerce solutions.</p>') 
+                                    }}
+                                />
                             </div>
-                            <div className="relative">
-                                <div className="aspect-square overflow-hidden rounded-2xl shadow-2xl">
-                                    <img
-                                        src={getCmsValue('story', 'image_url', 'https://picsum.photos/600/600?random=robin-portrait')}
-                                        alt={getCmsValue('story', 'image_alt', 'Robin\'s Studio in the Cairngorms')}
-                                        className="w-full h-full object-cover"
-                                    />
-                                </div>
-                                <div className="absolute inset-0 bg-gradient-to-br from-purple-400/20 to-blue-400/20 rounded-2xl"></div>
+                            <div className="aspect-square overflow-hidden rounded-2xl shadow-2xl">
+                                <img
+                                    src={getCmsValue('story', 'image_url', 'https://picsum.photos/600/600?random=robin-portrait')}
+                                    alt={getCmsValue('story', 'image_alt', 'Robin\'s Studio in the Cairngorms')}
+                                    className="w-full h-full object-cover"
+                                />
                             </div>
                         </div>
                     </div>
@@ -139,7 +133,7 @@ export default function About({ cmsSettings = {} }) {
                 <section className="py-20 bg-white">
                     <div className="max-w-7xl mx-auto px-4">
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-                            <div className="relative order-2 lg:order-1">
+                            <div className="order-2 lg:order-1">
                                 <div className="aspect-square overflow-hidden rounded-2xl shadow-2xl">
                                     <img
                                         src={getCmsValue('process', 'image_url', 'https://picsum.photos/600/600?random=robin-process')}
@@ -147,21 +141,17 @@ export default function About({ cmsSettings = {} }) {
                                         className="w-full h-full object-cover"
                                     />
                                 </div>
-                                <div className="absolute inset-0 bg-gradient-to-br from-pink-400/20 to-orange-400/20 rounded-2xl"></div>
                             </div>
                             <div className="order-1 lg:order-2">
                                 <h2 className="text-4xl md:text-5xl font-bold mb-6 text-gray-900">
                                     {getCmsValue('process', 'title', 'Process & Technique')}
                                 </h2>
-                                <p className="text-lg text-gray-600 mb-6 leading-relaxed">
-                                    {getCmsValue('process', 'paragraph1', 'Robin\'s creative process is uniquely influenced by his technical background in eCommerce solutions. He approaches each artwork with the same systematic thinking and attention to detail that made him successful in product management and sales.')}
-                                </p>
-                                <p className="text-lg text-gray-600 mb-6 leading-relaxed">
-                                    {getCmsValue('process', 'paragraph2', 'Living in the Cairngorms National Park provides Robin with endless natural inspiration - from the dramatic mountain landscapes to the changing seasons and wildlife. His paintings capture the essence of Scotland\'s natural beauty, combining traditional techniques with contemporary perspectives.')}
-                                </p>
-                                <p className="text-lg text-gray-600 mb-8 leading-relaxed">
-                                    {getCmsValue('process', 'paragraph3', 'Robin\'s "can do" attitude from his professional life translates into his artistic practice, where he\'s not afraid to experiment with new techniques and push creative boundaries. Each piece reflects his deep connection to the Scottish Highlands and his passion for capturing its timeless beauty.')}
-                                </p>
+                                <div 
+                                    className="text-lg text-gray-600 leading-relaxed cms-content"
+                                    dangerouslySetInnerHTML={{ 
+                                        __html: getCmsValue('process', 'content', '<p>Robin\'s creative process is uniquely influenced by his technical background in eCommerce solutions. He approaches each artwork with the same systematic thinking and attention to detail that made him successful in product management and sales.</p><p>Living in the Cairngorms National Park provides Robin with endless natural inspiration - from the dramatic mountain landscapes to the changing seasons and wildlife. His paintings capture the essence of Scotland\'s natural beauty, combining traditional techniques with contemporary perspectives.</p><p>Robin\'s "can do" attitude from his professional life translates into his artistic practice, where he\'s not afraid to experiment with new techniques and push creative boundaries. Each piece reflects his deep connection to the Scottish Highlands and his passion for capturing its timeless beauty.</p>') 
+                                    }}
+                                />
                             </div>
                         </div>
                     </div>

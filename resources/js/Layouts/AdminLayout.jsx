@@ -62,7 +62,7 @@ export default function AdminLayout({ user, header, headerIcon, headerDescriptio
                                 <NavLink href={route('admin.cms.index')} active={route().current('admin.cms.*')}>
                                     CMS
                                 </NavLink>
-                                <NavLink href="/analytics" active={window.location.pathname === '/analytics'}>
+                                <NavLink href={route('admin.analytics.index')} active={route().current('admin.analytics.*')}>
                                     Analytics
                                 </NavLink>
                             </div>
@@ -145,7 +145,7 @@ export default function AdminLayout({ user, header, headerIcon, headerDescriptio
                                 <MobileNavLink href={route('admin.cms.index')} active={route().current('admin.cms.*')} icon={<SettingsIcon className="w-4 h-4" />}>
                                     CMS
                                 </MobileNavLink>
-                                <MobileNavLink href="/analytics" active={window.location.pathname === '/analytics'} icon={<BarChart3 className="w-4 h-4" />}>
+                                <MobileNavLink href={route('admin.analytics.index')} active={route().current('admin.analytics.*')} icon={<BarChart3 className="w-4 h-4" />}>
                                     Analytics
                                 </MobileNavLink>
                                 

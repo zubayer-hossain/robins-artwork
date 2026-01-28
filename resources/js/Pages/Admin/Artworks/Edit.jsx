@@ -1,4 +1,4 @@
-﻿import { Head, useForm, Link } from '@inertiajs/react';
+import { Head, useForm, Link } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
 import AdminLayout from '@/Layouts/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
@@ -9,10 +9,12 @@ import { Textarea } from '@/Components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import { Checkbox } from '@/Components/ui/checkbox';
 import { Badge } from '@/Components/ui/badge';
-import { ArrowLeft, Save, X, Palette, Edit, Eye } from 'lucide-react';
+import { ArrowLeft, Save, X, Palette, Edit, Eye, Image as ImageIcon } from 'lucide-react';
+import ImageUploader from '@/Components/ImageUploader';
 
 export default function AdminArtworksEdit({ auth, artwork, mediums, statuses, flash }) {
     const [newTagInput, setNewTagInput] = useState('');
+    const [artworkImages, setArtworkImages] = useState(artwork?.images || []);
 
     const { data, setData, put, processing, errors } = useForm({
         title: artwork?.title || '',
@@ -245,6 +247,28 @@ export default function AdminArtworksEdit({ auth, artwork, mediums, statuses, fl
                                             </Button>
                                         </div>
                                     </div>
+                                </CardContent>
+                            </Card>
+
+                            {/* Images Section */}
+                            <Card className="border-0 shadow-sm">
+                                <CardHeader className="bg-gradient-to-r from-purple-50 to-pink-50 border-b">
+                                    <CardTitle className="flex items-center gap-2 text-purple-900">
+                                        <ImageIcon className="w-5 h-5" />
+                                        Artwork Images
+                                        {artworkImages.length > 0 && (
+                                            <Badge variant="secondary" className="ml-2 bg-purple-100 text-purple-700">
+                                                {artworkImages.length}
+                                            </Badge>
+                                        )}
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent className="p-6">
+                                    <ImageUploader
+                                        artworkId={artwork.id}
+                                        images={artworkImages}
+                                        onImagesChange={setArtworkImages}
+                                    />
                                 </CardContent>
                             </Card>
                         </div>

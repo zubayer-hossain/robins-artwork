@@ -1,4 +1,4 @@
-import { Head, useForm } from '@inertiajs/react';
+import { Head, useForm, usePage } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -8,11 +8,17 @@ import { Link } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
 
 export default function Contact({ success, errors, cmsSettings = {} }) {
+    const { globalSettings = {} } = usePage().props;
     const [showSuccess, setShowSuccess] = useState(false);
     
-    // Helper function to get CMS value
+    // Helper function to get CMS value (page-specific)
     const getCmsValue = (section, key, defaultValue = '') => {
         return cmsSettings[section]?.[key] || defaultValue;
+    };
+
+    // Helper function to get global CMS value (site-wide)
+    const getGlobal = (section, key, defaultValue = '') => {
+        return globalSettings[section]?.[key] || defaultValue;
     };
     
     const { data, setData, post, processing, reset } = useForm({
@@ -260,8 +266,8 @@ export default function Contact({ success, errors, cmsSettings = {} }) {
                                             {getCmsValue('info', 'email_title', 'Email Us')}
                                         </h3>
                                         <p className="text-gray-600 leading-relaxed">
-                                            <a href={`mailto:${getCmsValue('info', 'email_address', 'hello@robinsartwork.com')}`} className="text-purple-600 hover:text-purple-700">
-                                                {getCmsValue('info', 'email_address', 'hello@robinsartwork.com')}
+                                            <a href={`mailto:${getGlobal('contact', 'email', 'hello@robinsartwork.com')}`} className="text-purple-600 hover:text-purple-700">
+                                                {getGlobal('contact', 'email', 'hello@robinsartwork.com')}
                                             </a><br />
                                             {getCmsValue('info', 'email_note', 'We typically respond within 24 hours')}
                                         </p>
@@ -277,8 +283,8 @@ export default function Contact({ success, errors, cmsSettings = {} }) {
                                             {getCmsValue('info', 'phone_title', 'Phone')}
                                         </h3>
                                         <p className="text-gray-600 leading-relaxed">
-                                            <a href={`tel:${getCmsValue('info', 'phone_number', '(123) 456-7890').replace(/[^0-9+]/g, '')}`} className="text-purple-600 hover:text-purple-700">
-                                                {getCmsValue('info', 'phone_number', '(123) 456-7890')}
+                                            <a href={`tel:${getGlobal('contact', 'phone', '(123) 456-7890').replace(/[^0-9+]/g, '')}`} className="text-purple-600 hover:text-purple-700">
+                                                {getGlobal('contact', 'phone', '(123) 456-7890')}
                                             </a><br />
                                             {getCmsValue('info', 'phone_hours', 'Available Tue-Sat, 10 AM - 6 PM')}
                                         </p>
@@ -291,15 +297,15 @@ export default function Contact({ success, errors, cmsSettings = {} }) {
                                     </div>
                                     <div>
                                         <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                                            {getCmsValue('info', 'social_title', 'Social Media')}
+                                            {getGlobal('social', 'social_title', 'Social Media')}
                                         </h3>
                                         <p className="text-gray-600 leading-relaxed mb-3">
-                                            {getCmsValue('info', 'social_description', 'Follow Robin\'s artistic journey')}
+                                            {getGlobal('social', 'social_description', "Follow Robin's artistic journey")}
                                         </p>
                                         <div className="flex space-x-4">
-                                            {getCmsValue('info', 'linkedin_url') && (
+                                            {getGlobal('social', 'linkedin_url') && (
                                                 <a 
-                                                    href={getCmsValue('info', 'linkedin_url', 'https://www.linkedin.com/in/robin-aitken-56180410/')} 
+                                                    href={getGlobal('social', 'linkedin_url')} 
                                                     target="_blank" 
                                                     rel="noopener noreferrer"
                                                     className="w-10 h-10 bg-blue-600 hover:bg-blue-700 rounded-full flex items-center justify-center text-white transition-colors duration-200"
@@ -310,9 +316,9 @@ export default function Contact({ success, errors, cmsSettings = {} }) {
                                                     </svg>
                                                 </a>
                                             )}
-                                            {getCmsValue('info', 'facebook_url') && (
+                                            {getGlobal('social', 'facebook_url') && (
                                                 <a 
-                                                    href={getCmsValue('info', 'facebook_url', 'https://www.facebook.com/robin.aitken.woodley')} 
+                                                    href={getGlobal('social', 'facebook_url')} 
                                                     target="_blank" 
                                                     rel="noopener noreferrer"
                                                     className="w-10 h-10 bg-blue-600 hover:bg-blue-700 rounded-full flex items-center justify-center text-white transition-colors duration-200"
@@ -320,6 +326,32 @@ export default function Contact({ success, errors, cmsSettings = {} }) {
                                                 >
                                                     <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                                                         <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                                                    </svg>
+                                                </a>
+                                            )}
+                                            {getGlobal('social', 'instagram_url') && (
+                                                <a 
+                                                    href={getGlobal('social', 'instagram_url')} 
+                                                    target="_blank" 
+                                                    rel="noopener noreferrer"
+                                                    className="w-10 h-10 bg-gradient-to-br from-purple-600 to-pink-500 hover:from-purple-700 hover:to-pink-600 rounded-full flex items-center justify-center text-white transition-colors duration-200"
+                                                    aria-label="Instagram Profile"
+                                                >
+                                                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                                                        <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                                                    </svg>
+                                                </a>
+                                            )}
+                                            {getGlobal('social', 'twitter_url') && (
+                                                <a 
+                                                    href={getGlobal('social', 'twitter_url')} 
+                                                    target="_blank" 
+                                                    rel="noopener noreferrer"
+                                                    className="w-10 h-10 bg-gray-900 hover:bg-gray-800 rounded-full flex items-center justify-center text-white transition-colors duration-200"
+                                                    aria-label="Twitter/X Profile"
+                                                >
+                                                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                                                        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
                                                     </svg>
                                                 </a>
                                             )}
@@ -345,41 +377,52 @@ export default function Contact({ success, errors, cmsSettings = {} }) {
                     </div>
                     
                     <div className="space-y-8">
-                        <div className="bg-white p-8 rounded-2xl shadow-lg">
-                            <h3 className="text-xl font-semibold mb-4 text-gray-900">
-                                {getCmsValue('faq', 'faq1_question', 'Can I commission a custom piece?')}
-                            </h3>
-                            <p className="text-gray-600 leading-relaxed">
-                                {getCmsValue('faq', 'faq1_answer', 'Yes! Robin accepts custom commissions. Please contact us with your vision, timeline, and budget, and we\'ll discuss how to bring your idea to life.')}
-                            </p>
-                        </div>
-                        
-                        <div className="bg-white p-8 rounded-2xl shadow-lg">
-                            <h3 className="text-xl font-semibold mb-4 text-gray-900">
-                                {getCmsValue('faq', 'faq2_question', 'Do you ship internationally?')}
-                            </h3>
-                            <p className="text-gray-600 leading-relaxed">
-                                {getCmsValue('faq', 'faq2_answer', 'We ship worldwide! All artwork is carefully packaged and insured. Shipping costs and delivery times vary by location.')}
-                            </p>
-                        </div>
-                        
-                        <div className="bg-white p-8 rounded-2xl shadow-lg">
-                            <h3 className="text-xl font-semibold mb-4 text-gray-900">
-                                {getCmsValue('faq', 'faq3_question', 'Can I visit the studio?')}
-                            </h3>
-                            <p className="text-gray-600 leading-relaxed">
-                                {getCmsValue('faq', 'faq3_answer', 'Studio visits are available by appointment only. Robin also runs a charming B&B in the Cairngorms National Park, so you can combine your art appreciation with a beautiful Scottish Highland getaway.')}
-                            </p>
-                        </div>
-                        
-                        <div className="bg-white p-8 rounded-2xl shadow-lg">
-                            <h3 className="text-xl font-semibold mb-4 text-gray-900">
-                                {getCmsValue('faq', 'faq4_question', 'What payment methods do you accept?')}
-                            </h3>
-                            <p className="text-gray-600 leading-relaxed">
-                                {getCmsValue('faq', 'faq4_answer', 'We accept all major credit cards, PayPal, and bank transfers. For high-value pieces, we can arrange payment plans.')}
-                            </p>
-                        </div>
+                        {/* Dynamically render FAQs from CMS */}
+                        {(() => {
+                            const faqSection = cmsSettings?.faq || {};
+                            const faqNumbers = [];
+                            
+                            // Find all FAQ numbers from keys like faq1_question, faq2_question, etc.
+                            Object.keys(faqSection).forEach(key => {
+                                const match = key.match(/^faq(\d+)_question$/);
+                                if (match) {
+                                    faqNumbers.push(parseInt(match[1]));
+                                }
+                            });
+                            
+                            // Sort by number (ascending order for display)
+                            faqNumbers.sort((a, b) => a - b);
+                            
+                            // Filter out FAQs with empty questions
+                            const validFaqs = faqNumbers.filter(num => {
+                                const question = faqSection[`faq${num}_question`];
+                                return question && question.trim() !== '';
+                            });
+                            
+                            if (validFaqs.length === 0) {
+                                return (
+                                    <div className="text-center py-8 text-gray-500">
+                                        No FAQs available at the moment.
+                                    </div>
+                                );
+                            }
+                            
+                            return validFaqs.map(num => {
+                                const question = faqSection[`faq${num}_question`];
+                                const answer = faqSection[`faq${num}_answer`] || '';
+                                
+                                return (
+                                    <div key={num} className="bg-white p-8 rounded-2xl shadow-lg">
+                                        <h3 className="text-xl font-semibold mb-4 text-gray-900">
+                                            {question}
+                                        </h3>
+                                        <p className="text-gray-600 leading-relaxed">
+                                            {answer}
+                                        </p>
+                                    </div>
+                                );
+                            });
+                        })()}
                     </div>
                 </div>
             </section>

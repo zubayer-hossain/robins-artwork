@@ -6,10 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Models\CmsSetting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
-use Intervention\Image\Facades\Image;
 
 class CmsController extends Controller
 {
@@ -28,7 +28,7 @@ class CmsController extends Controller
      */
     public function page(string $page, Request $request): Response
     {
-        $section = $request->query('section'); // Get section from query parameter
+        $section = $request->query('section');
         
         $settings = CmsSetting::where('page', $page)
             ->where('is_active', true)
@@ -37,10 +37,9 @@ class CmsController extends Controller
             ->get()
             ->groupBy('section');
 
-        // Define section order based on page to match frontend
         $sectionOrders = [
             'home' => ['hero', 'stats', 'featured', 'about', 'contact_cta'],
-            'gallery' => ['header', 'controls', 'empty_state', 'cta', 'features', 'footer_info'],
+            'gallery' => ['header', 'controls', 'empty_state', 'cta'],
             'about' => ['hero', 'story', 'philosophy', 'process', 'cta'],
             'contact' => ['hero', 'form', 'info', 'faq', 'cta']
         ];
@@ -80,10 +79,80 @@ class CmsController extends Controller
             }
         }
 
-        // Clear cache for this page
         CmsSetting::clearCache($page);
 
         return redirect()->back()->with('success', ucfirst($page) . ' page settings updated successfully!');
+    }
+
+    /**
+     * Add a new FAQ item
+     */
+    public function addFaq(Request $request, string $page, string $section)
+    {
+        // Find the highest existing FAQ number
+        $existingFaqs = CmsSetting::where('page', $page)
+            ->where('section', $section)
+            ->where('key', 'like', 'faq%_question')
+            ->get();
+
+        $maxNum = 0;
+        foreach ($existingFaqs as $faq) {
+            if (preg_match('/faq(\d+)_question/', $faq->key, $matches)) {
+                $maxNum = max($maxNum, (int) $matches[1]);
+            }
+        }
+
+        $newNum = $maxNum + 1;
+        $maxSortOrder = CmsSetting::where('page', $page)
+            ->where('section', $section)
+            ->max('sort_order') ?? 0;
+
+        // Create the question field
+        CmsSetting::create([
+            'page' => $page,
+            'section' => $section,
+            'key' => "faq{$newNum}_question",
+            'value' => '',
+            'type' => 'text',
+            'description' => "FAQ {$newNum} question",
+            'sort_order' => $maxSortOrder + 1,
+            'is_active' => true
+        ]);
+
+        // Create the answer field
+        CmsSetting::create([
+            'page' => $page,
+            'section' => $section,
+            'key' => "faq{$newNum}_answer",
+            'value' => '',
+            'type' => 'textarea',
+            'description' => "FAQ {$newNum} answer",
+            'sort_order' => $maxSortOrder + 2,
+            'is_active' => true
+        ]);
+
+        CmsSetting::clearCache($page);
+
+        return redirect()->back()->with('success', "FAQ {$newNum} added successfully!");
+    }
+
+    /**
+     * Delete a FAQ item
+     */
+    public function deleteFaq(Request $request, string $page, string $section, int $faqNum)
+    {
+        // Delete both question and answer
+        CmsSetting::where('page', $page)
+            ->where('section', $section)
+            ->where(function ($query) use ($faqNum) {
+                $query->where('key', "faq{$faqNum}_question")
+                      ->orWhere('key', "faq{$faqNum}_answer");
+            })
+            ->delete();
+
+        CmsSetting::clearCache($page);
+
+        return redirect()->back()->with('success', "FAQ {$faqNum} deleted successfully!");
     }
 
     /**
@@ -91,7 +160,7 @@ class CmsController extends Controller
      */
     public function global(Request $request): Response
     {
-        $section = $request->query('section'); // Get section from query parameter
+        $section = $request->query('section');
         
         $settings = CmsSetting::where('page', 'global')
             ->where('is_active', true)
@@ -100,7 +169,6 @@ class CmsController extends Controller
             ->get()
             ->groupBy('section');
 
-        // Define section order for global settings
         $sectionOrders = ['site', 'contact', 'social', 'images'];
         $orderedSections = $sectionOrders;
         $defaultSection = $section ?? ($orderedSections[0] ?? null);
@@ -136,7 +204,6 @@ class CmsController extends Controller
             }
         }
 
-        // Clear cache for global settings
         CmsSetting::clearCache('global');
 
         return redirect()->back()->with('success', 'Global settings updated successfully!');
@@ -164,50 +231,95 @@ class CmsController extends Controller
     }
 
     /**
+     * List images as JSON (for image picker component)
+     */
+    public function listImages()
+    {
+        $images = CmsSetting::getUploadedImages();
+        
+        // Ensure all images have full URLs
+        $images = array_map(function($image) {
+            // If URL is relative, convert to full URL
+            if (isset($image['url']) && !str_starts_with($image['url'], 'http')) {
+                $image['url'] = url($image['url']);
+            }
+            // Also store relative URL for flexibility
+            if (isset($image['path']) && !isset($image['relative_url'])) {
+                $image['relative_url'] = Storage::url($image['path']);
+            }
+            return $image;
+        }, $images);
+        
+        return response()->json([
+            'success' => true,
+            'images' => $images
+        ]);
+    }
+
+    /**
      * Upload new image
      */
     public function uploadImage(Request $request)
     {
         $request->validate([
-            'image' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:10240', // 10MB max
+            'image' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:10240',
             'alt_text' => 'nullable|string|max:255',
             'category' => 'nullable|string|max:100'
         ]);
 
-        $file = $request->file('image');
-        $originalName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
-        $extension = $file->getClientOriginalExtension();
-        
-        // Generate unique filename
-        $filename = Str::slug($originalName) . '-' . time() . '.' . $extension;
-        
-        // Store original image
-        $path = $file->storeAs('cms/images', $filename, 'public');
-        
-        // Create thumbnails
-        $this->createThumbnails($file, $filename);
-        
-        // Store image record
-        $imageData = [
-            'filename' => $filename,
-            'original_name' => $file->getClientOriginalName(),
-            'path' => $path,
-            'url' => Storage::url($path),
-            'alt_text' => $request->alt_text ?? $originalName,
-            'category' => $request->category ?? 'general',
-            'file_size' => $file->getSize(),
-            'dimensions' => $this->getImageDimensions($file),
-            'uploaded_at' => now()->toISOString()
-        ];
-        
-        // Add to collection using model method
-        CmsSetting::addImage($imageData);
-        
-        return response()->json([
-            'success' => true,
-            'message' => 'Image uploaded successfully!',
-            'image' => $imageData
-        ]);
+        try {
+            $file = $request->file('image');
+            $originalName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
+            $extension = strtolower($file->getClientOriginalExtension());
+            
+            // Generate unique filename
+            $filename = Str::slug($originalName) . '-' . time() . '.' . $extension;
+            
+            // Ensure directories exist
+            $this->ensureDirectoriesExist();
+            
+            // Store original image
+            $path = $file->storeAs('cms/images', $filename, 'public');
+            
+            // Get image dimensions
+            $dimensions = $this->getImageDimensions($file->getRealPath());
+            
+            // Create thumbnails using native PHP GD
+            $this->createThumbnails($file->getRealPath(), $filename, $extension);
+            
+            // Store image record - use full URL for better compatibility
+            $relativeUrl = Storage::url($path);
+            $fullUrl = url($relativeUrl);
+            
+            $imageData = [
+                'filename' => $filename,
+                'original_name' => $file->getClientOriginalName(),
+                'path' => $path,
+                'url' => $fullUrl,
+                'relative_url' => $relativeUrl,
+                'alt_text' => $request->alt_text ?? $originalName,
+                'category' => $request->category ?? 'general',
+                'file_size' => $file->getSize(),
+                'dimensions' => $dimensions,
+                'uploaded_at' => now()->toISOString()
+            ];
+            
+            CmsSetting::addImage($imageData);
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Image uploaded successfully!',
+                'image' => $imageData
+            ]);
+            
+        } catch (\Exception $e) {
+            Log::error('Image upload error: ' . $e->getMessage());
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to upload image: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     /**
@@ -224,18 +336,30 @@ class CmsController extends Controller
             ], 404);
         }
         
-        // Delete files from storage
-        Storage::disk('public')->delete($image['path']);
-        Storage::disk('public')->delete('cms/images/thumbs/thumb_' . $image['filename']);
-        Storage::disk('public')->delete('cms/images/thumbs/medium_' . $image['filename']);
-        
-        // Remove from collection using model method
-        $success = CmsSetting::removeImage($filename);
-        
-        return response()->json([
-            'success' => $success,
-            'message' => $success ? 'Image deleted successfully!' : 'Failed to delete image'
-        ]);
+        try {
+            // Delete files from storage
+            if (isset($image['path'])) {
+                Storage::disk('public')->delete($image['path']);
+            }
+            Storage::disk('public')->delete('cms/images/thumbs/thumb_' . $filename);
+            Storage::disk('public')->delete('cms/images/thumbs/medium_' . $filename);
+            
+            // Remove from collection
+            $success = CmsSetting::removeImage($filename);
+            
+            return response()->json([
+                'success' => $success,
+                'message' => $success ? 'Image deleted successfully!' : 'Failed to delete image'
+            ]);
+            
+        } catch (\Exception $e) {
+            Log::error('Image delete error: ' . $e->getMessage());
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to delete image'
+            ], 500);
+        }
     }
 
     /**
@@ -285,74 +409,222 @@ class CmsController extends Controller
             'category' => 'nullable|string|max:100'
         ]);
         
-        switch ($request->action) {
-            case 'delete_multiple':
-                foreach ($request->image_filenames as $filename) {
-                    $image = CmsSetting::getImageByFilename($filename);
-                    if ($image) {
-                        // Delete files
-                        Storage::disk('public')->delete($image['path']);
-                        Storage::disk('public')->delete('cms/images/thumbs/thumb_' . $image['filename']);
-                        Storage::disk('public')->delete('cms/images/thumbs/medium_' . $image['filename']);
-                        // Remove from collection
-                        CmsSetting::removeImage($filename);
+        try {
+            switch ($request->action) {
+                case 'delete_multiple':
+                    foreach ($request->image_filenames as $filename) {
+                        $image = CmsSetting::getImageByFilename($filename);
+                        if ($image) {
+                            // Delete files
+                            if (isset($image['path'])) {
+                                Storage::disk('public')->delete($image['path']);
+                            }
+                            Storage::disk('public')->delete('cms/images/thumbs/thumb_' . $filename);
+                            Storage::disk('public')->delete('cms/images/thumbs/medium_' . $filename);
+                            // Remove from collection
+                            CmsSetting::removeImage($filename);
+                        }
                     }
+                    break;
+                    
+                case 'update_category':
+                    foreach ($request->image_filenames as $filename) {
+                        CmsSetting::updateImage($filename, ['category' => $request->category]);
+                    }
+                    break;
+            }
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Images organized successfully!'
+            ]);
+            
+        } catch (\Exception $e) {
+            Log::error('Image organize error: ' . $e->getMessage());
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to organize images'
+            ], 500);
+        }
+    }
+
+    /**
+     * Ensure required directories exist
+     */
+    private function ensureDirectoriesExist(): void
+    {
+        $directories = [
+            'cms/images',
+            'cms/images/thumbs'
+        ];
+        
+        foreach ($directories as $dir) {
+            if (!Storage::disk('public')->exists($dir)) {
+                Storage::disk('public')->makeDirectory($dir);
+            }
+        }
+    }
+
+    /**
+     * Create thumbnails using native PHP GD
+     */
+    private function createThumbnails(string $sourcePath, string $filename, string $extension): void
+    {
+        try {
+            // Load the source image based on extension
+            $sourceImage = $this->loadImage($sourcePath, $extension);
+            
+            if (!$sourceImage) {
+                Log::warning('Failed to load source image for thumbnails: ' . $filename);
+                return;
+            }
+            
+            $originalWidth = imagesx($sourceImage);
+            $originalHeight = imagesy($sourceImage);
+            
+            // Create small thumbnail (150x150)
+            $this->createResizedImage(
+                $sourceImage,
+                $originalWidth,
+                $originalHeight,
+                150,
+                150,
+                storage_path('app/public/cms/images/thumbs/thumb_' . $filename),
+                $extension
+            );
+            
+            // Create medium thumbnail (400x400)
+            $this->createResizedImage(
+                $sourceImage,
+                $originalWidth,
+                $originalHeight,
+                400,
+                400,
+                storage_path('app/public/cms/images/thumbs/medium_' . $filename),
+                $extension
+            );
+            
+            // Free memory
+            imagedestroy($sourceImage);
+            
+        } catch (\Exception $e) {
+            Log::warning('Failed to create thumbnails for ' . $filename . ': ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Load image from file based on extension
+     */
+    private function loadImage(string $path, string $extension)
+    {
+        switch (strtolower($extension)) {
+            case 'jpg':
+            case 'jpeg':
+                return @imagecreatefromjpeg($path);
+            case 'png':
+                return @imagecreatefrompng($path);
+            case 'gif':
+                return @imagecreatefromgif($path);
+            case 'webp':
+                if (function_exists('imagecreatefromwebp')) {
+                    return @imagecreatefromwebp($path);
                 }
+                return null;
+            default:
+                return null;
+        }
+    }
+
+    /**
+     * Create a resized/cropped image (fit to dimensions)
+     */
+    private function createResizedImage($sourceImage, int $originalWidth, int $originalHeight, int $targetWidth, int $targetHeight, string $outputPath, string $extension): void
+    {
+        // Calculate crop dimensions to maintain aspect ratio and fill target
+        $sourceRatio = $originalWidth / $originalHeight;
+        $targetRatio = $targetWidth / $targetHeight;
+        
+        if ($sourceRatio > $targetRatio) {
+            // Source is wider - crop width
+            $cropHeight = $originalHeight;
+            $cropWidth = (int)($originalHeight * $targetRatio);
+            $cropX = (int)(($originalWidth - $cropWidth) / 2);
+            $cropY = 0;
+        } else {
+            // Source is taller - crop height
+            $cropWidth = $originalWidth;
+            $cropHeight = (int)($originalWidth / $targetRatio);
+            $cropX = 0;
+            $cropY = (int)(($originalHeight - $cropHeight) / 2);
+        }
+        
+        // Create the thumbnail image
+        $thumb = imagecreatetruecolor($targetWidth, $targetHeight);
+        
+        // Preserve transparency for PNG and GIF
+        if (in_array(strtolower($extension), ['png', 'gif'])) {
+            imagealphablending($thumb, false);
+            imagesavealpha($thumb, true);
+            $transparent = imagecolorallocatealpha($thumb, 0, 0, 0, 127);
+            imagefilledrectangle($thumb, 0, 0, $targetWidth, $targetHeight, $transparent);
+        }
+        
+        // Copy and resize
+        imagecopyresampled(
+            $thumb,
+            $sourceImage,
+            0, 0,
+            $cropX, $cropY,
+            $targetWidth, $targetHeight,
+            $cropWidth, $cropHeight
+        );
+        
+        // Ensure output directory exists
+        $outputDir = dirname($outputPath);
+        if (!is_dir($outputDir)) {
+            mkdir($outputDir, 0755, true);
+        }
+        
+        // Save based on extension
+        switch (strtolower($extension)) {
+            case 'jpg':
+            case 'jpeg':
+                imagejpeg($thumb, $outputPath, 85);
                 break;
-                
-            case 'update_category':
-                foreach ($request->image_filenames as $filename) {
-                    CmsSetting::updateImage($filename, ['category' => $request->category]);
+            case 'png':
+                imagepng($thumb, $outputPath, 8);
+                break;
+            case 'gif':
+                imagegif($thumb, $outputPath);
+                break;
+            case 'webp':
+                if (function_exists('imagewebp')) {
+                    imagewebp($thumb, $outputPath, 85);
                 }
                 break;
         }
         
-        return response()->json([
-            'success' => true,
-            'message' => 'Images organized successfully!'
-        ]);
+        imagedestroy($thumb);
     }
 
-
-
     /**
-     * Create thumbnails for uploaded image
+     * Get image dimensions using native PHP
      */
-    private function createThumbnails($file, string $filename): void
+    private function getImageDimensions(string $path): array
     {
         try {
-            // Create thumbnails directory if it doesn't exist
-            if (!Storage::disk('public')->exists('cms/images/thumbs')) {
-                Storage::disk('public')->makeDirectory('cms/images/thumbs');
+            $imageInfo = @getimagesize($path);
+            
+            if ($imageInfo) {
+                return [
+                    'width' => $imageInfo[0],
+                    'height' => $imageInfo[1]
+                ];
             }
             
-            $image = Image::make($file);
+            return ['width' => 0, 'height' => 0];
             
-            // Create small thumbnail (150x150)
-            $thumb = clone $image;
-            $thumb->fit(150, 150)->save(storage_path('app/public/cms/images/thumbs/thumb_' . $filename));
-            
-            // Create medium thumbnail (400x400)
-            $medium = clone $image;
-            $medium->fit(400, 400)->save(storage_path('app/public/cms/images/thumbs/medium_' . $filename));
-            
-        } catch (\Exception $e) {
-            // Log error but don't fail the upload
-            \Log::warning('Failed to create thumbnails for ' . $filename . ': ' . $e->getMessage());
-        }
-    }
-
-    /**
-     * Get image dimensions
-     */
-    private function getImageDimensions($file): array
-    {
-        try {
-            $image = Image::make($file);
-            return [
-                'width' => $image->width(),
-                'height' => $image->height()
-            ];
         } catch (\Exception $e) {
             return ['width' => 0, 'height' => 0];
         }
