@@ -11,6 +11,7 @@ import { Checkbox } from '@/Components/ui/checkbox';
 import { Badge } from '@/Components/ui/badge';
 import { ArrowLeft, Save, Palette, X, Image as ImageIcon, AlertCircle } from 'lucide-react';
 import ImageUploader from '@/Components/ImageUploader';
+import RichTextEditor from '@/Components/RichTextEditor';
 
 export default function AdminArtworkCreate({ auth, mediums, statuses, flash }) {
     const [newTagInput, setNewTagInput] = useState('');
@@ -75,10 +76,26 @@ export default function AdminArtworkCreate({ auth, mediums, statuses, flash }) {
     };
 
     const addTag = () => {
-        if (newTagInput.trim() && !data.tags.includes(newTagInput.trim())) {
-            setData('tags', [...data.tags, newTagInput.trim()]);
-            setNewTagInput('');
+        const input = newTagInput.trim();
+        if (!input) return;
+
+        // Check if input contains commas - split into multiple tags
+        if (input.includes(',')) {
+            const newTags = input
+                .split(',')
+                .map(tag => tag.trim())
+                .filter(tag => tag && !data.tags.includes(tag));
+            
+            if (newTags.length > 0) {
+                setData('tags', [...data.tags, ...newTags]);
+            }
+        } else {
+            // Single tag
+            if (!data.tags.includes(input)) {
+                setData('tags', [...data.tags, input]);
+            }
         }
+        setNewTagInput('');
     };
 
     const removeTag = (tagToRemove) => {
@@ -89,6 +106,22 @@ export default function AdminArtworkCreate({ auth, mediums, statuses, flash }) {
         if (e.key === 'Enter') {
             e.preventDefault();
             addTag();
+        }
+    };
+
+    const handleTagPaste = (e) => {
+        const pastedText = e.clipboardData.getData('text');
+        if (pastedText.includes(',')) {
+            e.preventDefault();
+            const newTags = pastedText
+                .split(',')
+                .map(tag => tag.trim())
+                .filter(tag => tag && !data.tags.includes(tag));
+            
+            if (newTags.length > 0) {
+                setData('tags', [...data.tags, ...newTags]);
+            }
+            setNewTagInput('');
         }
     };
 
@@ -216,12 +249,11 @@ export default function AdminArtworkCreate({ auth, mediums, statuses, flash }) {
                                 <CardContent className="p-6 space-y-4">
                                     <div>
                                         <Label htmlFor="story">Story/Description</Label>
-                                        <Textarea
-                                            id="story"
-                                            value={data.story.content || ''}
-                                            onChange={(e) => setData('story', { ...data.story, content: e.target.value })}
+                                        <p className="text-xs text-gray-500 mb-2">Use the rich text editor to format your artwork's story</p>
+                                        <RichTextEditor
+                                            content={data.story.content || ''}
+                                            onChange={(content) => setData('story', { ...data.story, content })}
                                             placeholder="Tell the story behind this artwork..."
-                                            rows={4}
                                         />
                                         {errors.story && <p className="text-sm text-red-600 mt-1">{errors.story}</p>}
                                     </div>
@@ -242,12 +274,14 @@ export default function AdminArtworkCreate({ auth, mediums, statuses, flash }) {
                                                 </Badge>
                                             ))}
                                         </div>
+                                        <p className="text-xs text-gray-500 mb-2">Paste comma-separated tags or add one at a time</p>
                                         <div className="flex gap-2">
                                             <Input
                                                 value={newTagInput}
                                                 onChange={(e) => setNewTagInput(e.target.value)}
                                                 onKeyPress={handleKeyPress}
-                                                placeholder="Add a tag..."
+                                                onPaste={handleTagPaste}
+                                                placeholder="wildlife, nature, landscape..."
                                                 className="flex-1"
                                             />
                                             <Button type="button" onClick={addTag} variant="outline">

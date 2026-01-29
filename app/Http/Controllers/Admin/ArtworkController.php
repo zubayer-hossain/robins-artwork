@@ -112,6 +112,7 @@ class ArtworkController extends Controller
                 'created_at' => $artwork->created_at,
                 'updated_at' => $artwork->updated_at,
                 'images' => $artwork->images->map(function ($image) {
+                    if (!file_exists($image->getPath())) return null;
                     return [
                         'id' => $image->id,
                         'is_primary' => $image->custom_properties['is_primary'] ?? false,
@@ -119,7 +120,7 @@ class ArtworkController extends Controller
                         'medium' => $image->getUrl('medium'),
                         'xl' => $image->getUrl('xl'),
                     ];
-                }),
+                })->filter()->values(),
                 'editions' => $artwork->editions->map(function ($edition) {
                     return [
                         'id' => $edition->id,
@@ -128,6 +129,7 @@ class ArtworkController extends Controller
                         'price' => $edition->price,
                         'stock' => $edition->stock,
                         'is_limited' => $edition->is_limited,
+                        'created_at' => $edition->created_at->format('M j, Y'),
                     ];
                 }),
             ],
@@ -153,6 +155,7 @@ class ArtworkController extends Controller
                 'is_original' => $artwork->is_original,
                 'is_print_available' => $artwork->is_print_available,
                 'images' => $artwork->images->map(function ($image) {
+                    if (!file_exists($image->getPath())) return null;
                     return [
                         'id' => $image->id,
                         'is_primary' => $image->custom_properties['is_primary'] ?? false,
@@ -160,7 +163,7 @@ class ArtworkController extends Controller
                         'medium' => $image->getUrl('medium'),
                         'xl' => $image->getUrl('xl'),
                     ];
-                }),
+                })->filter()->values(),
                 'editions' => $artwork->editions->map(function ($edition) {
                     return [
                         'id' => $edition->id,
@@ -169,6 +172,7 @@ class ArtworkController extends Controller
                         'price' => $edition->price,
                         'stock' => $edition->stock,
                         'is_limited' => $edition->is_limited,
+                        'created_at' => $edition->created_at->format('M j, Y'),
                     ];
                 }),
             ],
@@ -259,14 +263,14 @@ class ArtworkController extends Controller
 
         try {
             $uploadedImages = [];
-            $existingCount = $artwork->getMedia('artworks')->count();
+            $existingCount = $artwork->getMedia('artwork-images')->count();
 
             foreach ($request->file('images') as $index => $file) {
                 $isPrimary = ($existingCount === 0 && $index === 0);
                 
                 $media = $artwork->addMedia($file)
                     ->withCustomProperties(['is_primary' => $isPrimary])
-                    ->toMediaCollection('artworks');
+                    ->toMediaCollection('artwork-images');
                 
                 $uploadedImages[] = [
                     'id' => $media->id,
@@ -307,7 +311,7 @@ class ArtworkController extends Controller
     public function deleteImage(Request $request, Artwork $artwork, $mediaId)
     {
         try {
-            $media = $artwork->getMedia('artworks')->where('id', $mediaId)->first();
+            $media = $artwork->getMedia('artwork-images')->where('id', $mediaId)->first();
 
             if (!$media) {
                 return response()->json([
@@ -321,7 +325,7 @@ class ArtworkController extends Controller
 
             // If the deleted image was primary, set the first remaining image as primary
             if ($wasPrimary) {
-                $firstImage = $artwork->getMedia('artworks')->first();
+                $firstImage = $artwork->getMedia('artwork-images')->first();
                 if ($firstImage) {
                     $firstImage->setCustomProperty('is_primary', true);
                     $firstImage->save();
@@ -359,13 +363,13 @@ class ArtworkController extends Controller
     {
         try {
             // Remove primary from all images
-            foreach ($artwork->getMedia('artworks') as $media) {
+            foreach ($artwork->getMedia('artwork-images') as $media) {
                 $media->setCustomProperty('is_primary', false);
                 $media->save();
             }
 
             // Set the selected image as primary
-            $media = $artwork->getMedia('artworks')->where('id', $mediaId)->first();
+            $media = $artwork->getMedia('artwork-images')->where('id', $mediaId)->first();
             if ($media) {
                 $media->setCustomProperty('is_primary', true);
                 $media->save();
@@ -407,7 +411,7 @@ class ArtworkController extends Controller
 
         try {
             foreach ($request->order as $index => $mediaId) {
-                $media = $artwork->getMedia('artworks')->where('id', $mediaId)->first();
+                $media = $artwork->getMedia('artwork-images')->where('id', $mediaId)->first();
                 if ($media) {
                     $media->order_column = $index;
                     $media->save();

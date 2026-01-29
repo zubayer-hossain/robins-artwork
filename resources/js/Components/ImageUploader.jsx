@@ -1,6 +1,7 @@
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { Button } from '@/Components/ui/button';
 import { Badge } from '@/Components/ui/badge';
+import ConfirmDialog from '@/Components/ConfirmDialog';
 import {
     Image as ImageIcon,
     Upload,
@@ -11,7 +12,10 @@ import {
     GripVertical,
     Plus,
     CheckCircle,
-    AlertCircle
+    AlertCircle,
+    ZoomIn,
+    ChevronLeft,
+    ChevronRight
 } from 'lucide-react';
 
 /**
@@ -35,7 +39,34 @@ export default function ImageUploader({
     const [isDragging, setIsDragging] = useState(false);
     const [draggedIndex, setDraggedIndex] = useState(null);
     const [toast, setToast] = useState(null);
+    const [lightboxOpen, setLightboxOpen] = useState(false);
+    const [lightboxIndex, setLightboxIndex] = useState(0);
+    const [deleteConfirm, setDeleteConfirm] = useState({ open: false, imageId: null });
+    const [isDeleting, setIsDeleting] = useState(false);
     const fileInputRef = useRef(null);
+
+    // Sync local state with props when images prop changes
+    useEffect(() => {
+        setLocalImages(images);
+    }, [images]);
+
+    // Keyboard navigation for lightbox
+    useEffect(() => {
+        if (!lightboxOpen) return;
+        
+        const handleKeyDown = (e) => {
+            if (e.key === 'Escape') {
+                setLightboxOpen(false);
+            } else if (e.key === 'ArrowLeft') {
+                setLightboxIndex((prev) => (prev > 0 ? prev - 1 : localImages.length - 1));
+            } else if (e.key === 'ArrowRight') {
+                setLightboxIndex((prev) => (prev < localImages.length - 1 ? prev + 1 : 0));
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [lightboxOpen, localImages.length]);
 
     // Show toast message
     const showToast = (message, type = 'success') => {
@@ -83,10 +114,17 @@ export default function ImageUploader({
         }
     };
 
-    // Handle delete image
-    const handleDelete = async (imageId) => {
-        if (!artworkId || !confirm('Delete this image?')) return;
+    // Handle delete image - opens confirmation dialog
+    const openDeleteConfirm = (imageId) => {
+        setDeleteConfirm({ open: true, imageId });
+    };
 
+    // Perform actual delete after confirmation
+    const handleDelete = async () => {
+        const imageId = deleteConfirm.imageId;
+        if (!artworkId || !imageId) return;
+
+        setIsDeleting(true);
         try {
             const response = await fetch(route('admin.artworks.images.delete', [artworkId, imageId]), {
                 method: 'DELETE',
@@ -106,11 +144,14 @@ export default function ImageUploader({
                 setLocalImages(newImages);
                 onImagesChange?.(newImages);
                 showToast('Image deleted');
+                setDeleteConfirm({ open: false, imageId: null });
             } else {
                 showToast(result.message || 'Failed to delete image', 'error');
             }
         } catch (error) {
             showToast('Network error deleting image', 'error');
+        } finally {
+            setIsDeleting(false);
         }
     };
 
@@ -174,14 +215,28 @@ export default function ImageUploader({
         }
     };
 
-    // Image reordering
+    // Image reordering - track if we actually moved something
+    const [hasMoved, setHasMoved] = useState(false);
+    const dragImageRef = useRef(null);
+
     const handleImageDragStart = (e, index) => {
+        e.stopPropagation();
         setDraggedIndex(index);
+        setHasMoved(false);
         e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/plain', index.toString());
+        
+        // Create a custom drag image
+        if (e.target) {
+            dragImageRef.current = e.target;
+        }
     };
 
     const handleImageDragOver = (e, index) => {
         e.preventDefault();
+        e.stopPropagation();
+        e.dataTransfer.dropEffect = 'move';
+        
         if (draggedIndex === null || draggedIndex === index) return;
 
         const newImages = [...localImages];
@@ -191,16 +246,29 @@ export default function ImageUploader({
         
         setDraggedIndex(index);
         setLocalImages(newImages);
+        setHasMoved(true);
     };
 
-    const handleImageDragEnd = async () => {
-        if (draggedIndex === null || !artworkId) {
-            setDraggedIndex(null);
-            return;
-        }
+    const handleImageDrop = (e, index) => {
+        e.preventDefault();
+        e.stopPropagation();
+    };
 
+    const handleImageDragEnd = async (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        const shouldSave = hasMoved && artworkId;
+        const currentImages = [...localImages];
+        
         setDraggedIndex(null);
-        onImagesChange?.(localImages);
+        setHasMoved(false);
+        dragImageRef.current = null;
+
+        if (!shouldSave) return;
+
+        onImagesChange?.(currentImages);
+        showToast('Saving order...');
 
         // Save order to backend
         try {
@@ -211,12 +279,14 @@ export default function ImageUploader({
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    order: localImages.map(img => img.id)
+                    order: currentImages.map(img => img.id)
                 }),
             });
 
             const result = await response.json();
-            if (!result.success) {
+            if (result.success) {
+                showToast('Order saved!');
+            } else {
                 showToast('Failed to save order', 'error');
             }
         } catch (error) {
@@ -313,15 +383,16 @@ export default function ImageUploader({
                         {localImages.map((image, index) => (
                             <div
                                 key={image.id}
-                                draggable={!disabled && artworkId}
+                                draggable={!disabled && !!artworkId}
                                 onDragStart={(e) => handleImageDragStart(e, index)}
                                 onDragOver={(e) => handleImageDragOver(e, index)}
+                                onDrop={(e) => handleImageDrop(e, index)}
                                 onDragEnd={handleImageDragEnd}
-                                className={`group relative aspect-square rounded-xl overflow-hidden border-2 transition-all duration-200 ${
+                                className={`group relative aspect-square rounded-xl overflow-hidden border-2 transition-all duration-200 cursor-grab active:cursor-grabbing ${
                                     image.is_primary 
                                         ? 'border-yellow-400 ring-2 ring-yellow-200' 
                                         : 'border-gray-200 hover:border-gray-300'
-                                } ${draggedIndex === index ? 'opacity-50 scale-95' : ''}`}
+                                } ${draggedIndex === index ? 'opacity-50 scale-95 ring-2 ring-purple-400' : ''} ${draggedIndex !== null && draggedIndex !== index ? 'hover:ring-2 hover:ring-purple-300' : ''}`}
                             >
                                 <img
                                     src={image.thumb || image.medium || image.xl}
@@ -347,7 +418,23 @@ export default function ImageUploader({
                                 </div>
 
                                 {/* Actions Overlay */}
-                                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all duration-200 flex items-end justify-center pb-3 opacity-0 group-hover:opacity-100">
+                                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all duration-200 flex flex-col items-center justify-center gap-2 opacity-0 group-hover:opacity-100">
+                                    {/* View Button */}
+                                    <Button
+                                        type="button"
+                                        size="sm"
+                                        variant="secondary"
+                                        className="h-8 px-3 bg-white/90 hover:bg-white text-gray-700"
+                                        onClick={() => {
+                                            setLightboxIndex(index);
+                                            setLightboxOpen(true);
+                                        }}
+                                    >
+                                        <ZoomIn className="w-3.5 h-3.5 mr-1" />
+                                        View
+                                    </Button>
+                                    
+                                    {/* Action Buttons */}
                                     <div className="flex gap-1">
                                         {!image.is_primary && (
                                             <Button
@@ -357,6 +444,7 @@ export default function ImageUploader({
                                                 className="h-8 px-2 bg-white/90 hover:bg-white text-gray-700"
                                                 onClick={() => handleSetPrimary(image.id)}
                                                 disabled={disabled}
+                                                title="Set as primary"
                                             >
                                                 <Star className="w-3.5 h-3.5" />
                                             </Button>
@@ -366,8 +454,9 @@ export default function ImageUploader({
                                             size="sm"
                                             variant="destructive"
                                             className="h-8 px-2"
-                                            onClick={() => handleDelete(image.id)}
+                                            onClick={() => openDeleteConfirm(image.id)}
                                             disabled={disabled}
+                                            title="Delete image"
                                         >
                                             <Trash2 className="w-3.5 h-3.5" />
                                         </Button>
@@ -414,6 +503,127 @@ export default function ImageUploader({
                     <span className="font-medium">{toast.message}</span>
                 </div>
             )}
+
+            {/* Lightbox - Rendered via Portal to avoid form context */}
+            {lightboxOpen && localImages.length > 0 && (
+                <div 
+                    className="fixed inset-0 z-[9999] bg-black/90 flex items-center justify-center"
+                    onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setLightboxOpen(false);
+                    }}
+                >
+                    {/* Close Button */}
+                    <button
+                        type="button"
+                        onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            setLightboxOpen(false);
+                        }}
+                        className="absolute top-4 right-4 p-2 bg-white/10 hover:bg-white/20 rounded-full transition-colors z-10"
+                    >
+                        <X className="w-6 h-6 text-white" />
+                    </button>
+
+                    {/* Navigation */}
+                    {localImages.length > 1 && (
+                        <>
+                            <button
+                                type="button"
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    setLightboxIndex((prev) => (prev > 0 ? prev - 1 : localImages.length - 1));
+                                }}
+                                className="absolute left-4 p-3 bg-white/10 hover:bg-white/20 rounded-full transition-colors z-10"
+                            >
+                                <ChevronLeft className="w-8 h-8 text-white" />
+                            </button>
+                            <button
+                                type="button"
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    setLightboxIndex((prev) => (prev < localImages.length - 1 ? prev + 1 : 0));
+                                }}
+                                className="absolute right-4 p-3 bg-white/10 hover:bg-white/20 rounded-full transition-colors z-10"
+                            >
+                                <ChevronRight className="w-8 h-8 text-white" />
+                            </button>
+                        </>
+                    )}
+
+                    {/* Image */}
+                    <div 
+                        className="max-w-[90vw] max-h-[90vh] flex items-center justify-center"
+                        onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                        }}
+                    >
+                        <img
+                            src={localImages[lightboxIndex]?.xl || localImages[lightboxIndex]?.medium || localImages[lightboxIndex]?.thumb}
+                            alt={`Image ${lightboxIndex + 1}`}
+                            className="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl"
+                        />
+                    </div>
+
+                    {/* Image Counter & Info */}
+                    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-4">
+                        <div className="bg-black/50 px-4 py-2 rounded-full text-white text-sm font-medium">
+                            {lightboxIndex + 1} / {localImages.length}
+                        </div>
+                        {localImages[lightboxIndex]?.is_primary && (
+                            <Badge className="bg-yellow-400 text-yellow-900">
+                                <Star className="w-3 h-3 mr-1 fill-current" />
+                                Primary
+                            </Badge>
+                        )}
+                    </div>
+
+                    {/* Thumbnail Strip */}
+                    {localImages.length > 1 && (
+                        <div className="absolute bottom-16 left-1/2 -translate-x-1/2 flex gap-2 p-2 bg-black/50 rounded-xl max-w-[80vw] overflow-x-auto">
+                            {localImages.map((image, index) => (
+                                <button
+                                    type="button"
+                                    key={image.id}
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        setLightboxIndex(index);
+                                    }}
+                                    className={`w-16 h-16 rounded-lg overflow-hidden flex-shrink-0 border-2 transition-all ${
+                                        index === lightboxIndex 
+                                            ? 'border-white scale-110' 
+                                            : 'border-transparent opacity-60 hover:opacity-100'
+                                    }`}
+                                >
+                                    <img
+                                        src={image.thumb}
+                                        alt={`Thumbnail ${index + 1}`}
+                                        className="w-full h-full object-cover"
+                                    />
+                                </button>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            )}
+
+            {/* Delete Confirmation Dialog */}
+            <ConfirmDialog
+                isOpen={deleteConfirm.open}
+                onClose={() => setDeleteConfirm({ open: false, imageId: null })}
+                onConfirm={handleDelete}
+                title="Delete Image"
+                message="Are you sure you want to delete this image? This action cannot be undone."
+                confirmText="Delete Image"
+                isLoading={isDeleting}
+                variant="danger"
+            />
         </div>
     );
 }

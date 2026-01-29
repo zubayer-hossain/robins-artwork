@@ -3,7 +3,7 @@ import { Link, usePage, router } from '@inertiajs/react';
 import axios from 'axios';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Settings, Menu, X, Home, LayoutDashboard, Palette, ShoppingBag, Layers, Settings as SettingsIcon, User, LogOut, BarChart3 } from 'lucide-react';
+import { Settings, Menu, X, Home, LayoutDashboard, Palette, ShoppingBag, Layers, Settings as SettingsIcon, User, LogOut, BarChart3, MessageSquare } from 'lucide-react';
 
 export default function AdminLayout({ user, header, headerIcon, headerDescription, headerActions, children }) {
     const [showingNavigationDropdown, setShowingNavigationDropdown] = useState(false);
@@ -53,14 +53,17 @@ export default function AdminLayout({ user, header, headerIcon, headerDescriptio
                                 <NavLink href={route('admin.artworks.index')} active={route().current('admin.artworks.*')}>
                                     Artworks
                                 </NavLink>
-                                <NavLink href={route('admin.orders.index')} active={route().current('admin.orders.*')}>
-                                    Orders
-                                </NavLink>
                                 <NavLink href={route('admin.editions.index')} active={route().current('admin.editions.*')}>
                                     Editions
                                 </NavLink>
+                                <NavLink href={route('admin.orders.index')} active={route().current('admin.orders.*')}>
+                                    Orders
+                                </NavLink>
                                 <NavLink href={route('admin.cms.index')} active={route().current('admin.cms.*')}>
                                     CMS
+                                </NavLink>
+                                <NavLink href={route('admin.contact-messages.index')} active={route().current('admin.contact-messages.*')}>
+                                    Messages
                                 </NavLink>
                                 <NavLink href={route('admin.analytics.index')} active={route().current('admin.analytics.*')}>
                                     Analytics
@@ -136,14 +139,17 @@ export default function AdminLayout({ user, header, headerIcon, headerDescriptio
                                 <MobileNavLink href={route('admin.artworks.index')} active={route().current('admin.artworks.*')} icon={<Palette className="w-4 h-4" />}>
                                     Artworks
                                 </MobileNavLink>
-                                <MobileNavLink href={route('admin.orders.index')} active={route().current('admin.orders.*')} icon={<ShoppingBag className="w-4 h-4" />}>
-                                    Orders
-                                </MobileNavLink>
                                 <MobileNavLink href={route('admin.editions.index')} active={route().current('admin.editions.*')} icon={<Layers className="w-4 h-4" />}>
                                     Editions
                                 </MobileNavLink>
+                                <MobileNavLink href={route('admin.orders.index')} active={route().current('admin.orders.*')} icon={<ShoppingBag className="w-4 h-4" />}>
+                                    Orders
+                                </MobileNavLink>
                                 <MobileNavLink href={route('admin.cms.index')} active={route().current('admin.cms.*')} icon={<SettingsIcon className="w-4 h-4" />}>
                                     CMS
+                                </MobileNavLink>
+                                <MobileNavLink href={route('admin.contact-messages.index')} active={route().current('admin.contact-messages.*')} icon={<MessageSquare className="w-4 h-4" />}>
+                                    Messages
                                 </MobileNavLink>
                                 <MobileNavLink href={route('admin.analytics.index')} active={route().current('admin.analytics.*')} icon={<BarChart3 className="w-4 h-4" />}>
                                     Analytics

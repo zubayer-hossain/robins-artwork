@@ -15,10 +15,20 @@ class EditionController extends Controller
 {
     public function index(): Response
     {
-        $editions = Edition::with(['artwork'])
+        $editions = Edition::with(['artwork.media'])
             ->orderBy('created_at', 'desc')
             ->paginate(20)
             ->through(function ($edition) {
+                $artworkImage = null;
+                if ($edition->artwork && $edition->artwork->primaryImage) {
+                    $media = $edition->artwork->primaryImage;
+                    if (file_exists($media->getPath())) {
+                        $artworkImage = $media->hasGeneratedConversion('thumb') 
+                            ? $media->getUrl('thumb') 
+                            : $media->getUrl();
+                    }
+                }
+                
                 return [
                     'id' => $edition->id,
                     'sku' => $edition->sku,
@@ -30,6 +40,7 @@ class EditionController extends Controller
                         'id' => $edition->artwork->id,
                         'title' => $edition->artwork->title,
                         'slug' => $edition->artwork->slug,
+                        'image' => $artworkImage,
                     ] : null,
                     'created_at' => $edition->created_at->format('M j, Y'),
                 ];
@@ -43,8 +54,26 @@ class EditionController extends Controller
     public function create(): Response
     {
         $artworks = Artwork::where('status', 'published')
+            ->with('media')
             ->orderBy('title')
-            ->get(['id', 'title', 'slug', 'medium', 'year', 'size_text']);
+            ->get()
+            ->map(function ($artwork) {
+                $primaryImage = null;
+                if ($artwork->primaryImage && file_exists($artwork->primaryImage->getPath())) {
+                    $primaryImage = $artwork->primaryImage->hasGeneratedConversion('thumb') 
+                        ? $artwork->primaryImage->getUrl('thumb') 
+                        : $artwork->primaryImage->getUrl();
+                }
+                return [
+                    'id' => $artwork->id,
+                    'title' => $artwork->title,
+                    'slug' => $artwork->slug,
+                    'medium' => $artwork->medium,
+                    'year' => $artwork->year,
+                    'size_text' => $artwork->size_text,
+                    'image' => $primaryImage,
+                ];
+            });
 
         return Inertia::render('Admin/Editions/Create', [
             'artworks' => $artworks,
@@ -97,11 +126,37 @@ class EditionController extends Controller
 
     public function edit(Edition $edition): Response
     {
-        $edition->load(['artwork']);
+        $edition->load(['artwork.media']);
+        
+        // Get artwork image
+        $artworkImage = null;
+        if ($edition->artwork && $edition->artwork->primaryImage && file_exists($edition->artwork->primaryImage->getPath())) {
+            $artworkImage = $edition->artwork->primaryImage->hasGeneratedConversion('thumb') 
+                ? $edition->artwork->primaryImage->getUrl('thumb') 
+                : $edition->artwork->primaryImage->getUrl();
+        }
         
         $artworks = Artwork::where('status', 'published')
+            ->with('media')
             ->orderBy('title')
-            ->get(['id', 'title', 'slug']);
+            ->get()
+            ->map(function ($artwork) {
+                $primaryImage = null;
+                if ($artwork->primaryImage && file_exists($artwork->primaryImage->getPath())) {
+                    $primaryImage = $artwork->primaryImage->hasGeneratedConversion('thumb') 
+                        ? $artwork->primaryImage->getUrl('thumb') 
+                        : $artwork->primaryImage->getUrl();
+                }
+                return [
+                    'id' => $artwork->id,
+                    'title' => $artwork->title,
+                    'slug' => $artwork->slug,
+                    'medium' => $artwork->medium,
+                    'year' => $artwork->year,
+                    'size_text' => $artwork->size_text,
+                    'image' => $primaryImage,
+                ];
+            });
 
         return Inertia::render('Admin/Editions/Edit', [
             'edition' => [
@@ -119,6 +174,7 @@ class EditionController extends Controller
                     'medium' => $edition->artwork->medium,
                     'year' => $edition->artwork->year,
                     'size_text' => $edition->artwork->size_text,
+                    'image' => $artworkImage,
                 ] : null,
             ],
             'artworks' => $artworks,

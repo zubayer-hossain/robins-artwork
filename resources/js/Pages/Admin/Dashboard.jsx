@@ -1,4 +1,4 @@
-﻿﻿import { Head, Link, usePage } from '@inertiajs/react';
+import { Head, Link, usePage } from '@inertiajs/react';
 import AdminLayout from '@/Layouts/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import { Button } from '@/Components/ui/button';
@@ -76,7 +76,7 @@ export default function AdminDashboard({ stats, recentOrders, recentMessages, re
             title: 'View Messages',
             description: 'Respond to customer inquiries and contact forms',
             icon: MessageSquare,
-            href: route('admin.contact.index'),
+            href: route('admin.contact-messages.index'),
             color: 'bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700',
         },
     ];
@@ -445,7 +445,7 @@ export default function AdminDashboard({ stats, recentOrders, recentMessages, re
                                         </h4>
                                         <div className="space-y-2">
                                             {recentMessages.slice(0, 2).map((message) => (
-                                                <Link key={message.id} href={route('admin.contact.show', message.id)}>
+                                                <Link key={message.id} href={route('admin.contact-messages.show', message.id)}>
                                                     <div className="p-2 rounded-lg border border-gray-100 hover:border-orange-200 hover:bg-orange-50/30 transition-all duration-200">
                                                         <div className="flex items-center justify-between mb-1">
                                                             <span className="font-medium text-sm text-gray-900">{message.name}</span>

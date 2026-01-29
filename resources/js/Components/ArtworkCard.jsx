@@ -7,15 +7,22 @@ export default function ArtworkCard({ artwork, className = "", showFavoriteButto
     return (
         <Card className={`group overflow-hidden hover:shadow-2xl transition-all duration-300 border-0 shadow-lg ${className}`}>
             {/* Image Section */}
-            {artwork.primaryImage && (
-                <div className="aspect-square overflow-hidden">
+            <div className="aspect-square overflow-hidden bg-gradient-to-br from-purple-100 to-blue-100">
+                {artwork.primaryImage ? (
                     <img
-                        src={artwork.primaryImage.medium}
+                        src={artwork.primaryImage.medium || artwork.primaryImage.thumb}
                         alt={artwork.title}
                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                     />
-                </div>
-            )}
+                ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                        <div className="text-center p-4">
+                            <div className="text-6xl mb-3 opacity-60">🎨</div>
+                            <div className="text-sm font-medium text-gray-600">{artwork.title}</div>
+                        </div>
+                    </div>
+                )}
+            </div>
             
             {/* Content Section */}
             <CardContent className="p-4">

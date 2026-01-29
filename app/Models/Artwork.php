@@ -63,7 +63,7 @@ class Artwork extends Model implements HasMedia
     {
         $this->addMediaCollection('artwork-images')
             ->useDisk('public')
-            ->acceptsMimeTypes(['image/jpeg', 'image/png', 'image/webp'])
+            ->acceptsMimeTypes(['image/jpeg', 'image/png', 'image/webp', 'image/gif'])
             ->registerMediaConversions(function (Media $media) {
                 $this->addMediaConversion('thumb')
                     ->width(400)

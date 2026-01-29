@@ -33,95 +33,106 @@ export default function AdminOrdersIndex({ auth, orders }) {
                         <CardTitle>Orders ({orders.total})</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead>Order ID</TableHead>
-                                    <TableHead>Customer</TableHead>
-                                    <TableHead>Items</TableHead>
-                                    <TableHead>Total</TableHead>
-                                    <TableHead>Status</TableHead>
-                                    <TableHead>Date</TableHead>
-                                    <TableHead>Actions</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {orders.data.map((order) => (
-                                    <TableRow key={order.id}>
-                                        <TableCell>
-                                            <div className="font-medium">#{order.id}</div>
-                                            <div className="text-sm text-gray-600 font-mono">
-                                                {order.stripe_session_id}
-                                            </div>
-                                        </TableCell>
-                                        <TableCell>
-                                            <div>
-                                                <div className="font-medium">{order.customer_name}</div>
-                                                <div className="text-sm text-gray-600">{order.customer_email}</div>
-                                            </div>
-                                        </TableCell>
-                                        <TableCell>
-                                            <span className="text-sm">{order.items_count} items</span>
-                                        </TableCell>
-                                        <TableCell>
-                                            <div className="font-medium">
-                                                ${order.total.toLocaleString()}
-                                            </div>
-                                            <div className="text-sm text-gray-600">
-                                                USD
-                                            </div>
-                                        </TableCell>
-                                        <TableCell>{getStatusBadge(order.status)}</TableCell>
-                                        <TableCell>
-                                            <div className="text-sm">{order.created_at}</div>
-                                        </TableCell>
-                                        <TableCell>
-                                            <div className="flex gap-2">
-                                                <Link href={route('admin.orders.show', order.id)}>
-                                                    <Button variant="outline" size="sm">
-                                                        <Eye className="w-4 h-4" />
-                                                    </Button>
-                                                </Link>
-                                                <Button variant="outline" size="sm">
-                                                    <Download className="w-4 h-4" />
-                                                </Button>
-                                            </div>
-                                        </TableCell>
-                                    </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
+                        {orders.data && orders.data.length > 0 ? (
+                            <>
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow>
+                                            <TableHead>Order ID</TableHead>
+                                            <TableHead>Customer</TableHead>
+                                            <TableHead>Items</TableHead>
+                                            <TableHead>Total</TableHead>
+                                            <TableHead>Status</TableHead>
+                                            <TableHead>Date</TableHead>
+                                            <TableHead>Actions</TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {orders.data.map((order) => (
+                                            <TableRow key={order.id}>
+                                                <TableCell>
+                                                    <div className="font-medium">#{order.id}</div>
+                                                    <div className="text-sm text-gray-600 font-mono">
+                                                        {order.stripe_session_id}
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <div>
+                                                        <div className="font-medium">{order.customer_name}</div>
+                                                        <div className="text-sm text-gray-600">{order.customer_email}</div>
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <span className="text-sm">{order.items_count} items</span>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <div className="font-medium">
+                                                        ${order.total.toLocaleString()}
+                                                    </div>
+                                                    <div className="text-sm text-gray-600">
+                                                        USD
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell>{getStatusBadge(order.status)}</TableCell>
+                                                <TableCell>
+                                                    <div className="text-sm">{order.created_at}</div>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <div className="flex gap-2">
+                                                        <Link href={route('admin.orders.show', order.id)}>
+                                                            <Button variant="outline" size="sm">
+                                                                <Eye className="w-4 h-4" />
+                                                            </Button>
+                                                        </Link>
+                                                        <Button variant="outline" size="sm">
+                                                            <Download className="w-4 h-4" />
+                                                        </Button>
+                                                    </div>
+                                                </TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
 
-                        {/* Pagination */}
-                        {orders.links && orders.links.length > 3 && (
-                            <div className="flex justify-center mt-6">
-                                <div className="flex gap-2">
-                                    {orders.links.map((link, index) => {
-                                        // Handle disabled/null links
-                                        if (!link.url) {
-                                            return (
-                                                <span
-                                                    key={index}
-                                                    className="px-3 py-2 rounded-md text-sm text-gray-400 bg-gray-100 cursor-not-allowed"
-                                                    dangerouslySetInnerHTML={{ __html: link.label }}
-                                                />
-                                            );
-                                        }
-                                        
-                                        return (
-                                            <Link
-                                                key={index}
-                                                href={link.url}
-                                                preserveState
-                                                className={`px-3 py-2 rounded-md text-sm ${
-                                                    link.active
-                                                        ? 'bg-blue-600 text-white'
-                                                        : 'bg-white text-gray-700 hover:bg-gray-50 border'
-                                                }`}
-                                                dangerouslySetInnerHTML={{ __html: link.label }}
-                                            />
-                                        );
-                                    })}
+                                {/* Pagination */}
+                                {orders.links && orders.links.length > 3 && (
+                                    <div className="flex justify-center mt-6">
+                                        <div className="flex gap-2">
+                                            {orders.links.map((link, index) => {
+                                                if (!link.url) {
+                                                    return (
+                                                        <span
+                                                            key={index}
+                                                            className="px-3 py-2 rounded-md text-sm text-gray-400 bg-gray-100 cursor-not-allowed"
+                                                            dangerouslySetInnerHTML={{ __html: link.label }}
+                                                        />
+                                                    );
+                                                }
+                                                
+                                                return (
+                                                    <Link
+                                                        key={index}
+                                                        href={link.url}
+                                                        preserveState
+                                                        className={`px-3 py-2 rounded-md text-sm ${
+                                                            link.active
+                                                                ? 'bg-purple-600 text-white'
+                                                                : 'bg-white text-gray-700 hover:bg-gray-50 border'
+                                                        }`}
+                                                        dangerouslySetInnerHTML={{ __html: link.label }}
+                                                    />
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+                                )}
+                            </>
+                        ) : (
+                            <div className="text-center py-12">
+                                <div className="text-gray-500">
+                                    <ShoppingBag className="w-16 h-16 mx-auto mb-4 opacity-50" />
+                                    <h3 className="text-lg font-medium mb-2">No Orders Yet</h3>
+                                    <p>Orders will appear here when customers make purchases.</p>
                                 </div>
                             </div>
                         )}

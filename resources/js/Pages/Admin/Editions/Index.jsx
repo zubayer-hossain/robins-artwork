@@ -1,11 +1,12 @@
 import { Head, Link, router } from '@inertiajs/react';
 import { useState } from 'react';
 import AdminLayout from '@/Layouts/AdminLayout';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Plus, Edit, Trash2, Eye, Package } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
+import { Badge } from '@/Components/ui/badge';
+import { Button } from '@/Components/ui/button';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/Components/ui/table';
+import ConfirmDialog from '@/Components/ConfirmDialog';
+import { Plus, Edit, Trash2, Eye, Package, Image as ImageIcon, ExternalLink } from 'lucide-react';
 
 export default function AdminEditionsIndex({ auth, editions }) {
     const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -69,102 +70,138 @@ export default function AdminEditionsIndex({ auth, editions }) {
                         <CardTitle>Editions ({editions.total})</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead>SKU</TableHead>
-                                    <TableHead>Artwork</TableHead>
-                                    <TableHead>Edition Size</TableHead>
-                                    <TableHead>Price</TableHead>
-                                    <TableHead>Stock</TableHead>
-                                    <TableHead>Status</TableHead>
-                                    <TableHead>Created</TableHead>
-                                    <TableHead>Actions</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {editions.data.map((edition) => (
-                                    <TableRow key={edition.id}>
-                                        <TableCell>
-                                            <div className="font-medium font-mono">{edition.sku}</div>
-                                        </TableCell>
-                                        <TableCell>
-                                            {edition.artwork ? (
-                                                <div>
-                                                    <div className="font-medium">{edition.artwork.title}</div>
-                                                    <div className="text-sm text-gray-600">ID: {edition.artwork.id}</div>
-                                                </div>
-                                            ) : (
-                                                <span className="text-gray-400">No artwork</span>
-                                            )}
-                                        </TableCell>
-                                        <TableCell>
-                                            {edition.is_limited ? (
-                                                <span>Limited: {edition.edition_total}</span>
-                                            ) : (
-                                                <span>Unlimited</span>
-                                            )}
-                                        </TableCell>
-                                        <TableCell>
-                                            <span className="font-medium text-green-600">
-                                                ${edition.price.toLocaleString()}
-                                            </span>
-                                        </TableCell>
-                                        <TableCell>
-                                            <div className="flex items-center gap-2">
-                                                <span className="font-medium">{edition.stock}</span>
-                                                {getStockBadge(edition.stock)}
-                                            </div>
-                                        </TableCell>
-                                        <TableCell>
-                                            {edition.is_limited && (
-                                                <Badge variant="outline">Limited</Badge>
-                                            )}
-                                        </TableCell>
-                                        <TableCell>{edition.created_at}</TableCell>
-                                        <TableCell>
-                                            <div className="flex gap-2">
-                                                 <Link href={route('admin.editions.show', edition.id)}>
-                                                    <Button variant="outline" size="sm">
-                                                        <Eye className="w-4 h-4" />
-                                                    </Button>
-                                                </Link>
-                                                <Link href={route('admin.editions.edit', edition.id)}>
-                                                    <Button variant="outline" size="sm">
-                                                        <Edit className="w-4 h-4" />
-                                                    </Button>
-                                                </Link>
-                                                <Button 
-                                                    variant="outline" 
-                                                    size="sm" 
-                                                    className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                                                    onClick={() => handleDeleteClick(edition)}
-                                                >
-                                                    <Trash2 className="w-4 h-4" />
-                                                </Button>
-                                            </div>
-                                        </TableCell>
-                                    </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
+                        {editions.data && editions.data.length > 0 ? (
+                            <>
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow>
+                                            <TableHead className="w-20">Image</TableHead>
+                                            <TableHead>SKU</TableHead>
+                                            <TableHead>Artwork</TableHead>
+                                            <TableHead>Type</TableHead>
+                                            <TableHead>Price</TableHead>
+                                            <TableHead>Stock</TableHead>
+                                            <TableHead>Created</TableHead>
+                                            <TableHead>Actions</TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {editions.data.map((edition) => (
+                                            <TableRow key={edition.id}>
+                                                <TableCell>
+                                                    {edition.artwork?.image ? (
+                                                        <img
+                                                            src={edition.artwork.image}
+                                                            alt={edition.artwork.title}
+                                                            className="w-14 h-14 object-cover rounded-lg border border-gray-200 shadow-sm"
+                                                        />
+                                                    ) : (
+                                                        <div className="w-14 h-14 bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg flex items-center justify-center border border-gray-200">
+                                                            <ImageIcon className="w-6 h-6 text-gray-400" />
+                                                        </div>
+                                                    )}
+                                                </TableCell>
+                                                <TableCell>
+                                                    <div className="font-medium font-mono text-purple-600">{edition.sku}</div>
+                                                </TableCell>
+                                                <TableCell>
+                                                    {edition.artwork ? (
+                                                        <div>
+                                                            <Link 
+                                                                href={route('admin.artworks.show', edition.artwork.id)}
+                                                                className="font-medium text-gray-900 hover:text-purple-600 transition-colors flex items-center gap-1"
+                                                            >
+                                                                {edition.artwork.title}
+                                                                <ExternalLink className="w-3 h-3" />
+                                                            </Link>
+                                                        </div>
+                                                    ) : (
+                                                        <span className="text-gray-400 italic">No artwork linked</span>
+                                                    )}
+                                                </TableCell>
+                                                <TableCell>
+                                                    {edition.is_limited ? (
+                                                        <Badge className="bg-orange-100 text-orange-700 border-orange-200">
+                                                            Limited ({edition.edition_total})
+                                                        </Badge>
+                                                    ) : (
+                                                        <Badge className="bg-green-100 text-green-700 border-green-200">
+                                                            Open Edition
+                                                        </Badge>
+                                                    )}
+                                                </TableCell>
+                                                <TableCell>
+                                                    <span className="font-semibold text-green-600">
+                                                        ${Number(edition.price).toLocaleString()}
+                                                    </span>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="font-medium">{edition.stock}</span>
+                                                        {getStockBadge(edition.stock)}
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell className="text-gray-500 text-sm">{edition.created_at}</TableCell>
+                                                <TableCell>
+                                                    <div className="flex gap-1">
+                                                        <Link href={route('admin.editions.show', edition.id)}>
+                                                            <Button variant="outline" size="sm" title="View">
+                                                                <Eye className="w-4 h-4" />
+                                                            </Button>
+                                                        </Link>
+                                                        <Link href={route('admin.editions.edit', edition.id)}>
+                                                            <Button variant="outline" size="sm" title="Edit">
+                                                                <Edit className="w-4 h-4" />
+                                                            </Button>
+                                                        </Link>
+                                                        <Button 
+                                                            variant="outline" 
+                                                            size="sm" 
+                                                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                                                            onClick={() => handleDeleteClick(edition)}
+                                                            title="Delete"
+                                                        >
+                                                            <Trash2 className="w-4 h-4" />
+                                                        </Button>
+                                                    </div>
+                                                </TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
 
-                        {/* Pagination */}
-                        {editions.links && editions.links.length > 3 && (
-                            <div className="flex justify-center mt-6">
-                                <div className="flex gap-2">
-                                    {editions.links.map((link, index) => (
-                                        <Link
-                                            key={index}
-                                            href={link.url}
-                                            className={`px-3 py-2 rounded-md text-sm ${
-                                                link.active
-                                                    ? 'bg-blue-600 text-white'
-                                                    : 'bg-white text-gray-700 hover:bg-gray-50 border'
-                                            }`}
-                                            dangerouslySetInnerHTML={{ __html: link.label }}
-                                        />
-                                    ))}
+                                {/* Pagination */}
+                                {editions.links && editions.links.length > 3 && (
+                                    <div className="flex justify-center mt-6">
+                                        <div className="flex gap-2">
+                                            {editions.links.map((link, index) => (
+                                                <Link
+                                                    key={index}
+                                                    href={link.url}
+                                                    className={`px-3 py-2 rounded-md text-sm ${
+                                                        link.active
+                                                            ? 'bg-purple-600 text-white'
+                                                            : 'bg-white text-gray-700 hover:bg-gray-50 border'
+                                                    } ${!link.url ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                                    dangerouslySetInnerHTML={{ __html: link.label }}
+                                                />
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                            </>
+                        ) : (
+                            <div className="text-center py-12">
+                                <div className="text-gray-500">
+                                    <Package className="w-16 h-16 mx-auto mb-4 opacity-50" />
+                                    <h3 className="text-lg font-medium mb-2">No Editions Yet</h3>
+                                    <p className="mb-4">Create print editions for your artworks to sell limited or open editions.</p>
+                                    <Link href={route('admin.editions.create')}>
+                                        <Button>
+                                            <Plus className="w-4 h-4 mr-2" />
+                                            Create Your First Edition
+                                        </Button>
+                                    </Link>
                                 </div>
                             </div>
                         )}
@@ -173,60 +210,19 @@ export default function AdminEditionsIndex({ auth, editions }) {
             </div>
 
             {/* Delete Confirmation Modal */}
-            {showDeleteModal && editionToDelete && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                    <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
-                        <div className="flex items-center gap-3 mb-4">
-                            <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
-                                <Trash2 className="w-5 h-5 text-red-600" />
-                            </div>
-                            <div>
-                                <h3 className="text-lg font-semibold text-gray-900">Delete Edition</h3>
-                                <p className="text-sm text-gray-600">This action cannot be undone.</p>
-                            </div>
-                        </div>
-                        
-                        <div className="mb-6">
-                            <p className="text-gray-700">
-                                Are you sure you want to delete <strong>"{editionToDelete.sku}"</strong>? 
-                                This will permanently remove the edition and all associated data.
-                            </p>
-                        </div>
-
-                        <div className="flex gap-3 justify-end">
-                            <Button
-                                variant="outline"
-                                onClick={() => {
-                                    setShowDeleteModal(false);
-                                    setEditionToDelete(null);
-                                }}
-                                disabled={isDeleting}
-                                className="border-gray-300 text-gray-700 hover:bg-gray-50"
-                            >
-                                Cancel
-                            </Button>
-                            <Button
-                                variant="destructive"
-                                onClick={handleDelete}
-                                disabled={isDeleting}
-                                className="bg-red-600 hover:bg-red-700 text-white"
-                            >
-                                {isDeleting ? (
-                                    <>
-                                        <div className="w-4 h-4 mr-2 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                                        Deleting...
-                                    </>
-                                ) : (
-                                    <>
-                                        <Trash2 className="w-4 h-4 mr-2" />
-                                        Delete Edition
-                                    </>
-                                )}
-                            </Button>
-                        </div>
-                    </div>
-                </div>
-            )}
+            <ConfirmDialog
+                isOpen={showDeleteModal && editionToDelete}
+                onClose={() => {
+                    setShowDeleteModal(false);
+                    setEditionToDelete(null);
+                }}
+                onConfirm={handleDelete}
+                title="Delete Edition"
+                message={`Are you sure you want to delete "${editionToDelete?.sku}"? This will permanently remove the edition and all associated data.`}
+                confirmText="Delete Edition"
+                isLoading={isDeleting}
+                variant="danger"
+            />
         </AdminLayout>
     );
 }

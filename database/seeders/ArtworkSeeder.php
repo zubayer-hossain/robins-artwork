@@ -137,33 +137,8 @@ class ArtworkSeeder extends Seeder
             $artworkData['slug'] = Str::slug($artworkData['title']);
             $artwork = Artwork::create($artworkData);
             
-            // Add media with more reliable image URLs
-            try {
-                // Use more reliable image service
-                $imageUrls = [
-                    'https://picsum.photos/seed/' . $artwork->id . '1/600/600',
-                    'https://picsum.photos/seed/' . $artwork->id . '2/1000/1000',
-                    'https://picsum.photos/seed/' . $artwork->id . '3/2000/2000',
-                ];
-                
-                foreach ($imageUrls as $index => $imageUrl) {
-                    $media = $artwork->addMediaFromUrl($imageUrl)
-                        ->toMediaCollection('artwork-images', 'public');
-                    
-                    // Set custom properties
-                    $media->setCustomProperty('is_primary', $index === 0);
-                    $media->save();
-                    
-                    // Add a small delay to avoid overwhelming the image service
-                    usleep(100000); // 0.1 second delay
-                }
-            } catch (\Exception $e) {
-                // If external images fail, just log the error and continue
-                \Log::warning("Failed to add external images for artwork {$artwork->id}: " . $e->getMessage());
-                
-                // Don't create placeholder media - just continue without images
-                // The frontend will handle missing images gracefully
-            }
+            // Note: Images should be uploaded manually via the admin panel
+            // No placeholder images are added during seeding
         }
     }
 }

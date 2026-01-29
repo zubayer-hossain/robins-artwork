@@ -148,9 +148,10 @@ Route::prefix('admin')->name('admin.')->middleware('web')->group(function () {
         Route::post('/profile/delete', [ProfileController::class, 'destroy'])->name('profile.destroy');
         
         // Contact messages management
-        Route::resource('contact', AdminContactController::class)->only(['index', 'show', 'destroy']);
-        Route::patch('/contact/{contact_message}/mark-read', [AdminContactController::class, 'markAsRead'])->name('contact.mark-read');
-        Route::patch('/contact/{contact_message}/mark-replied', [AdminContactController::class, 'markAsReplied'])->name('contact.mark-replied');
+        Route::resource('contact-messages', AdminContactController::class)->only(['index', 'show', 'destroy']);
+        Route::patch('/contact-messages/{contact_message}/mark-read', [AdminContactController::class, 'markAsRead'])->name('contact-messages.mark-read');
+        Route::patch('/contact-messages/{contact_message}/mark-replied', [AdminContactController::class, 'markAsReplied'])->name('contact-messages.mark-replied');
+        Route::post('/contact-messages/{contact_message}/reply', [AdminContactController::class, 'reply'])->name('contact-messages.reply');
         
         // CMS management
         Route::get('/cms', [AdminCmsController::class, 'index'])->name('cms.index');

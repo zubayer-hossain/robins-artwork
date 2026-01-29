@@ -80,13 +80,14 @@ class ArtworkController extends Controller
                     'price' => $artwork->price,
                     'tags' => $artwork->tags,
                     'isFavorite' => in_array($artwork->id, $userFavorites),
-                    'primaryImage' => $artwork->primaryImage ? [
-                        'thumb' => $artwork->primaryImage->getUrl('thumb'),
-                        'medium' => $artwork->primaryImage->getUrl('medium'),
-                    ] : [
-                        'thumb' => 'https://picsum.photos/400/400?random=' . $artwork->id,
-                        'medium' => 'https://picsum.photos/1000/1000?random=' . $artwork->id,
-                    ],
+                    'primaryImage' => ($artwork->primaryImage && file_exists($artwork->primaryImage->getPath())) ? [
+                        'thumb' => $artwork->primaryImage->hasGeneratedConversion('thumb') 
+                            ? $artwork->primaryImage->getUrl('thumb') 
+                            : $artwork->primaryImage->getUrl(),
+                        'medium' => $artwork->primaryImage->hasGeneratedConversion('medium') 
+                            ? $artwork->primaryImage->getUrl('medium') 
+                            : $artwork->primaryImage->getUrl(),
+                    ] : null,
                     'editions' => $artwork->editions->map(function ($edition) {
                         return [
                             'id' => $edition->id,
@@ -166,40 +167,31 @@ class ArtworkController extends Controller
                 'tags' => $artwork->tags,
                 'is_original' => $artwork->is_original,
                 'is_print_available' => $artwork->is_print_available,
-                'images' => $artwork->images->count() > 0 ? $artwork->images->map(function ($image) {
+                'images' => $artwork->images->map(function ($image) use ($artwork) {
                     try {
-                        // For now, use original image URLs since conversions aren't working
-                        $originalUrl = $image->getUrl();
+                        // Skip if the original file doesn't exist
+                        if (!file_exists($image->getPath())) {
+                            return null;
+                        }
+                        
+                        // Try to get converted URLs, fall back to original
+                        $thumbUrl = $image->hasGeneratedConversion('thumb') ? $image->getUrl('thumb') : $image->getUrl();
+                        $mediumUrl = $image->hasGeneratedConversion('medium') ? $image->getUrl('medium') : $image->getUrl();
+                        $xlUrl = $image->hasGeneratedConversion('xl') ? $image->getUrl('xl') : $image->getUrl();
                         
                         return [
                             'id' => $image->id,
                             'is_primary' => $image->custom_properties['is_primary'] ?? false,
-                            'thumb' => $originalUrl,
-                            'medium' => $originalUrl,
-                            'xl' => $originalUrl,
-                            'original' => $originalUrl,
+                            'thumb' => $thumbUrl,
+                            'medium' => $mediumUrl,
+                            'xl' => $xlUrl,
+                            'original' => $image->getUrl(),
                         ];
                     } catch (\Exception $e) {
-                        // If there's an issue with the media file, return placeholder
-                        return [
-                            'id' => $image->id,
-                            'is_primary' => $image->custom_properties['is_primary'] ?? false,
-                            'thumb' => 'https://picsum.photos/400/400?random=' . $artwork->id,
-                            'medium' => 'https://picsum.photos/1000/1000?random=' . $artwork->id,
-                            'xl' => 'https://picsum.photos/2000/2000?random=' . $artwork->id,
-                            'original' => 'https://picsum.photos/2000/2000?random=' . $artwork->id,
-                        ];
+                        // If there's an issue with the media file, skip this image
+                        return null;
                     }
-                })->values()->toArray() : [
-                    [
-                        'id' => 0,
-                        'is_primary' => true,
-                        'thumb' => 'https://picsum.photos/400/400?random=' . $artwork->id,
-                        'medium' => 'https://picsum.photos/1000/1000?random=' . $artwork->id,
-                        'xl' => 'https://picsum.photos/2000/2000?random=' . $artwork->id,
-                        'original' => 'https://picsum.photos/2000/2000?random=' . $artwork->id,
-                    ]
-                ],
+                })->filter()->values()->toArray(),
                 'editions' => $artwork->editions->map(function ($edition) {
                     return [
                         'id' => $edition->id,

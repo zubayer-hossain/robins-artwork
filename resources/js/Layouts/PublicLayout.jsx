@@ -203,7 +203,7 @@ export default function PublicLayout({ children }) {
                                                         </Link>
                                                     </DropdownMenuItem>
                                                     <DropdownMenuItem>
-                                                        <Link href={route('admin.contact.index')} className="flex items-center space-x-2 w-full">
+                                                        <Link href={route('admin.contact-messages.index')} className="flex items-center space-x-2 w-full">
                                                             <User className="w-4 h-4" />
                                                             <span>Contact Messages</span>
                                                         </Link>
@@ -379,7 +379,7 @@ export default function PublicLayout({ children }) {
                                                         Manage Editions
                                                     </Button>
                                                 </Link>
-                                                <Link href={route('admin.contact.index')}>
+                                                <Link href={route('admin.contact-messages.index')}>
                                                     <Button variant="ghost" className="w-full justify-start">
                                                         <User className="w-4 h-4 mr-2" />
                                                         Contact Messages

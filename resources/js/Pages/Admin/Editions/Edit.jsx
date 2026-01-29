@@ -1,13 +1,15 @@
 import { Head, useForm, Link } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
 import AdminLayout from '@/Layouts/AdminLayout';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Checkbox } from '@/components/ui/checkbox';
-import { ArrowLeft, Save, Trash2, Package, Eye, ExternalLink } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
+import { Button } from '@/Components/ui/button';
+import { Input } from '@/Components/ui/input';
+import { Label } from '@/Components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
+import { Checkbox } from '@/Components/ui/checkbox';
+import { Badge } from '@/Components/ui/badge';
+import ConfirmDialog from '@/Components/ConfirmDialog';
+import { ArrowLeft, Save, Trash2, Package, Eye, ExternalLink, Image as ImageIcon, Palette, Layers } from 'lucide-react';
 
 export default function AdminEditionEdit({ auth, edition, artworks, flash }) {
     const { data, setData, patch, processing, errors, delete: deleteEdition } = useForm({
@@ -20,6 +22,8 @@ export default function AdminEditionEdit({ auth, edition, artworks, flash }) {
     });
 
     const [selectedArtworkTitle, setSelectedArtworkTitle] = useState(edition.artwork?.title || '');
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
 
     // Handle flash messages
     useEffect(() => {
@@ -51,9 +55,20 @@ export default function AdminEditionEdit({ auth, edition, artworks, flash }) {
     };
 
     const handleDelete = () => {
-        if (confirm('Are you sure you want to delete this edition? This action cannot be undone.')) {
-            deleteEdition(route('admin.editions.destroy', edition.id));
-        }
+        setIsDeleting(true);
+        deleteEdition(route('admin.editions.destroy', edition.id), {
+            onSuccess: () => {
+                if (window.toast) {
+                    window.toast.success('Edition deleted successfully!', 'Success');
+                }
+            },
+            onError: () => {
+                setIsDeleting(false);
+                if (window.toast) {
+                    window.toast.error('Failed to delete edition.', 'Error');
+                }
+            }
+        });
     };
 
     return (
@@ -64,10 +79,18 @@ export default function AdminEditionEdit({ auth, edition, artworks, flash }) {
             headerDescription="Update edition details and pricing"
             headerActions={
                 <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+                    {edition.artwork && (
+                        <Link href={route('admin.artworks.edit', edition.artwork.id)}>
+                            <Button variant="outline" className="w-full sm:w-auto border-purple-200 text-purple-700 hover:bg-purple-50">
+                                <Palette className="w-4 h-4 mr-2" />
+                                Back to Artwork
+                            </Button>
+                        </Link>
+                    )}
                     <Link href={route('admin.editions.index')}>
                         <Button variant="outline" className="w-full sm:w-auto">
-                            <ArrowLeft className="w-4 h-4 mr-2" />
-                            Back to Editions
+                            <Layers className="w-4 h-4 mr-2" />
+                            All Editions
                         </Button>
                     </Link>
                     <Link href={route('admin.editions.show', edition.id)}>
@@ -104,13 +127,29 @@ export default function AdminEditionEdit({ auth, edition, artworks, flash }) {
                                                 setSelectedArtworkTitle(artworkTitle);
                                             }
                                         }}>
-                                            <SelectTrigger>
+                                            <SelectTrigger className="h-auto min-h-[42px]">
                                                 <SelectValue placeholder="Select an artwork" />
                                             </SelectTrigger>
-                                            <SelectContent>
+                                            <SelectContent className="max-h-[400px]">
                                                 {artworks.map((artwork) => (
-                                                    <SelectItem key={artwork.id} value={artwork.title}>
-                                                        {artwork.title}
+                                                    <SelectItem key={artwork.id} value={artwork.title} className="py-2">
+                                                        <div className="flex items-center gap-3">
+                                                            {artwork.image ? (
+                                                                <img 
+                                                                    src={artwork.image} 
+                                                                    alt={artwork.title}
+                                                                    className="w-10 h-10 object-cover rounded border border-gray-200"
+                                                                />
+                                                            ) : (
+                                                                <div className="w-10 h-10 bg-gray-100 rounded border border-gray-200 flex items-center justify-center">
+                                                                    <ImageIcon className="w-5 h-5 text-gray-400" />
+                                                                </div>
+                                                            )}
+                                                            <div className="flex-1">
+                                                                <div className="font-medium">{artwork.title}</div>
+                                                                <div className="text-xs text-gray-500">{artwork.medium} {artwork.year ? `• ${artwork.year}` : ''}</div>
+                                                            </div>
+                                                        </div>
                                                     </SelectItem>
                                                 ))}
                                             </SelectContent>
@@ -179,45 +218,59 @@ export default function AdminEditionEdit({ auth, edition, artworks, flash }) {
 
                             {/* Current Artwork Info */}
                             {edition.artwork && (
-                                <Card>
-                                    <CardHeader>
-                                        <CardTitle className="flex items-center gap-2">
-                                            <ExternalLink className="w-5 h-5 text-purple-600" />
-                                            Current Artwork
+                                <Card className="border-0 shadow-lg overflow-hidden">
+                                    <CardHeader className="bg-gradient-to-r from-purple-50 to-blue-50 border-b">
+                                        <CardTitle className="flex items-center gap-2 text-purple-900">
+                                            <Palette className="w-5 h-5" />
+                                            Linked Artwork
                                         </CardTitle>
                                     </CardHeader>
-                                    <CardContent className="p-6">
-                                        <div className="bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg p-6">
-                                            <div className="flex items-start justify-between">
-                                                <div className="flex-1">
-                                                    <h3 className="text-xl font-bold text-gray-900 mb-2">
-                                                        {edition.artwork.title}
-                                                    </h3>
-                                                    <div className="space-y-2 text-sm text-gray-600">
-                                                        <div className="flex items-center gap-2">
-                                                            <span className="font-medium">Medium:</span>
-                                                            <span>{edition.artwork.medium}</span>
+                                    <CardContent className="p-0">
+                                        <div className="flex flex-col md:flex-row">
+                                            {/* Artwork Image */}
+                                            <div className="md:w-48 flex-shrink-0">
+                                                {edition.artwork.image ? (
+                                                    <img 
+                                                        src={edition.artwork.image} 
+                                                        alt={edition.artwork.title}
+                                                        className="w-full h-48 md:h-full object-cover"
+                                                    />
+                                                ) : (
+                                                    <div className="w-full h-48 md:h-full bg-gradient-to-br from-purple-100 to-blue-100 flex items-center justify-center">
+                                                        <div className="text-center">
+                                                            <ImageIcon className="w-12 h-12 text-purple-300 mx-auto mb-2" />
+                                                            <span className="text-sm text-purple-400">No image</span>
                                                         </div>
-                                                        {edition.artwork.year && (
-                                                            <div className="flex items-center gap-2">
-                                                                <span className="font-medium">Year:</span>
-                                                                <span>{edition.artwork.year}</span>
-                                                            </div>
-                                                        )}
-                                                        {edition.artwork.size_text && (
-                                                            <div className="flex items-center gap-2">
-                                                                <span className="font-medium">Size:</span>
-                                                                <span>{edition.artwork.size_text}</span>
-                                                            </div>
-                                                        )}
                                                     </div>
+                                                )}
+                                            </div>
+                                            {/* Artwork Details */}
+                                            <div className="flex-1 p-6">
+                                                <div className="flex items-start justify-between mb-4">
+                                                    <h3 className="text-xl font-bold text-gray-900">{edition.artwork.title}</h3>
+                                                    <Link href={route('admin.artworks.show', edition.artwork.id)}>
+                                                        <Button variant="outline" size="sm" className="border-purple-200 text-purple-700 hover:bg-purple-50">
+                                                            <ExternalLink className="w-4 h-4 mr-2" />
+                                                            View
+                                                        </Button>
+                                                    </Link>
                                                 </div>
-                                                <Link href={route('admin.artworks.show', edition.artwork.id)}>
-                                                    <Button variant="outline" size="sm" className="bg-white border-gray-300 text-gray-700 hover:bg-gray-50">
-                                                        <ExternalLink className="w-4 h-4 mr-2" />
-                                                        View Artwork
-                                                    </Button>
-                                                </Link>
+                                                <div className="grid grid-cols-2 gap-4 text-sm">
+                                                    <div className="flex items-center gap-2 p-2 bg-gray-50 rounded">
+                                                        <span className="text-gray-500">Medium:</span>
+                                                        <span className="font-medium text-gray-900">{edition.artwork.medium || 'N/A'}</span>
+                                                    </div>
+                                                    <div className="flex items-center gap-2 p-2 bg-gray-50 rounded">
+                                                        <span className="text-gray-500">Year:</span>
+                                                        <span className="font-medium text-gray-900">{edition.artwork.year || 'N/A'}</span>
+                                                    </div>
+                                                    {edition.artwork.size_text && (
+                                                        <div className="flex items-center gap-2 p-2 bg-gray-50 rounded col-span-2">
+                                                            <span className="text-gray-500">Size:</span>
+                                                            <span className="font-medium text-gray-900">{edition.artwork.size_text}</span>
+                                                        </div>
+                                                    )}
+                                                </div>
                                             </div>
                                         </div>
                                     </CardContent>
@@ -311,10 +364,46 @@ export default function AdminEditionEdit({ auth, edition, artworks, flash }) {
                                     </div>
                                 </CardContent>
                             </Card>
+
+                            {/* Danger Zone */}
+                            <Card className="border-red-200 bg-red-50/30">
+                                <CardHeader>
+                                    <CardTitle className="flex items-center gap-2 text-red-700">
+                                        <Trash2 className="w-5 h-5" />
+                                        Danger Zone
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent className="p-6">
+                                    <p className="text-sm text-red-600 mb-3">
+                                        Deleting this edition is permanent and cannot be undone.
+                                    </p>
+                                    <Button 
+                                        type="button"
+                                        variant="destructive" 
+                                        className="w-full"
+                                        onClick={() => setShowDeleteModal(true)}
+                                    >
+                                        <Trash2 className="w-4 h-4 mr-2" />
+                                        Delete Edition
+                                    </Button>
+                                </CardContent>
+                            </Card>
                         </div>
                     </div>
                 </form>
             </div>
+
+            {/* Delete Confirmation Modal */}
+            <ConfirmDialog
+                isOpen={showDeleteModal}
+                onClose={() => setShowDeleteModal(false)}
+                onConfirm={handleDelete}
+                title="Delete Edition"
+                message={`Are you sure you want to delete "${edition.sku}"? This will permanently remove the edition and cannot be undone.`}
+                confirmText="Delete Edition"
+                isLoading={isDeleting}
+                variant="danger"
+            />
         </AdminLayout>
     );
 }

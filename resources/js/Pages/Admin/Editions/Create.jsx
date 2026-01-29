@@ -1,25 +1,42 @@
 import { Head, useForm, Link } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
 import AdminLayout from '@/Layouts/AdminLayout';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Checkbox } from '@/components/ui/checkbox';
-import { ArrowLeft, Save, Package, Eye, ExternalLink } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
+import { Button } from '@/Components/ui/button';
+import { Input } from '@/Components/ui/input';
+import { Label } from '@/Components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
+import { Checkbox } from '@/Components/ui/checkbox';
+import { Badge } from '@/Components/ui/badge';
+import { ArrowLeft, Save, Package, Eye, ExternalLink, Image as ImageIcon, Palette } from 'lucide-react';
 
 export default function AdminEditionCreate({ auth, artworks, flash }) {
+    // Check for pre-selected artwork from URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const preselectedArtworkId = urlParams.get('artwork_id');
+    const preselectedArtwork = preselectedArtworkId ? artworks.find(a => a.id == preselectedArtworkId) : null;
+
     const { data, setData, post, processing, errors, reset } = useForm({
-        artwork_id: '',
-        sku: '',
+        artwork_id: preselectedArtwork?.id || '',
+        sku: preselectedArtwork ? generateInitialSKU(preselectedArtwork) : '',
         edition_total: '',
         price: '',
         stock: '',
         is_limited: true,
     });
 
-    const [selectedArtworkTitle, setSelectedArtworkTitle] = useState('');
+    const [selectedArtworkTitle, setSelectedArtworkTitle] = useState(preselectedArtwork?.title || '');
+
+    // Helper function to generate initial SKU
+    function generateInitialSKU(artwork) {
+        if (!artwork) return '';
+        const cleanTitle = artwork.title
+            .toLowerCase()
+            .replace(/[^\w\s]/g, '')
+            .replace(/\s+/g, '-')
+            .substring(0, 10);
+        return `${cleanTitle}-print-${Date.now().toString().slice(-4)}`;
+    }
 
     // Handle flash messages
     useEffect(() => {
@@ -108,13 +125,29 @@ export default function AdminEditionCreate({ auth, artworks, flash }) {
                                     <div>
                                         <Label htmlFor="artwork_id">Artwork *</Label>
                                         <Select value={selectedArtworkTitle} onValueChange={handleArtworkChange}>
-                                            <SelectTrigger>
+                                            <SelectTrigger className="h-auto min-h-[42px]">
                                                 <SelectValue placeholder="Select an artwork" />
                                             </SelectTrigger>
-                                            <SelectContent>
+                                            <SelectContent className="max-h-[400px]">
                                                 {artworks.map((artwork) => (
-                                                    <SelectItem key={artwork.id} value={artwork.title}>
-                                                        {artwork.title}
+                                                    <SelectItem key={artwork.id} value={artwork.title} className="py-2">
+                                                        <div className="flex items-center gap-3">
+                                                            {artwork.image ? (
+                                                                <img 
+                                                                    src={artwork.image} 
+                                                                    alt={artwork.title}
+                                                                    className="w-10 h-10 object-cover rounded border border-gray-200"
+                                                                />
+                                                            ) : (
+                                                                <div className="w-10 h-10 bg-gray-100 rounded border border-gray-200 flex items-center justify-center">
+                                                                    <ImageIcon className="w-5 h-5 text-gray-400" />
+                                                                </div>
+                                                            )}
+                                                            <div className="flex-1">
+                                                                <div className="font-medium">{artwork.title}</div>
+                                                                <div className="text-xs text-gray-500">{artwork.medium} {artwork.year ? `• ${artwork.year}` : ''}</div>
+                                                            </div>
+                                                        </div>
                                                     </SelectItem>
                                                 ))}
                                             </SelectContent>
@@ -183,46 +216,62 @@ export default function AdminEditionCreate({ auth, artworks, flash }) {
 
                             {/* Selected Artwork Info */}
                             {data.artwork_id && (
-                                <Card>
-                                    <CardHeader>
-                                        <CardTitle className="flex items-center gap-2">
-                                            <Package className="w-5 h-5 text-purple-600" />
+                                <Card className="border-0 shadow-lg overflow-hidden">
+                                    <CardHeader className="bg-gradient-to-r from-purple-50 to-blue-50 border-b">
+                                        <CardTitle className="flex items-center gap-2 text-purple-900">
+                                            <Palette className="w-5 h-5" />
                                             Selected Artwork
                                         </CardTitle>
                                     </CardHeader>
-                                    <CardContent className="p-6">
+                                    <CardContent className="p-0">
                                         {(() => {
                                             const selectedArtwork = artworks.find(a => a.id == data.artwork_id);
                                             return selectedArtwork ? (
-                                                <div className="bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg p-6">
-                                                    <div className="flex items-start justify-between">
-                                                        <div className="flex-1">
-                                                            <h3 className="text-xl font-bold text-gray-900 mb-2">{selectedArtwork.title}</h3>
-                                                            <div className="space-y-2 text-sm text-gray-600">
-                                                                <div className="flex items-center gap-2">
-                                                                    <span className="font-medium">Medium:</span>
-                                                                    <span>{selectedArtwork.medium || 'Not specified'}</span>
+                                                <div className="flex flex-col md:flex-row">
+                                                    {/* Artwork Image */}
+                                                    <div className="md:w-48 flex-shrink-0">
+                                                        {selectedArtwork.image ? (
+                                                            <img 
+                                                                src={selectedArtwork.image} 
+                                                                alt={selectedArtwork.title}
+                                                                className="w-full h-48 md:h-full object-cover"
+                                                            />
+                                                        ) : (
+                                                            <div className="w-full h-48 md:h-full bg-gradient-to-br from-purple-100 to-blue-100 flex items-center justify-center">
+                                                                <div className="text-center">
+                                                                    <ImageIcon className="w-12 h-12 text-purple-300 mx-auto mb-2" />
+                                                                    <span className="text-sm text-purple-400">No image</span>
                                                                 </div>
-                                                                {selectedArtwork.year && (
-                                                                    <div className="flex items-center gap-2">
-                                                                        <span className="font-medium">Year:</span>
-                                                                        <span>{selectedArtwork.year}</span>
-                                                                    </div>
-                                                                )}
-                                                                {selectedArtwork.size_text && (
-                                                                    <div className="flex items-center gap-2">
-                                                                        <span className="font-medium">Size:</span>
-                                                                        <span>{selectedArtwork.size_text}</span>
-                                                                    </div>
-                                                                )}
                                                             </div>
+                                                        )}
+                                                    </div>
+                                                    {/* Artwork Details */}
+                                                    <div className="flex-1 p-6">
+                                                        <div className="flex items-start justify-between mb-4">
+                                                            <h3 className="text-xl font-bold text-gray-900">{selectedArtwork.title}</h3>
+                                                            <Link href={route('admin.artworks.show', selectedArtwork.id)}>
+                                                                <Button variant="outline" size="sm" className="border-purple-200 text-purple-700 hover:bg-purple-50">
+                                                                    <ExternalLink className="w-4 h-4 mr-2" />
+                                                                    View
+                                                                </Button>
+                                                            </Link>
                                                         </div>
-                                                        <Link href={route('admin.artworks.show', selectedArtwork.id)}>
-                                                            <Button variant="outline" size="sm" className="bg-white border-gray-300 text-gray-700 hover:bg-gray-50">
-                                                                <ExternalLink className="w-4 h-4 mr-2" />
-                                                                View Artwork
-                                                            </Button>
-                                                        </Link>
+                                                        <div className="grid grid-cols-2 gap-4 text-sm">
+                                                            <div className="flex items-center gap-2 p-2 bg-gray-50 rounded">
+                                                                <span className="text-gray-500">Medium:</span>
+                                                                <span className="font-medium text-gray-900">{selectedArtwork.medium || 'N/A'}</span>
+                                                            </div>
+                                                            <div className="flex items-center gap-2 p-2 bg-gray-50 rounded">
+                                                                <span className="text-gray-500">Year:</span>
+                                                                <span className="font-medium text-gray-900">{selectedArtwork.year || 'N/A'}</span>
+                                                            </div>
+                                                            {selectedArtwork.size_text && (
+                                                                <div className="flex items-center gap-2 p-2 bg-gray-50 rounded col-span-2">
+                                                                    <span className="text-gray-500">Size:</span>
+                                                                    <span className="font-medium text-gray-900">{selectedArtwork.size_text}</span>
+                                                                </div>
+                                                            )}
+                                                        </div>
                                                     </div>
                                                 </div>
                                             ) : null;

@@ -52,10 +52,7 @@ class HomeController extends Controller
                     'primaryImage' => $artwork->primaryImage ? [
                         'thumb' => $artwork->primaryImage->getUrl('thumb'),
                         'medium' => $artwork->primaryImage->getUrl('medium'),
-                    ] : [
-                        'thumb' => 'https://picsum.photos/400/400?random=' . $artwork->id,
-                        'medium' => 'https://picsum.photos/1000/1000?random=' . $artwork->id,
-                    ],
+                    ] : null,
                 ];
             }),
             'stats' => $stats,

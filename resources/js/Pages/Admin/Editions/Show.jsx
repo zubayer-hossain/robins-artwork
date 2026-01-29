@@ -4,6 +4,7 @@ import AdminLayout from '@/Layouts/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import { Button } from '@/Components/ui/button';
 import { Badge } from '@/Components/ui/badge';
+import ConfirmDialog from '@/Components/ConfirmDialog';
 import { 
     Package, 
     Edit, 
@@ -16,7 +17,8 @@ import {
     XCircle,
     CheckCircle,
     AlertCircle,
-    ExternalLink
+    ExternalLink,
+    Palette
 } from 'lucide-react';
 
 export default function AdminEditionShow({ auth, edition, flash }) {
@@ -77,6 +79,14 @@ export default function AdminEditionShow({ auth, edition, flash }) {
             headerDescription="View and manage edition details"
             headerActions={
                 <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+                    {edition.artwork && (
+                        <Link href={route('admin.artworks.show', edition.artwork.id)}>
+                            <Button variant="outline" className="w-full sm:w-auto border-purple-200 text-purple-700 hover:bg-purple-50">
+                                <Palette className="w-4 h-4 mr-2" />
+                                Back to Artwork
+                            </Button>
+                        </Link>
+                    )}
                     <Link href={route('admin.editions.index')}>
                         <Button variant="outline" className="w-full sm:w-auto">
                             <ArrowLeft className="w-4 h-4 mr-2" />
@@ -286,57 +296,16 @@ export default function AdminEditionShow({ auth, edition, flash }) {
                 </div>
 
                 {/* Delete Confirmation Modal */}
-                {showDeleteModal && (
-                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                        <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
-                            <div className="flex items-center gap-3 mb-4">
-                                <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
-                                    <Trash2 className="w-5 h-5 text-red-600" />
-                                </div>
-                                <div>
-                                    <h3 className="text-lg font-semibold text-gray-900">Delete Edition</h3>
-                                    <p className="text-sm text-gray-600">This action cannot be undone.</p>
-                                </div>
-                            </div>
-                            
-                            <div className="mb-6">
-                                <p className="text-gray-700">
-                                    Are you sure you want to delete <strong>"{edition.sku}"</strong>? 
-                                    This will permanently remove the edition and all associated data.
-                                </p>
-                            </div>
-
-                            <div className="flex gap-3 justify-end">
-                                <Button
-                                    variant="outline"
-                                    onClick={() => setShowDeleteModal(false)}
-                                    disabled={isDeleting}
-                                    className="border-gray-300 text-gray-700 hover:bg-gray-50"
-                                >
-                                    Cancel
-                                </Button>
-                                <Button
-                                    variant="destructive"
-                                    onClick={handleDelete}
-                                    disabled={isDeleting}
-                                    className="bg-red-600 hover:bg-red-700 text-white"
-                                >
-                                    {isDeleting ? (
-                                        <>
-                                            <div className="w-4 h-4 mr-2 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                                            Deleting...
-                                        </>
-                                    ) : (
-                                        <>
-                                            <Trash2 className="w-4 h-4 mr-2" />
-                                            Delete Edition
-                                        </>
-                                    )}
-                                </Button>
-                            </div>
-                        </div>
-                    </div>
-                )}
+                <ConfirmDialog
+                    isOpen={showDeleteModal}
+                    onClose={() => setShowDeleteModal(false)}
+                    onConfirm={handleDelete}
+                    title="Delete Edition"
+                    message={`Are you sure you want to delete "${edition.sku}"? This will permanently remove the edition and all associated data.`}
+                    confirmText="Delete Edition"
+                    isLoading={isDeleting}
+                    variant="danger"
+                />
             </div>
         </AdminLayout>
     );
