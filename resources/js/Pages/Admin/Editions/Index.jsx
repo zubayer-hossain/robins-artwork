@@ -1,4 +1,4 @@
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 import AdminLayout from '@/Layouts/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
@@ -9,6 +9,7 @@ import ConfirmDialog from '@/Components/ConfirmDialog';
 import { Plus, Edit, Trash2, Eye, Package, Image as ImageIcon, ExternalLink } from 'lucide-react';
 
 export default function AdminEditionsIndex({ auth, editions }) {
+    const { currency } = usePage().props;
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [editionToDelete, setEditionToDelete] = useState(null);
     const [isDeleting, setIsDeleting] = useState(false);
@@ -132,7 +133,7 @@ export default function AdminEditionsIndex({ auth, editions }) {
                                                 </TableCell>
                                                 <TableCell>
                                                     <span className="font-semibold text-green-600">
-                                                        ${Number(edition.price).toLocaleString()}
+                                                        {currency?.symbol || '$'}{Number(edition.price).toLocaleString()}
                                                     </span>
                                                 </TableCell>
                                                 <TableCell>

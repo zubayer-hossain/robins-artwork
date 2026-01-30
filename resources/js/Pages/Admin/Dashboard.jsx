@@ -22,7 +22,7 @@ import {
 } from 'lucide-react';
 
 export default function AdminDashboard({ stats, recentOrders, recentMessages, recentArtworks }) {
-    const { auth } = usePage().props;
+    const { auth, currency } = usePage().props;
     const user = auth.user;
     const getStatusColor = (status) => {
         switch (status) {
@@ -169,12 +169,12 @@ export default function AdminDashboard({ stats, recentOrders, recentMessages, re
                                     <div>
                                         <p className="text-xs sm:text-sm font-medium text-gray-500 mb-1">Total Revenue (Paid)</p>
                                         <p className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-                                            ${stats.totalRevenue || '0.00'}
+                                            {currency?.symbol || '$'}{stats.totalRevenue || '0.00'}
                                         </p>
                                         {stats.pendingRevenue && parseFloat(stats.pendingRevenue) > 0 && (
                                             <div className="flex items-center gap-2 mt-2">
                                                 <span className="text-xs px-2 py-0.5 bg-yellow-100 text-yellow-800 rounded-full">
-                                                    ${stats.pendingRevenue} Pending
+                                                    {currency?.symbol || '$'}{stats.pendingRevenue} Pending
                                                 </span>
                                             </div>
                                         )}
@@ -308,7 +308,7 @@ export default function AdminDashboard({ stats, recentOrders, recentMessages, re
                                                             </div>
                                                             <div className="flex items-center gap-1 sm:gap-2">
                                                                 <span className="font-semibold text-gray-900">
-                                                                    ${order.total}
+                                                                    {currency?.symbol || '$'}{order.total}
                                                                 </span>
                                                             </div>
                                                         </div>

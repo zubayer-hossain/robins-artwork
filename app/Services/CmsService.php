@@ -73,4 +73,26 @@ class CmsService
             'stat3_label' => self::get('home', 'stats', 'stat3_label', 'Art Mediums'),
         ];
     }
+
+    /**
+     * Get default currency setting
+     */
+    public static function getDefaultCurrency(): string
+    {
+        return self::getGlobal('site', 'default_currency', 'USD');
+    }
+
+    /**
+     * Get currency symbol for a currency code
+     */
+    public static function getCurrencySymbol(?string $currency = null): string
+    {
+        $currency = $currency ?? self::getDefaultCurrency();
+        $symbols = [
+            'USD' => '$',
+            'GBP' => '£',
+            'EUR' => '€',
+        ];
+        return $symbols[strtoupper($currency)] ?? '$';
+    }
 }

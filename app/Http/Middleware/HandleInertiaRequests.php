@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Models\CmsSetting;
+use App\Services\CmsService;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -35,6 +36,10 @@ class HandleInertiaRequests extends Middleware
         // Get global CMS settings for use across all pages (header, footer, etc.)
         $globalSettings = CmsSetting::getPageSettings('global');
         
+        // Get currency settings
+        $currencyCode = CmsService::getDefaultCurrency();
+        $currencySymbol = CmsService::getCurrencySymbol($currencyCode);
+        
         return [
             ...parent::share($request),
             'auth' => [
@@ -46,6 +51,10 @@ class HandleInertiaRequests extends Middleware
                 ] : null,
             ],
             'globalSettings' => $globalSettings,
+            'currency' => [
+                'code' => $currencyCode,
+                'symbol' => $currencySymbol,
+            ],
             'flash' => [
                 'success' => fn () => $request->session()->get('success'),
                 'error' => fn () => $request->session()->get('error'),

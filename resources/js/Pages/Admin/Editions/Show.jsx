@@ -1,4 +1,4 @@
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
 import AdminLayout from '@/Layouts/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 
 export default function AdminEditionShow({ auth, edition, flash }) {
+    const { currency } = usePage().props;
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
 
@@ -118,7 +119,7 @@ export default function AdminEditionShow({ auth, edition, flash }) {
                                     </div>
                                     <div className="flex items-center justify-between p-3 bg-green-50/50 rounded-lg">
                                         <span className="text-sm font-medium text-gray-600">Price</span>
-                                        <span className="text-lg font-bold text-green-600">${edition.price.toLocaleString()}</span>
+                                        <span className="text-lg font-bold text-green-600">{currency?.symbol || '$'}{edition.price.toLocaleString()}</span>
                                     </div>
                                 </div>
 

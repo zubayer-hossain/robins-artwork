@@ -1,9 +1,10 @@
 import { Card, CardContent } from '@/Components/ui/card';
 import { Badge } from '@/Components/ui/badge';
 import { ArtworkCardActions } from '@/Components/ArtworkActions';
-import { Link } from '@inertiajs/react';
+import { Link, usePage } from '@inertiajs/react';
 
 export default function ArtworkCard({ artwork, className = "", showFavoriteButton = true }) {
+    const { currency } = usePage().props;
     return (
         <Card className={`group overflow-hidden hover:shadow-2xl transition-all duration-300 border-0 shadow-lg ${className}`}>
             {/* Image Section */}
@@ -45,7 +46,7 @@ export default function ArtworkCard({ artwork, className = "", showFavoriteButto
                     {artwork.price && (
                         <div className="text-right flex-shrink-0 ml-3">
                             <span className="text-xl font-bold text-green-600">
-                                ${artwork.price.toLocaleString()}
+                                {currency?.symbol || '$'}{artwork.price.toLocaleString()}
                             </span>
                         </div>
                     )}

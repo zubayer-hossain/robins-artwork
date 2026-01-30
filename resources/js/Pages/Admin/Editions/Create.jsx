@@ -1,4 +1,4 @@
-import { Head, useForm, Link } from '@inertiajs/react';
+import { Head, useForm, Link, usePage } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
 import AdminLayout from '@/Layouts/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
@@ -11,6 +11,7 @@ import { Badge } from '@/Components/ui/badge';
 import { ArrowLeft, Save, Package, Eye, ExternalLink, Image as ImageIcon, Palette } from 'lucide-react';
 
 export default function AdminEditionCreate({ auth, artworks, flash }) {
+    const { currency } = usePage().props;
     // Check for pre-selected artwork from URL
     const urlParams = new URLSearchParams(window.location.search);
     const preselectedArtworkId = urlParams.get('artwork_id');
@@ -168,7 +169,7 @@ export default function AdminEditionCreate({ auth, artworks, flash }) {
                                             {errors.sku && <p className="text-sm text-red-600 mt-1">{errors.sku}</p>}
                                         </div>
                                         <div>
-                                            <Label htmlFor="price">Price ($) *</Label>
+                                            <Label htmlFor="price">Price ({currency?.symbol || '$'}) *</Label>
                                             <Input
                                                 id="price"
                                                 type="number"

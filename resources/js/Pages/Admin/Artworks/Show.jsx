@@ -1,4 +1,4 @@
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
 import AdminLayout from '@/Layouts/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
@@ -30,6 +30,7 @@ import {
 } from 'lucide-react';
 
 export default function AdminArtworkShow({ auth, artwork, flash }) {
+    const { currency } = usePage().props;
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
     const [lightboxOpen, setLightboxOpen] = useState(false);
@@ -192,7 +193,7 @@ export default function AdminArtworkShow({ auth, artwork, flash }) {
                                             <div>
                                                 <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Price</label>
                                                 <p className="font-semibold text-gray-900">
-                                                    {artwork.price ? `$${artwork.price.toLocaleString()}` : 'Not for sale'}
+                                                    {artwork.price ? `${currency?.symbol || '$'}${artwork.price.toLocaleString()}` : 'Not for sale'}
                                                 </p>
                                             </div>
                                         </div>
@@ -382,7 +383,7 @@ export default function AdminArtworkShow({ auth, artwork, flash }) {
                                                         <div className="flex items-center gap-3 text-sm text-gray-500 mt-1">
                                                             <span className="flex items-center gap-1">
                                                                 <DollarSign className="w-3 h-3" />
-                                                                ${Number(edition.price).toLocaleString()}
+                                                                {currency?.symbol || '$'}{Number(edition.price).toLocaleString()}
                                                             </span>
                                                             <span>•</span>
                                                             <span className={edition.stock > 0 ? 'text-green-600' : 'text-red-600'}>

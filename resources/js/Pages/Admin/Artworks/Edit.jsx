@@ -1,4 +1,4 @@
-import { Head, useForm, Link } from '@inertiajs/react';
+import { Head, useForm, Link, usePage } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
 import AdminLayout from '@/Layouts/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
@@ -14,6 +14,7 @@ import ImageUploader from '@/Components/ImageUploader';
 import RichTextEditor from '@/Components/RichTextEditor';
 
 export default function AdminArtworksEdit({ auth, artwork, mediums, statuses, flash }) {
+    const { currency } = usePage().props;
     const [newTagInput, setNewTagInput] = useState('');
     const [artworkImages, setArtworkImages] = useState(artwork?.images || []);
 
@@ -44,13 +45,6 @@ export default function AdminArtworksEdit({ auth, artwork, mediums, statuses, fl
     const handleSubmit = (e) => {
         e.preventDefault();
         put(route('admin.artworks.update', artwork.id), {
-            onSuccess: () => {
-                if (window.toast) {
-                    window.toast.success('Artwork updated successfully!', 'Success');
-                }
-                // Redirect to artworks list
-                window.location.href = route('admin.artworks.index');
-            },
             onError: (errors) => {
                 if (window.toast) {
                     window.toast.error('Please check the form for errors.', 'Validation Error');
@@ -204,7 +198,7 @@ export default function AdminArtworksEdit({ auth, artwork, mediums, statuses, fl
                                             {errors.year && <p className="text-sm text-red-600 mt-1">{errors.year}</p>}
                                         </div>
                                         <div>
-                                            <Label htmlFor="price">Price ($)</Label>
+                                            <Label htmlFor="price">Price ({currency?.symbol || '$'})</Label>
                                             <Input
                                                 id="price"
                                                 type="number"
@@ -359,7 +353,7 @@ export default function AdminArtworksEdit({ auth, artwork, mediums, statuses, fl
                                                             <div className="flex items-center gap-3 text-sm text-gray-500 mt-1">
                                                                 <span className="flex items-center gap-1">
                                                                     <DollarSign className="w-3 h-3" />
-                                                                    ${Number(edition.price).toLocaleString()}
+                                                                    {currency?.symbol || '$'}{Number(edition.price).toLocaleString()}
                                                                 </span>
                                                                 <span>•</span>
                                                                 <span className={edition.stock > 0 ? 'text-green-600' : 'text-red-600'}>

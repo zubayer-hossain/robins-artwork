@@ -1,4 +1,4 @@
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 import AdminLayout from '@/Layouts/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
@@ -9,6 +9,7 @@ import ConfirmDialog from '@/Components/ConfirmDialog';
 import { Plus, Edit, Trash2, Eye, Palette } from 'lucide-react';
 
 export default function AdminArtworksIndex({ auth, artworks }) {
+    const { currency } = usePage().props;
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [artworkToDelete, setArtworkToDelete] = useState(null);
     const [isDeleting, setIsDeleting] = useState(false);
@@ -117,7 +118,7 @@ export default function AdminArtworksIndex({ auth, artworks }) {
                                                 <TableCell>
                                                     {artwork.price ? (
                                                         <span className="font-medium text-green-600">
-                                                            ${artwork.price.toLocaleString()}
+                                                            {currency?.symbol || '$'}{artwork.price.toLocaleString()}
                                                         </span>
                                                     ) : (
                                                         <span className="text-gray-400">Not for sale</span>

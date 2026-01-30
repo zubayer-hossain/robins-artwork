@@ -1,4 +1,4 @@
-import { Head, router, Link } from '@inertiajs/react';
+import { Head, router, Link, usePage } from '@inertiajs/react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -8,6 +8,7 @@ import { useState, useEffect } from 'react';
 import { useCart } from '@/Contexts/CartContext';
 
 export default function GalleryShow({ artwork, isFavorite: initialIsFavorite }) {
+    const { currency } = usePage().props;
     const [selectedImage, setSelectedImage] = useState(0);
     const [selectedOption, setSelectedOption] = useState(null); // null = original, edition.id = selected edition
     const [isFavorite, setIsFavorite] = useState(initialIsFavorite || false);
@@ -317,8 +318,8 @@ export default function GalleryShow({ artwork, isFavorite: initialIsFavorite }) 
                                         <div>
                                             <div className="text-sm font-medium text-green-700 mb-1">Starting Price</div>
                                             <div className="text-4xl font-bold text-green-600">
-                                                ${artwork.price.toLocaleString()}
-                                                <span className="text-lg font-normal text-green-500 ml-2">USD</span>
+                                                {currency?.symbol || '$'}{artwork.price.toLocaleString()}
+                                                <span className="text-lg font-normal text-green-500 ml-2">{currency?.code || 'USD'}</span>
                                             </div>
                                         </div>
                                         <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center">
@@ -387,9 +388,9 @@ export default function GalleryShow({ artwork, isFavorite: initialIsFavorite }) 
                                                     </div>
                                                     <div className="text-center sm:text-right">
                                                         <div className="text-2xl font-bold text-purple-600">
-                                                            ${artwork.price.toLocaleString()}
+                                                            {currency?.symbol || '$'}{artwork.price.toLocaleString()}
                                                         </div>
-                                                        <div className="text-sm text-gray-500">USD</div>
+                                                        <div className="text-sm text-gray-500">{currency?.code || 'USD'}</div>
                                                     </div>
                                                 </div>
                                             </div>
@@ -462,9 +463,9 @@ export default function GalleryShow({ artwork, isFavorite: initialIsFavorite }) 
                                                             </div>
                                                             <div className="text-center sm:text-right">
                                                                 <div className="text-2xl font-bold text-blue-600">
-                                                                    ${edition.price.toLocaleString()}
+                                                                    {currency?.symbol || '$'}{edition.price.toLocaleString()}
                                                                 </div>
-                                                                <div className="text-sm text-gray-500">USD</div>
+                                                                <div className="text-sm text-gray-500">{currency?.code || 'USD'}</div>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -489,7 +490,7 @@ export default function GalleryShow({ artwork, isFavorite: initialIsFavorite }) 
                                                             {selectedOption === null ? 'Authentic original artwork' : 'High-quality print reproduction'}
                                                         </div>
                                                         <div className="text-2xl font-bold text-green-600 mt-1">
-                                                            ${getSelectedPrice()?.toLocaleString() || '0'}
+                                                            {currency?.symbol || '$'}{getSelectedPrice()?.toLocaleString() || '0'}
                                                         </div>
                                                     </div>
                                                 </div>

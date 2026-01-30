@@ -9,21 +9,12 @@ use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
-use Inertia\Response;
-use Illuminate\Routing\Controllers\HasMiddleware;
-use Illuminate\Routing\Controllers\Middleware;
 
-class CartController extends Controller implements HasMiddleware
+class CartController extends Controller
 {
-    public static function middleware(): array
-    {
-        return [
-            new Middleware('auth'),
-        ];
-    }
-
     /**
      * Display the user's cart
+     * Note: Authorization is handled by route-level 'customer' middleware
      */
     public function index(Request $request)
     {
@@ -180,8 +171,8 @@ class CartController extends Controller implements HasMiddleware
      */
     public function update(Request $request, CartItem $cartItem): JsonResponse
     {
-        // Ensure user owns this cart item
-        if ($cartItem->user_id != Auth::id()) {
+        // Security: Strict comparison to ensure user owns this cart item
+        if ($cartItem->user_id !== Auth::id()) {
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
@@ -212,8 +203,8 @@ class CartController extends Controller implements HasMiddleware
      */
     public function destroy(CartItem $cartItem): JsonResponse
     {
-        // Ensure user owns this cart item
-        if ($cartItem->user_id != Auth::id()) {
+        // Security: Strict comparison to ensure user owns this cart item
+        if ($cartItem->user_id !== Auth::id()) {
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 

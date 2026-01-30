@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
     Dialog,
     DialogContent,
@@ -18,7 +19,8 @@ import {
     ChevronRight, Save, Globe, Building2, Mail, Phone, MapPin,
     Facebook, Twitter, Instagram, Youtube, Linkedin, Link as LinkIcon,
     Image, AlertCircle, CheckCircle, RotateCcw, Sparkles, Info,
-    FileText, AtSign, MessageSquare, Share2, AlertTriangle, Trash2, X
+    FileText, AtSign, MessageSquare, Share2, AlertTriangle, Trash2, X,
+    DollarSign
 } from 'lucide-react';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import CmsSidebar from '@/Components/CmsSidebar';
@@ -358,6 +360,57 @@ export default function CmsGlobal({ auth, settings, breadcrumbs, pageTitle, acti
                         </div>
                     </div>
                 );
+            case 'select':
+                // Get options based on the setting key
+                const getSelectOptions = (key) => {
+                    if (key === 'default_currency') {
+                        return [
+                            { value: 'USD', label: '$ USD - US Dollar' },
+                            { value: 'GBP', label: '£ GBP - British Pound' },
+                            { value: 'EUR', label: '€ EUR - Euro' },
+                        ];
+                    }
+                    return [];
+                };
+                
+                const options = getSelectOptions(setting.key);
+                const SelectIcon = setting.key === 'default_currency' ? DollarSign : SettingIcon;
+                
+                return (
+                    <div className="group relative p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border border-green-200 hover:border-green-300 hover:shadow-sm transition-all duration-200">
+                        <div className="flex items-start gap-4">
+                            <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                                <SelectIcon className="w-5 h-5 text-green-600" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                                <Label htmlFor={setting.id} className="text-sm font-semibold text-gray-900 mb-2 block">
+                                    {setting.key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                                </Label>
+                                <Select 
+                                    value={value || options[0]?.value} 
+                                    onValueChange={(newValue) => updateSettingValue(setting.id, newValue)}
+                                >
+                                    <SelectTrigger className="w-full bg-white border-green-300 focus:ring-green-500">
+                                        <SelectValue placeholder="Select an option" />
+                                    </SelectTrigger>
+                                    <SelectContent className="z-[9999]" position="popper" sideOffset={5}>
+                                        {options.map((option) => (
+                                            <SelectItem key={option.value} value={option.value}>
+                                                {option.label}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                                {setting.description && (
+                                    <p className="text-xs text-gray-500 mt-2 flex items-center gap-1">
+                                        <Info className="w-3 h-3" />
+                                        {setting.description}
+                                    </p>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                );
             case 'boolean':
                 return (
                     <div className="flex items-center justify-between p-4 bg-gradient-to-r from-gray-50 to-white rounded-xl border border-gray-200 hover:border-blue-200 transition-colors">
@@ -514,7 +567,7 @@ export default function CmsGlobal({ auth, settings, breadcrumbs, pageTitle, acti
                                     return (
                                         <Card 
                                             key={section} 
-                                            className={`bg-white border-0 shadow-lg mb-6 transition-all duration-500 overflow-hidden ${
+                                            className={`bg-white border-0 shadow-lg mb-6 transition-all duration-500 ${
                                                 activeSection === section ? 'opacity-100 ring-2 ring-blue-100' : 'opacity-0 hidden'
                                             }`}
                                         >

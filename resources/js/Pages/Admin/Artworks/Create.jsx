@@ -1,4 +1,4 @@
-import { Head, useForm, Link } from '@inertiajs/react';
+import { Head, useForm, Link, usePage } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
 import AdminLayout from '@/Layouts/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
@@ -14,6 +14,7 @@ import ImageUploader from '@/Components/ImageUploader';
 import RichTextEditor from '@/Components/RichTextEditor';
 
 export default function AdminArtworkCreate({ auth, mediums, statuses, flash }) {
+    const { currency } = usePage().props;
     const [newTagInput, setNewTagInput] = useState('');
 
     const { data, setData, post, processing, errors, reset } = useForm({
@@ -212,7 +213,7 @@ export default function AdminArtworkCreate({ auth, mediums, statuses, flash }) {
                                             {errors.year && <p className="text-sm text-red-600 mt-1">{errors.year}</p>}
                                         </div>
                                         <div>
-                                            <Label htmlFor="price">Price ($)</Label>
+                                            <Label htmlFor="price">Price ({currency?.symbol || '$'})</Label>
                                             <Input
                                                 id="price"
                                                 type="number"

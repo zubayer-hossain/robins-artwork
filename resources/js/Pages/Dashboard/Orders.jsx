@@ -1,4 +1,4 @@
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, usePage } from '@inertiajs/react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 
 export default function CustomerOrders({ orders, stats }) {
+    const { currency } = usePage().props;
     const getStatusColor = (status) => {
         switch (status) {
             case 'paid':
@@ -125,7 +126,7 @@ export default function CustomerOrders({ orders, stats }) {
                                 <div className="flex items-center justify-between">
                                     <div>
                                         <p className="text-xs sm:text-sm font-medium text-gray-500 mb-1">Total Spent</p>
-                                        <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">${stats?.totalSpent || 0}</p>
+                                        <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">{currency?.symbol || '$'}{stats?.totalSpent || 0}</p>
                                     </div>
                                     <div className="p-2 sm:p-3 bg-gradient-to-br from-purple-500 to-indigo-500 rounded-xl shadow-lg">
                                         <CreditCard className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-white" />
@@ -162,7 +163,7 @@ export default function CustomerOrders({ orders, stats }) {
                                                     </Badge>
                                                 </div>
                                                 <div className="text-right">
-                                                    <p className="text-lg sm:text-xl font-bold text-gray-900">${order.total}</p>
+                                                    <p className="text-lg sm:text-xl font-bold text-gray-900">{currency?.symbol || '$'}{order.total}</p>
                                                     <p className="text-xs text-gray-500 flex items-center gap-1">
                                                         <Calendar className="w-3 h-3" />
                                                         {new Date(order.created_at).toLocaleDateString()}
@@ -191,18 +192,18 @@ export default function CustomerOrders({ orders, stats }) {
                                                                     </span>
                                                                     {item.qty > 1 && (
                                                                         <span className="text-gray-500">
-                                                                            ${item.unit_price} each
+                                                                            {currency?.symbol || '$'}{item.unit_price} each
                                                                         </span>
                                                                     )}
                                                                 </div>
                                                             </div>
                                                             <div className="text-right ml-3">
                                                                 <p className="font-bold text-gray-900 text-sm sm:text-base">
-                                                                    ${(item.unit_price * item.qty).toFixed(2)}
+                                                                    {currency?.symbol || '$'}{(item.unit_price * item.qty).toFixed(2)}
                                                                 </p>
                                                                 {item.qty > 1 && (
                                                                     <p className="text-xs text-gray-500">
-                                                                        ${item.unit_price} × {item.qty}
+                                                                        {currency?.symbol || '$'}{item.unit_price} × {item.qty}
                                                                     </p>
                                                                 )}
                                                             </div>

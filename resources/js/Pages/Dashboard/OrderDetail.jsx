@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, usePage } from '@inertiajs/react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -25,6 +25,7 @@ import {
 } from 'lucide-react';
 
 export default function OrderDetail({ order }) {
+    const { currency } = usePage().props;
     const [isDownloading, setIsDownloading] = useState(false);
 
     const handleDownloadReceipt = async () => {
@@ -134,8 +135,8 @@ export default function OrderDetail({ order }) {
                                             </div>
                                         </div>
                                         <div className="text-center lg:text-right">
-                                            <p className="text-2xl sm:text-3xl font-bold text-gray-900">${order.total}</p>
-                                            <p className="text-sm text-gray-500 font-medium">{order.currency?.toUpperCase() || 'USD'}</p>
+                                            <p className="text-2xl sm:text-3xl font-bold text-gray-900">{currency?.symbol || '$'}{order.total}</p>
+                                            <p className="text-sm text-gray-500 font-medium">{currency?.code || 'USD'}</p>
                                         </div>
                                     </div>
                                 </CardContent>
@@ -196,11 +197,11 @@ export default function OrderDetail({ order }) {
                                                             <div className="text-left sm:text-right">
                                                                 {item.qty > 1 && (
                                                                     <div className="text-sm text-gray-500">
-                                                                        ${item.unit_price} × {item.qty}
+                                                                        {currency?.symbol || '$'}{item.unit_price} × {item.qty}
                                                                     </div>
                                                                 )}
                                                                 <div className="text-base font-semibold text-gray-900">
-                                                                    ${(item.unit_price * item.qty).toFixed(2)}
+                                                                    {currency?.symbol || '$'}{(item.unit_price * item.qty).toFixed(2)}
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -376,7 +377,7 @@ export default function OrderDetail({ order }) {
                                 <CardContent className="pt-6 space-y-4">
                                     <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                                         <span className="text-sm font-medium text-gray-600">Items ({order.items.length})</span>
-                                        <span className="font-semibold text-gray-900">${order.total}</span>
+                                        <span className="font-semibold text-gray-900">{currency?.symbol || '$'}{order.total}</span>
                                     </div>
                                     <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                                         <span className="text-sm font-medium text-gray-600">Shipping</span>
@@ -384,7 +385,7 @@ export default function OrderDetail({ order }) {
                                     </div>
                                     <div className="border-t border-gray-200 pt-4 flex items-center justify-between">
                                         <span className="text-lg font-semibold text-gray-900">Total</span>
-                                        <span className="text-2xl font-bold text-gray-900">${order.total}</span>
+                                        <span className="text-2xl font-bold text-gray-900">{currency?.symbol || '$'}{order.total}</span>
                                     </div>
                                 </CardContent>
                             </Card>

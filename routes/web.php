@@ -33,33 +33,7 @@ Route::get('/about', [AboutController::class, 'index'])->name('about');
 Route::get('/contact', [ContactController::class, 'index'])->name('contact');
 Route::post('/contact', [ContactController::class, 'store'])->name('contact.store');
 
-// Test route for debugging
-Route::get('/test', function () {
-    return Inertia::render('Test', ['message' => 'Hello World']);
-})->name('test');
-
-// Debug route for authentication testing
-Route::get('/debug/auth', function () {
-    return response()->json([
-        'authenticated' => auth()->check(),
-        'user_id' => auth()->id(),
-        'user' => auth()->user(),
-        'session_id' => session()->getId(),
-        'csrf_token' => csrf_token(),
-    ]);
-})->middleware('auth')->name('debug.auth');
-
-// Debug route for CSRF testing
-Route::post('/debug/csrf', function () {
-    return response()->json([
-        'success' => true,
-        'message' => 'CSRF token is valid',
-        'received_token' => request()->header('X-CSRF-TOKEN'),
-        'session_token' => csrf_token(),
-    ]);
-})->middleware('auth')->name('debug.csrf');
-
-// CSRF token refresh route
+// CSRF token refresh route (required for SPA functionality)
 Route::get('/csrf-token', function () {
     return response()->json([
         'token' => csrf_token(),
@@ -140,6 +114,7 @@ Route::prefix('admin')->name('admin.')->middleware('web')->group(function () {
         
         Route::resource('orders', AdminOrderController::class)->only(['index', 'show']);
         Route::patch('/orders/{order}/status', [AdminOrderController::class, 'updateStatus'])->name('orders.update-status');
+        Route::get('/orders/{order}/invoice', [AdminOrderController::class, 'downloadInvoice'])->name('orders.invoice');
         Route::resource('editions', AdminEditionController::class);
         
         // Admin profile management

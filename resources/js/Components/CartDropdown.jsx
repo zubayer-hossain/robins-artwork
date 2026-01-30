@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from '@inertiajs/react';
+import { Link, usePage } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useCart } from '@/Contexts/CartContext';
@@ -7,6 +7,7 @@ import { ShoppingCart, Trash2, Eye, ShoppingBag } from 'lucide-react';
 import axios from 'axios';
 
 export default function CartDropdown({ isOpen, onClose, triggerRef }) {
+    const { currency } = usePage().props;
     const [cartItems, setCartItems] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
     const [totalPrice, setTotalPrice] = useState(0);
@@ -161,7 +162,7 @@ export default function CartDropdown({ isOpen, onClose, triggerRef }) {
                                         </div>
                                         <div className="text-right">
                                             <span className="text-sm font-semibold text-gray-900">
-                                                ${item.total_price}
+                                                {currency?.symbol || '$'}{item.total_price}
                                             </span>
                                         </div>
                                     </div>
@@ -187,7 +188,7 @@ export default function CartDropdown({ isOpen, onClose, triggerRef }) {
                     {/* Total */}
                     <div className="flex justify-between items-center mb-3">
                         <span className="text-sm sm:text-base font-medium text-gray-900">Total:</span>
-                        <span className="text-base sm:text-lg font-bold text-gray-900">${totalPrice}</span>
+                        <span className="text-base sm:text-lg font-bold text-gray-900">{currency?.symbol || '$'}{totalPrice}</span>
                     </div>
 
                     {/* Action Buttons */}

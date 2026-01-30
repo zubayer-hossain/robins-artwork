@@ -1,4 +1,4 @@
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -8,6 +8,7 @@ import { useState, useEffect } from 'react';
 import ArtworkCard from '@/Components/ArtworkCard';
 
 export default function GalleryIndex({ artworks, filters, totalArtworks, stats, cmsSettings = {} }) {
+    const { currency } = usePage().props;
     // Helper function to get CMS value
     const getCmsValue = (section, key, defaultValue = '') => {
         return cmsSettings[section]?.[key] || defaultValue;
@@ -243,8 +244,8 @@ export default function GalleryIndex({ artworks, filters, totalArtworks, stats, 
                                             {searchTerm && <span className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-medium">"{searchTerm}"</span>}
                                             {selectedMedium !== 'all' && <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">{selectedMedium}</span>}
                                             {selectedYear !== 'all' && <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">{selectedYear}</span>}
-                                            {priceRange.min && <span className="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-xs font-medium">Min: ${priceRange.min}</span>}
-                                            {priceRange.max && <span className="px-3 py-1 bg-red-100 text-red-700 rounded-full text-xs font-medium">Max: ${priceRange.max}</span>}
+                                            {priceRange.min && <span className="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-xs font-medium">Min: {currency?.symbol || '$'}{priceRange.min}</span>}
+                                            {priceRange.max && <span className="px-3 py-1 bg-red-100 text-red-700 rounded-full text-xs font-medium">Max: {currency?.symbol || '$'}{priceRange.max}</span>}
                                         </div>
                                         <Button 
                                             variant="outline" 

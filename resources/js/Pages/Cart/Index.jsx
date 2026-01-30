@@ -1,4 +1,4 @@
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -11,6 +11,7 @@ import { Trash2, Plus, Minus, ShoppingBag, ArrowRight, MapPin, PlusCircle, Edit 
 import AddressModal from '@/Components/AddressModal';
 
 export default function CartIndex({ cartItems, totalPrice, itemCount, addresses, defaultShippingAddress, defaultBillingAddress }) {
+    const { currency } = usePage().props;
     const [isSubmittingOrder, setIsSubmittingOrder] = useState(false);
     const [selectedShippingAddress, setSelectedShippingAddress] = useState(defaultShippingAddress?.label || '');
     const [selectedBillingAddress, setSelectedBillingAddress] = useState(defaultBillingAddress?.label || '');
@@ -284,10 +285,10 @@ export default function CartIndex({ cartItems, totalPrice, itemCount, addresses,
                                                 
                                                 <div className="text-left sm:text-right">
                                                     <div className="text-sm text-gray-500">
-                                                        ${item.price} × {item.quantity}
+                                                        {currency?.symbol || '$'}{item.price} × {item.quantity}
                                                     </div>
                                                     <div className="text-base font-semibold text-gray-900">
-                                                        ${item.total_price}
+                                                        {currency?.symbol || '$'}{item.total_price}
                                                     </div>
                                                 </div>
                                             </div>
@@ -516,13 +517,13 @@ export default function CartIndex({ cartItems, totalPrice, itemCount, addresses,
                                     <div className="space-y-4">
                                         <div className="flex justify-between text-sm">
                                             <span className="text-gray-600">Subtotal ({itemCount} items)</span>
-                                            <span className="font-medium">${totalPrice}</span>
+                                            <span className="font-medium">{currency?.symbol || '$'}{totalPrice}</span>
                                         </div>
                                         
                                         <div className="border-t pt-4">
                                             <div className="flex justify-between text-lg font-semibold">
                                                 <span>Total</span>
-                                                <span>${totalPrice}</span>
+                                                <span>{currency?.symbol || '$'}{totalPrice}</span>
                                             </div>
                                         </div>
 

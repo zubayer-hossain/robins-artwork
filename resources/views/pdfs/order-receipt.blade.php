@@ -162,7 +162,7 @@
                 <th>Payment Method</th>
                 <td>{{ $order->payment_method ?? '—' }}</td>
                 <th>Currency</th>
-                <td>USD</td>
+                <td>{{ $currencyCode ?? 'USD' }}</td>
             </tr>
         </table>
 
@@ -214,7 +214,8 @@
             </thead>
             <tbody>
             @php
-                $currency = 'USD';
+                $currency = $currencyCode ?? 'USD';
+                $symbol = $currencySymbol ?? '$';
                 $idx = 1;
             @endphp
             @foreach($order->items as $item)
@@ -233,8 +234,8 @@
                     </td>
                     <td class="small">{{ $sku }}</td>
                     <td class="col-qty">{{ number_format($qty) }}</td>
-                    <td class="col-price">{{ number_format($unit, 2) }} {{ $currency }}</td>
-                    <td class="col-total fw-600">{{ number_format($line, 2) }} {{ $currency }}</td>
+                    <td class="col-price">{{ $symbol }}{{ number_format($unit, 2) }}</td>
+                    <td class="col-total fw-600">{{ $symbol }}{{ number_format($line, 2) }}</td>
                 </tr>
             @endforeach
             </tbody>
@@ -265,23 +266,23 @@
                     <table class="totals">
                         <tr>
                             <td class="label">Subtotal</td>
-                            <td class="num">{{ number_format($subtotal, 2) }} {{ $currency }}</td>
+                            <td class="num">{{ $symbol }}{{ number_format($subtotal, 2) }}</td>
                         </tr>
                         <tr>
                             <td class="label">Shipping</td>
-                            <td class="num">{{ number_format($shipping, 2) }} {{ $currency }}</td>
+                            <td class="num">{{ $symbol }}{{ number_format($shipping, 2) }}</td>
                         </tr>
                         <tr>
                             <td class="label">Discount</td>
-                            <td class="num">-{{ number_format($discount, 2) }} {{ $currency }}</td>
+                            <td class="num">-{{ $symbol }}{{ number_format($discount, 2) }}</td>
                         </tr>
                         <tr>
                             <td class="label">Tax</td>
-                            <td class="num">{{ number_format($tax, 2) }} {{ $currency }}</td>
+                            <td class="num">{{ $symbol }}{{ number_format($tax, 2) }}</td>
                         </tr>
                         <tr>
                             <td class="grand">Grand Total</td>
-                            <td class="grand num">{{ number_format($grand, 2) }} {{ $currency }}</td>
+                            <td class="grand num">{{ $symbol }}{{ number_format($grand, 2) }} {{ $currency }}</td>
                         </tr>
                     </table>
                 </td>

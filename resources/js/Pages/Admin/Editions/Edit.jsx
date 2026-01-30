@@ -1,4 +1,4 @@
-import { Head, useForm, Link } from '@inertiajs/react';
+import { Head, useForm, Link, usePage } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
 import AdminLayout from '@/Layouts/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
@@ -12,6 +12,7 @@ import ConfirmDialog from '@/Components/ConfirmDialog';
 import { ArrowLeft, Save, Trash2, Package, Eye, ExternalLink, Image as ImageIcon, Palette, Layers } from 'lucide-react';
 
 export default function AdminEditionEdit({ auth, edition, artworks, flash }) {
+    const { currency } = usePage().props;
     const { data, setData, patch, processing, errors, delete: deleteEdition } = useForm({
         artwork_id: edition.artwork_id || '',
         sku: edition.sku || '',
@@ -170,7 +171,7 @@ export default function AdminEditionEdit({ auth, edition, artworks, flash }) {
                                             {errors.sku && <p className="text-sm text-red-600 mt-1">{errors.sku}</p>}
                                         </div>
                                         <div>
-                                            <Label htmlFor="price">Price ($) *</Label>
+                                            <Label htmlFor="price">Price ({currency?.symbol || '$'}) *</Label>
                                             <Input
                                                 id="price"
                                                 type="number"
