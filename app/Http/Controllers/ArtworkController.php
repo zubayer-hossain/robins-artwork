@@ -80,12 +80,12 @@ class ArtworkController extends Controller
                     'price' => $artwork->price,
                     'tags' => $artwork->tags,
                     'isFavorite' => in_array($artwork->id, $userFavorites),
-                    'primaryImage' => ($artwork->primaryImage && file_exists($artwork->primaryImage->getPath())) ? [
-                        'thumb' => $artwork->primaryImage->hasGeneratedConversion('thumb') 
-                            ? $artwork->primaryImage->getUrl('thumb') 
+                    'primaryImage' => $artwork->primaryImage ? [
+                        'thumb' => $artwork->primaryImage->hasGeneratedConversion('thumb')
+                            ? $artwork->primaryImage->getUrl('thumb')
                             : $artwork->primaryImage->getUrl(),
-                        'medium' => $artwork->primaryImage->hasGeneratedConversion('medium') 
-                            ? $artwork->primaryImage->getUrl('medium') 
+                        'medium' => $artwork->primaryImage->hasGeneratedConversion('medium')
+                            ? $artwork->primaryImage->getUrl('medium')
                             : $artwork->primaryImage->getUrl(),
                     ] : null,
                     'editions' => $artwork->editions->map(function ($edition) {

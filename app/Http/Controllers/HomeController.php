@@ -50,8 +50,12 @@ class HomeController extends Controller
                     'tags' => $artwork->tags,
                     'isFavorite' => in_array($artwork->id, $userFavorites),
                     'primaryImage' => $artwork->primaryImage ? [
-                        'thumb' => $artwork->primaryImage->getUrl('thumb'),
-                        'medium' => $artwork->primaryImage->getUrl('medium'),
+                        'thumb' => $artwork->primaryImage->hasGeneratedConversion('thumb')
+                            ? $artwork->primaryImage->getUrl('thumb')
+                            : $artwork->primaryImage->getUrl(),
+                        'medium' => $artwork->primaryImage->hasGeneratedConversion('medium')
+                            ? $artwork->primaryImage->getUrl('medium')
+                            : $artwork->primaryImage->getUrl(),
                     ] : null,
                 ];
             }),

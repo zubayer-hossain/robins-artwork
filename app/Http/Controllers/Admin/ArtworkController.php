@@ -27,7 +27,9 @@ class ArtworkController extends Controller
                     'status' => $artwork->status,
                     'price' => $artwork->price,
                     'primaryImage' => $artwork->primaryImage ? [
-                        'thumb' => $artwork->primaryImage->getUrl('thumb'),
+                        'thumb' => $artwork->primaryImage->hasGeneratedConversion('thumb')
+                            ? $artwork->primaryImage->getUrl('thumb')
+                            : $artwork->primaryImage->getUrl(),
                     ] : null,
                     'created_at' => $artwork->created_at->format('M j, Y'),
                 ];
