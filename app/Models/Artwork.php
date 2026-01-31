@@ -2,16 +2,29 @@
 
 namespace App\Models;
 
+use App\Conversions\Conversion as ArtworkConversion;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
+use Spatie\MediaLibrary\Conversions\Conversion;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 use Spatie\Image\Enums\Fit;
 
 class Artwork extends Model implements HasMedia
 {
     use HasFactory, InteractsWithMedia;
+
+    /**
+     * Use custom Conversion that works when proc_open is disabled (empty optimizer chain).
+     */
+    public function addMediaConversion(string $name): Conversion
+    {
+        $conversion = ArtworkConversion::create($name);
+        $this->mediaConversions[] = $conversion;
+
+        return $conversion;
+    }
 
     protected $fillable = [
         'slug',
