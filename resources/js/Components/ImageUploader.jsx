@@ -90,10 +90,16 @@ export default function ImageUploader({
             const response = await fetch(route('admin.artworks.images.upload', artworkId), {
                 method: 'POST',
                 body: formData,
+                credentials: 'same-origin',
                 headers: {
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
                 },
             });
+
+            if (response.status === 419) {
+                showToast('Session expired. Please refresh the page and try again.', 'error');
+                return;
+            }
 
             const result = await response.json();
             setUploadProgress(100);
@@ -128,6 +134,7 @@ export default function ImageUploader({
         try {
             const response = await fetch(route('admin.artworks.images.delete', [artworkId, imageId]), {
                 method: 'DELETE',
+                credentials: 'same-origin',
                 headers: {
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
                 },
@@ -162,6 +169,7 @@ export default function ImageUploader({
         try {
             const response = await fetch(route('admin.artworks.images.primary', [artworkId, imageId]), {
                 method: 'POST',
+                credentials: 'same-origin',
                 headers: {
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
                     'Content-Type': 'application/json',
@@ -274,6 +282,7 @@ export default function ImageUploader({
         try {
             const response = await fetch(route('admin.artworks.images.reorder', artworkId), {
                 method: 'POST',
+                credentials: 'same-origin',
                 headers: {
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
                     'Content-Type': 'application/json',
