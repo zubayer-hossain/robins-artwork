@@ -3,6 +3,7 @@
 namespace App\Mail;
 
 use App\Models\Order;
+use App\Services\CmsService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
@@ -26,10 +27,15 @@ class OrderReceipt extends Mailable
 
     public function content(): Content
     {
+        $currencyCode = CmsService::getDefaultCurrency();
+        $currencySymbol = CmsService::getCurrencySymbol($currencyCode);
+
         return new Content(
             view: 'emails.order-receipt',
             with: [
                 'order' => $this->order,
+                'currencyCode' => $currencyCode,
+                'currencySymbol' => $currencySymbol,
             ],
         );
     }

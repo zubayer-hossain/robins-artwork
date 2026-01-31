@@ -1,4 +1,4 @@
-﻿﻿import { Head, Link, usePage } from '@inertiajs/react';
+import { Head, Link, usePage } from '@inertiajs/react';
 import AdminLayout from '@/Layouts/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import { Button } from '@/Components/ui/button';
@@ -22,7 +22,7 @@ import {
 } from 'lucide-react';
 
 export default function AdminDashboard({ stats, recentOrders, recentMessages, recentArtworks }) {
-    const { auth } = usePage().props;
+    const { auth, currency } = usePage().props;
     const user = auth.user;
     const getStatusColor = (status) => {
         switch (status) {
@@ -76,7 +76,7 @@ export default function AdminDashboard({ stats, recentOrders, recentMessages, re
             title: 'View Messages',
             description: 'Respond to customer inquiries and contact forms',
             icon: MessageSquare,
-            href: route('admin.contact.index'),
+            href: route('admin.contact-messages.index'),
             color: 'bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700',
         },
     ];
@@ -169,12 +169,12 @@ export default function AdminDashboard({ stats, recentOrders, recentMessages, re
                                     <div>
                                         <p className="text-xs sm:text-sm font-medium text-gray-500 mb-1">Total Revenue (Paid)</p>
                                         <p className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-                                            ${stats.totalRevenue || '0.00'}
+                                            {currency?.symbol || '$'}{stats.totalRevenue || '0.00'}
                                         </p>
                                         {stats.pendingRevenue && parseFloat(stats.pendingRevenue) > 0 && (
                                             <div className="flex items-center gap-2 mt-2">
                                                 <span className="text-xs px-2 py-0.5 bg-yellow-100 text-yellow-800 rounded-full">
-                                                    ${stats.pendingRevenue} Pending
+                                                    {currency?.symbol || '$'}{stats.pendingRevenue} Pending
                                                 </span>
                                             </div>
                                         )}
@@ -308,7 +308,7 @@ export default function AdminDashboard({ stats, recentOrders, recentMessages, re
                                                             </div>
                                                             <div className="flex items-center gap-1 sm:gap-2">
                                                                 <span className="font-semibold text-gray-900">
-                                                                    ${order.total}
+                                                                    {currency?.symbol || '$'}{order.total}
                                                                 </span>
                                                             </div>
                                                         </div>
@@ -445,7 +445,7 @@ export default function AdminDashboard({ stats, recentOrders, recentMessages, re
                                         </h4>
                                         <div className="space-y-2">
                                             {recentMessages.slice(0, 2).map((message) => (
-                                                <Link key={message.id} href={route('admin.contact.show', message.id)}>
+                                                <Link key={message.id} href={route('admin.contact-messages.show', message.id)}>
                                                     <div className="p-2 rounded-lg border border-gray-100 hover:border-orange-200 hover:bg-orange-50/30 transition-all duration-200">
                                                         <div className="flex items-center justify-between mb-1">
                                                             <span className="font-medium text-sm text-gray-900">{message.name}</span>

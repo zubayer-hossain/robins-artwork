@@ -42,7 +42,13 @@ class AddressController extends Controller
             ]);
 
             $userId = Auth::id();
-            $data = $request->all();
+            
+            // Security: Use only() to prevent mass assignment of unwanted fields
+            $data = $request->only([
+                'type', 'label', 'name', 'company', 'address_line_1', 
+                'address_line_2', 'city', 'state_province', 'postal_code', 
+                'country', 'phone', 'is_default'
+            ]);
             $data['user_id'] = $userId;
 
             return DB::transaction(function () use ($data) {
@@ -80,23 +86,10 @@ class AddressController extends Controller
     public function update(Request $request, Address $address): JsonResponse
     {
         try {
-            // Debug logging
-            \Log::info('Address update attempt', [
-                'user_id' => Auth::id(),
-                'address_user_id' => $address->user_id,
-                'address_id' => $address->id,
-                'session_id' => $request->session()->getId(),
-                'authenticated' => Auth::check(),
-                'method' => $request->method(),
-                'csrf_token' => $request->header('X-CSRF-TOKEN'),
-                'session_csrf' => csrf_token(),
-            ]);
-            
-            // Ensure user owns this address
-            if ($address->user_id != Auth::id()) {
-                \Log::warning('Unauthorized address access', [
+            // Security: Strict comparison to ensure user owns this address
+            if ($address->user_id !== Auth::id()) {
+                \Log::warning('Unauthorized address access attempt', [
                     'user_id' => Auth::id(),
-                    'address_user_id' => $address->user_id,
                     'address_id' => $address->id,
                 ]);
                 return response()->json([
@@ -120,7 +113,12 @@ class AddressController extends Controller
                 'is_default' => 'boolean',
             ]);
 
-            $data = $request->all();
+            // Security: Use only() to prevent mass assignment of unwanted fields
+            $data = $request->only([
+                'type', 'label', 'name', 'company', 'address_line_1', 
+                'address_line_2', 'city', 'state_province', 'postal_code', 
+                'country', 'phone', 'is_default'
+            ]);
 
             return DB::transaction(function () use ($address, $data) {
                 $address->update($data);
@@ -156,20 +154,10 @@ class AddressController extends Controller
     public function destroy(Address $address): JsonResponse
     {
         try {
-            // Debug logging
-            \Log::info('Address destroy attempt', [
-                'user_id' => Auth::id(),
-                'address_user_id' => $address->user_id,
-                'address_id' => $address->id,
-                'session_id' => request()->session()->getId(),
-                'authenticated' => Auth::check(),
-            ]);
-            
-            // Ensure user owns this address
-            if ($address->user_id != Auth::id()) {
-                \Log::warning('Unauthorized address deletion', [
+            // Security: Strict comparison to ensure user owns this address
+            if ($address->user_id !== Auth::id()) {
+                \Log::warning('Unauthorized address deletion attempt', [
                     'user_id' => Auth::id(),
-                    'address_user_id' => $address->user_id,
                     'address_id' => $address->id,
                 ]);
                 return response()->json([
@@ -204,8 +192,8 @@ class AddressController extends Controller
     public function setDefault(Address $address): JsonResponse
     {
         try {
-            // Ensure user owns this address
-            if ($address->user_id != Auth::id()) {
+            // Security: Strict comparison to ensure user owns this address
+            if ($address->user_id !== Auth::id()) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Unauthorized access to address.',

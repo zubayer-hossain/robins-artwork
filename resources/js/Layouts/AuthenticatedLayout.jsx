@@ -93,7 +93,7 @@ export default function AuthenticatedLayout({ header, children }) {
                                 <NavLink href={route('recent-views')} active={route().current('recent-views')}>
                                     Recent Views
                                 </NavLink>
-                                <NavLink href={route('orders')} active={route().current('orders')}>
+                                <NavLink href={route('orders')} active={route().current('orders') || route().current('orders.*')}>
                                     Orders
                                 </NavLink>
                                 <NavLink href={route('addresses.index')} active={route().current('addresses.*')}>
@@ -234,7 +234,7 @@ export default function AuthenticatedLayout({ header, children }) {
                             <MobileNavLink href={route('recent-views')} active={route().current('recent-views')}>
                                 Recent Views
                             </MobileNavLink>
-                            <MobileNavLink href={route('orders')} active={route().current('orders')}>
+                            <MobileNavLink href={route('orders')} active={route().current('orders') || route().current('orders.*')}>
                                 Orders
                             </MobileNavLink>
                             <MobileNavLink href={route('addresses.index')} active={route().current('addresses.*')}>

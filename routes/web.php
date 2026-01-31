@@ -18,6 +18,7 @@ use App\Http\Controllers\Admin\EditionController as AdminEditionController;
 use App\Http\Controllers\Admin\ContactController as AdminContactController;
 use App\Http\Controllers\Admin\CmsController as AdminCmsController;
 use App\Http\Controllers\Admin\AuthController as AdminAuthController;
+use App\Http\Controllers\Admin\AnalyticsController as AdminAnalyticsController;
 
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -32,33 +33,7 @@ Route::get('/about', [AboutController::class, 'index'])->name('about');
 Route::get('/contact', [ContactController::class, 'index'])->name('contact');
 Route::post('/contact', [ContactController::class, 'store'])->name('contact.store');
 
-// Test route for debugging
-Route::get('/test', function () {
-    return Inertia::render('Test', ['message' => 'Hello World']);
-})->name('test');
-
-// Debug route for authentication testing
-Route::get('/debug/auth', function () {
-    return response()->json([
-        'authenticated' => auth()->check(),
-        'user_id' => auth()->id(),
-        'user' => auth()->user(),
-        'session_id' => session()->getId(),
-        'csrf_token' => csrf_token(),
-    ]);
-})->middleware('auth')->name('debug.auth');
-
-// Debug route for CSRF testing
-Route::post('/debug/csrf', function () {
-    return response()->json([
-        'success' => true,
-        'message' => 'CSRF token is valid',
-        'received_token' => request()->header('X-CSRF-TOKEN'),
-        'session_token' => csrf_token(),
-    ]);
-})->middleware('auth')->name('debug.csrf');
-
-// CSRF token refresh route
+// CSRF token refresh route (required for SPA functionality)
 Route::get('/csrf-token', function () {
     return response()->json([
         'token' => csrf_token(),
@@ -130,8 +105,16 @@ Route::prefix('admin')->name('admin.')->middleware('web')->group(function () {
     Route::middleware(['admin'])->group(function () {
         Route::get('/', [AdminDashboardController::class, 'index'])->name('dashboard');
         Route::resource('artworks', AdminArtworkController::class);
+        
+        // Artwork Image Management
+        Route::post('/artworks/{artwork}/images', [AdminArtworkController::class, 'uploadImages'])->name('artworks.images.upload');
+        Route::delete('/artworks/{artwork}/images/{media}', [AdminArtworkController::class, 'deleteImage'])->name('artworks.images.delete');
+        Route::post('/artworks/{artwork}/images/{media}/primary', [AdminArtworkController::class, 'setPrimaryImage'])->name('artworks.images.primary');
+        Route::post('/artworks/{artwork}/images/reorder', [AdminArtworkController::class, 'reorderImages'])->name('artworks.images.reorder');
+        
         Route::resource('orders', AdminOrderController::class)->only(['index', 'show']);
         Route::patch('/orders/{order}/status', [AdminOrderController::class, 'updateStatus'])->name('orders.update-status');
+        Route::get('/orders/{order}/invoice', [AdminOrderController::class, 'downloadInvoice'])->name('orders.invoice');
         Route::resource('editions', AdminEditionController::class);
         
         // Admin profile management
@@ -140,9 +123,10 @@ Route::prefix('admin')->name('admin.')->middleware('web')->group(function () {
         Route::post('/profile/delete', [ProfileController::class, 'destroy'])->name('profile.destroy');
         
         // Contact messages management
-        Route::resource('contact', AdminContactController::class)->only(['index', 'show', 'destroy']);
-        Route::patch('/contact/{contact_message}/mark-read', [AdminContactController::class, 'markAsRead'])->name('contact.mark-read');
-        Route::patch('/contact/{contact_message}/mark-replied', [AdminContactController::class, 'markAsReplied'])->name('contact.mark-replied');
+        Route::resource('contact-messages', AdminContactController::class)->only(['index', 'show', 'destroy']);
+        Route::patch('/contact-messages/{contact_message}/mark-read', [AdminContactController::class, 'markAsRead'])->name('contact-messages.mark-read');
+        Route::patch('/contact-messages/{contact_message}/mark-replied', [AdminContactController::class, 'markAsReplied'])->name('contact-messages.mark-replied');
+        Route::post('/contact-messages/{contact_message}/reply', [AdminContactController::class, 'reply'])->name('contact-messages.reply');
         
         // CMS management
         Route::get('/cms', [AdminCmsController::class, 'index'])->name('cms.index');
@@ -151,14 +135,22 @@ Route::prefix('admin')->name('admin.')->middleware('web')->group(function () {
         
         // CMS Image Management
         Route::get('/cms/images', [AdminCmsController::class, 'images'])->name('cms.images');
+        Route::get('/cms/images/list', [AdminCmsController::class, 'listImages'])->name('cms.images.list');
         Route::post('/cms/images/upload', [AdminCmsController::class, 'uploadImage'])->name('cms.images.upload');
-        Route::delete('/cms/images/{id}', [AdminCmsController::class, 'deleteImage'])->name('cms.images.delete');
-        Route::patch('/cms/images/{id}', [AdminCmsController::class, 'updateImage'])->name('cms.images.update');
+        Route::delete('/cms/images/{filename}', [AdminCmsController::class, 'deleteImage'])->name('cms.images.delete');
+        Route::patch('/cms/images/{filename}', [AdminCmsController::class, 'updateImage'])->name('cms.images.update');
         Route::post('/cms/images/organize', [AdminCmsController::class, 'organizeImages'])->name('cms.images.organize');
         
         // CMS Page Management - Single route with section as query parameter
         Route::get('/cms/{page}', [AdminCmsController::class, 'page'])->name('cms.page');
         Route::patch('/cms/{page}', [AdminCmsController::class, 'updatePage'])->name('cms.page.update');
+        
+        // CMS FAQ CRUD
+        Route::post('/cms/{page}/{section}/faq', [AdminCmsController::class, 'addFaq'])->name('cms.faq.add');
+        Route::delete('/cms/{page}/{section}/faq/{faqNum}', [AdminCmsController::class, 'deleteFaq'])->name('cms.faq.delete');
+
+        // Analytics
+        Route::get('/analytics', [AdminAnalyticsController::class, 'index'])->name('analytics.index');
     });
 });
 

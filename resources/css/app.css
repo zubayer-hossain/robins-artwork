@@ -66,3 +66,56 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* CMS Rich Text Content Styles */
+.cms-content {
+  @apply text-lg leading-relaxed;
+}
+
+.cms-content p {
+  @apply mb-4;
+}
+
+.cms-content p:last-child {
+  @apply mb-0;
+}
+
+.cms-content h1 {
+  @apply text-3xl font-bold mb-4 mt-6;
+}
+
+.cms-content h2 {
+  @apply text-2xl font-semibold mb-3 mt-5;
+}
+
+.cms-content h3 {
+  @apply text-xl font-semibold mb-2 mt-4;
+}
+
+.cms-content ul {
+  @apply list-disc pl-6 mb-4 space-y-2;
+}
+
+.cms-content ol {
+  @apply list-decimal pl-6 mb-4 space-y-2;
+}
+
+.cms-content blockquote {
+  @apply border-l-4 border-gray-300 pl-4 italic text-gray-600 my-4;
+}
+
+.cms-content a {
+  @apply text-blue-600 hover:text-blue-800 underline;
+}
+
+.cms-content strong {
+  @apply font-semibold;
+}
+
+.cms-content em {
+  @apply italic;
+}
+
+.cms-content hr {
+  @apply border-t border-gray-200 my-6;
+}

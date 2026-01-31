@@ -43,20 +43,10 @@ class OrderController extends Controller
     {
         $user = $request->user();
         
-        // Debug logging
-        \Log::info('Order show attempt', [
-            'user_id' => $user ? $user->id : null,
-            'order_user_id' => $order->user_id,
-            'order_id' => $order->id,
-            'session_id' => $request->session()->getId(),
-            'authenticated' => Auth::check(),
-        ]);
-        
-        // Ensure the user can only view their own orders
-        if ($order->user_id != $user->id) {
-            \Log::warning('Unauthorized order access', [
-                'user_id' => $user ? $user->id : null,
-                'order_user_id' => $order->user_id,
+        // Security: Ensure the user can only view their own orders (strict comparison)
+        if ($order->user_id !== $user->id) {
+            \Log::warning('Unauthorized order access attempt', [
+                'user_id' => $user->id,
                 'order_id' => $order->id,
             ]);
             abort(403, 'Unauthorized access to order.');
@@ -167,15 +157,6 @@ class OrderController extends Controller
             ], 400);
         }
 
-        // Log the address types for debugging (remove in production)
-        \Log::info('Order submission addresses', [
-            'shipping_address_id' => $request->shipping_address_id,
-            'shipping_address_type' => $shippingAddress->type,
-            'billing_address_id' => $request->billing_address_id,
-            'billing_address_type' => $billingAddress->type,
-            'user_id' => $userId
-        ]);
-
         try {
             DB::beginTransaction();
 
@@ -234,8 +215,8 @@ class OrderController extends Controller
 
     public function downloadReceipt(Order $order)
     {
-        // Authz
-        if ($order->user_id != Auth::id()) {
+        // Security: Strict comparison for authorization
+        if ($order->user_id !== Auth::id()) {
             abort(403, 'Unauthorized');
         }
 
@@ -254,6 +235,10 @@ class OrderController extends Controller
         // Or if using Storage::url and remote:
         // $logoUrl = url('storage/logo.png');
 
+        // Get currency settings
+        $currencyCode = \App\Services\CmsService::getDefaultCurrency();
+        $currencySymbol = \App\Services\CmsService::getCurrencySymbol($currencyCode);
+
         $pdf = Pdf::setOptions([
             'isHtml5ParserEnabled' => true,
             'isRemoteEnabled'      => true, // set true if you reference http(s) images/fonts
@@ -262,6 +247,8 @@ class OrderController extends Controller
         ])->loadView('pdfs.order-receipt', [
             'order'   => $order,
             'logoUrl' => $logoUrl,
+            'currencyCode' => $currencyCode,
+            'currencySymbol' => $currencySymbol,
         ]);
 
         $pdf->setPaper('A4', 'portrait');

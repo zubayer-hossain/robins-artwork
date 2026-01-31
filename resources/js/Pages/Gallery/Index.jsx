@@ -1,4 +1,4 @@
-﻿import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -8,6 +8,7 @@ import { useState, useEffect } from 'react';
 import ArtworkCard from '@/Components/ArtworkCard';
 
 export default function GalleryIndex({ artworks, filters, totalArtworks, stats, cmsSettings = {} }) {
+    const { currency } = usePage().props;
     // Helper function to get CMS value
     const getCmsValue = (section, key, defaultValue = '') => {
         return cmsSettings[section]?.[key] || defaultValue;
@@ -243,8 +244,8 @@ export default function GalleryIndex({ artworks, filters, totalArtworks, stats, 
                                             {searchTerm && <span className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-medium">"{searchTerm}"</span>}
                                             {selectedMedium !== 'all' && <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">{selectedMedium}</span>}
                                             {selectedYear !== 'all' && <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">{selectedYear}</span>}
-                                            {priceRange.min && <span className="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-xs font-medium">Min: ${priceRange.min}</span>}
-                                            {priceRange.max && <span className="px-3 py-1 bg-red-100 text-red-700 rounded-full text-xs font-medium">Max: ${priceRange.max}</span>}
+                                            {priceRange.min && <span className="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-xs font-medium">Min: {currency?.symbol || '$'}{priceRange.min}</span>}
+                                            {priceRange.max && <span className="px-3 py-1 bg-red-100 text-red-700 rounded-full text-xs font-medium">Max: {currency?.symbol || '$'}{priceRange.max}</span>}
                                         </div>
                                         <Button 
                                             variant="outline" 
@@ -383,22 +384,22 @@ export default function GalleryIndex({ artworks, filters, totalArtworks, stats, 
                                 <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-3">
                                     <span className="text-xl">🎨</span>
                                 </div>
-                                <h4 className="font-semibold text-gray-800 mb-2">{getCmsValue('features', 'feature1_title', 'Custom Commissions')}</h4>
-                                <p className="text-sm text-gray-600">{getCmsValue('features', 'feature1_description', 'Personalized artwork tailored to your vision')}</p>
+                                <h4 className="font-semibold text-gray-800 mb-2">{getCmsValue('cta', 'feature1_title', 'Custom Commissions')}</h4>
+                                <p className="text-sm text-gray-600">{getCmsValue('cta', 'feature1_description', 'Personalized artwork tailored to your vision')}</p>
                             </div>
                             <div className="text-center p-4">
                                 <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
                                     <span className="text-xl">🏔️</span>
                                 </div>
-                                <h4 className="font-semibold text-gray-800 mb-2">{getCmsValue('features', 'feature2_title', 'Scottish Landscapes')}</h4>
-                                <p className="text-sm text-gray-600">{getCmsValue('features', 'feature2_description', 'Inspired by the beautiful Cairngorms')}</p>
+                                <h4 className="font-semibold text-gray-800 mb-2">{getCmsValue('cta', 'feature2_title', 'Scottish Landscapes')}</h4>
+                                <p className="text-sm text-gray-600">{getCmsValue('cta', 'feature2_description', 'Inspired by the beautiful Cairngorms')}</p>
                             </div>
                             <div className="text-center p-4">
                                 <div className="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-3">
                                     <span className="text-xl">🏠</span>
                                 </div>
-                                <h4 className="font-semibold text-gray-800 mb-2">{getCmsValue('features', 'feature3_title', 'Studio Visits')}</h4>
-                                <p className="text-sm text-gray-600">{getCmsValue('features', 'feature3_description', 'Visit Robin\'s studio in the Highlands')}</p>
+                                <h4 className="font-semibold text-gray-800 mb-2">{getCmsValue('cta', 'feature3_title', 'Studio Visits')}</h4>
+                                <p className="text-sm text-gray-600">{getCmsValue('cta', 'feature3_description', 'Visit Robin\'s studio in the Highlands')}</p>
                             </div>
                         </div>
                         
@@ -418,19 +419,19 @@ export default function GalleryIndex({ artworks, filters, totalArtworks, stats, 
                                     <svg className="w-4 h-4 text-purple-400" fill="currentColor" viewBox="0 0 20 20">
                                         <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                                     </svg>
-                                    <span>{getCmsValue('footer_info', 'info1_text', 'Free consultation')}</span>
+                                    <span>{getCmsValue('cta', 'info1_text', 'Free consultation')}</span>
                                 </div>
                                 <div className="flex items-center gap-2">
                                     <svg className="w-4 h-4 text-purple-400" fill="currentColor" viewBox="0 0 20 20">
                                         <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                                     </svg>
-                                    <span>{getCmsValue('footer_info', 'info2_text', 'Worldwide shipping')}</span>
+                                    <span>{getCmsValue('cta', 'info2_text', 'Worldwide shipping')}</span>
                                 </div>
                                 <div className="flex items-center gap-2">
                                     <svg className="w-4 h-4 text-purple-400" fill="currentColor" viewBox="0 0 20 20">
                                         <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                                     </svg>
-                                    <span>{getCmsValue('footer_info', 'info3_text', 'Secure payments')}</span>
+                                    <span>{getCmsValue('cta', 'info3_text', 'Secure payments')}</span>
                                 </div>
                             </div>
                         </div>

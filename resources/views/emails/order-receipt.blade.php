@@ -117,7 +117,11 @@
                 <p><strong>Order #:</strong> <span>{{ $order->id }}</span></p>
                 <p><strong>Date:</strong> <span>{{ $order->created_at->format('F j, Y') }}</span></p>
                 <p><strong>Status:</strong> <span style="color: #28a745; font-weight: 600;">{{ ucfirst($order->status) }}</span></p>
-                <p><strong>Total:</strong> <span style="font-weight: 600;">${{ number_format($order->total, 2) }}</span></p>
+                @php
+                    $symbol = $currencySymbol ?? '$';
+                    $code = $currencyCode ?? 'USD';
+                @endphp
+                <p><strong>Total:</strong> <span style="font-weight: 600;">{{ $symbol }}{{ number_format($order->total, 2) }} {{ $code }}</span></p>
             </div>
 
             <div class="items-section">
@@ -125,13 +129,13 @@
                 @foreach($order->items as $item)
                 <div class="item">
                     <div class="item-title">{{ $item->title_snapshot }}</div>
-                    <div class="item-details">Quantity: {{ $item->qty }} × ${{ number_format($item->unit_price, 2) }}</div>
+                    <div class="item-details">Quantity: {{ $item->qty }} × {{ $symbol }}{{ number_format($item->unit_price, 2) }}</div>
                 </div>
                 @endforeach
             </div>
 
             <div class="total">
-                Total: ${{ number_format($order->total, 2) }}
+                Total: {{ $symbol }}{{ number_format($order->total, 2) }} {{ $code }}
             </div>
         </div>
 

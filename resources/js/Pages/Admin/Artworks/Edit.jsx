@@ -1,4 +1,4 @@
-﻿import { Head, useForm, Link } from '@inertiajs/react';
+import { Head, useForm, Link, usePage } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
 import AdminLayout from '@/Layouts/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
@@ -9,10 +9,14 @@ import { Textarea } from '@/Components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import { Checkbox } from '@/Components/ui/checkbox';
 import { Badge } from '@/Components/ui/badge';
-import { ArrowLeft, Save, X, Palette, Edit, Eye } from 'lucide-react';
+import { ArrowLeft, Save, X, Palette, Edit, Eye, Image as ImageIcon, Package, Plus, Trash2, DollarSign } from 'lucide-react';
+import ImageUploader from '@/Components/ImageUploader';
+import RichTextEditor from '@/Components/RichTextEditor';
 
 export default function AdminArtworksEdit({ auth, artwork, mediums, statuses, flash }) {
+    const { currency } = usePage().props;
     const [newTagInput, setNewTagInput] = useState('');
+    const [artworkImages, setArtworkImages] = useState(artwork?.images || []);
 
     const { data, setData, put, processing, errors } = useForm({
         title: artwork?.title || '',
@@ -41,13 +45,6 @@ export default function AdminArtworksEdit({ auth, artwork, mediums, statuses, fl
     const handleSubmit = (e) => {
         e.preventDefault();
         put(route('admin.artworks.update', artwork.id), {
-            onSuccess: () => {
-                if (window.toast) {
-                    window.toast.success('Artwork updated successfully!', 'Success');
-                }
-                // Redirect to artworks list
-                window.location.href = route('admin.artworks.index');
-            },
             onError: (errors) => {
                 if (window.toast) {
                     window.toast.error('Please check the form for errors.', 'Validation Error');
@@ -57,10 +54,26 @@ export default function AdminArtworksEdit({ auth, artwork, mediums, statuses, fl
     };
 
     const addTag = () => {
-        if (newTagInput.trim() && !data.tags.includes(newTagInput.trim())) {
-            setData('tags', [...data.tags, newTagInput.trim()]);
-            setNewTagInput('');
+        const input = newTagInput.trim();
+        if (!input) return;
+
+        // Check if input contains commas - split into multiple tags
+        if (input.includes(',')) {
+            const newTags = input
+                .split(',')
+                .map(tag => tag.trim())
+                .filter(tag => tag && !data.tags.includes(tag));
+            
+            if (newTags.length > 0) {
+                setData('tags', [...data.tags, ...newTags]);
+            }
+        } else {
+            // Single tag
+            if (!data.tags.includes(input)) {
+                setData('tags', [...data.tags, input]);
+            }
         }
+        setNewTagInput('');
     };
 
     const removeTag = (tagToRemove) => {
@@ -71,6 +84,22 @@ export default function AdminArtworksEdit({ auth, artwork, mediums, statuses, fl
         if (e.key === 'Enter') {
             e.preventDefault();
             addTag();
+        }
+    };
+
+    const handleTagPaste = (e) => {
+        const pastedText = e.clipboardData.getData('text');
+        if (pastedText.includes(',')) {
+            e.preventDefault();
+            const newTags = pastedText
+                .split(',')
+                .map(tag => tag.trim())
+                .filter(tag => tag && !data.tags.includes(tag));
+            
+            if (newTags.length > 0) {
+                setData('tags', [...data.tags, ...newTags]);
+            }
+            setNewTagInput('');
         }
     };
 
@@ -169,7 +198,7 @@ export default function AdminArtworksEdit({ auth, artwork, mediums, statuses, fl
                                             {errors.year && <p className="text-sm text-red-600 mt-1">{errors.year}</p>}
                                         </div>
                                         <div>
-                                            <Label htmlFor="price">Price ($)</Label>
+                                            <Label htmlFor="price">Price ({currency?.symbol || '$'})</Label>
                                             <Input
                                                 id="price"
                                                 type="number"
@@ -206,12 +235,11 @@ export default function AdminArtworksEdit({ auth, artwork, mediums, statuses, fl
                                 <CardContent className="p-6 space-y-4">
                                     <div>
                                         <Label htmlFor="story">Story/Description</Label>
-                                        <Textarea
-                                            id="story"
-                                            value={data.story.content || ''}
-                                            onChange={(e) => setData('story', { ...data.story, content: e.target.value })}
+                                        <p className="text-xs text-gray-500 mb-2">Use the rich text editor to format your artwork's story</p>
+                                        <RichTextEditor
+                                            content={data.story.content || ''}
+                                            onChange={(content) => setData('story', { ...data.story, content })}
                                             placeholder="Tell the story behind this artwork..."
-                                            rows={4}
                                         />
                                         {errors.story && <p className="text-sm text-red-600 mt-1">{errors.story}</p>}
                                     </div>
@@ -232,12 +260,14 @@ export default function AdminArtworksEdit({ auth, artwork, mediums, statuses, fl
                                                 </Badge>
                                             ))}
                                         </div>
+                                        <p className="text-xs text-gray-500 mb-2">Paste comma-separated tags or add one at a time</p>
                                         <div className="flex gap-2">
                                             <Input
                                                 value={newTagInput}
                                                 onChange={(e) => setNewTagInput(e.target.value)}
                                                 onKeyPress={handleKeyPress}
-                                                placeholder="Add a tag..."
+                                                onPaste={handleTagPaste}
+                                                placeholder="wildlife, nature, landscape..."
                                                 className="flex-1"
                                             />
                                             <Button type="button" onClick={addTag} variant="outline">
@@ -245,6 +275,131 @@ export default function AdminArtworksEdit({ auth, artwork, mediums, statuses, fl
                                             </Button>
                                         </div>
                                     </div>
+                                </CardContent>
+                            </Card>
+
+                            {/* Images Section */}
+                            <Card className="border-0 shadow-sm">
+                                <CardHeader className="bg-gradient-to-r from-purple-50 to-pink-50 border-b">
+                                    <CardTitle className="flex items-center gap-2 text-purple-900">
+                                        <ImageIcon className="w-5 h-5" />
+                                        Artwork Images
+                                        {artworkImages.length > 0 && (
+                                            <Badge variant="secondary" className="ml-2 bg-purple-100 text-purple-700">
+                                                {artworkImages.length}
+                                            </Badge>
+                                        )}
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent className="p-6">
+                                    <ImageUploader
+                                        artworkId={artwork.id}
+                                        images={artworkImages}
+                                        onImagesChange={setArtworkImages}
+                                    />
+                                </CardContent>
+                            </Card>
+
+                            {/* Editions Section */}
+                            <Card className="border-0 shadow-sm">
+                                <CardHeader className="bg-gradient-to-r from-orange-50 to-amber-50 border-b">
+                                    <div className="flex items-center justify-between">
+                                        <CardTitle className="flex items-center gap-2 text-orange-900">
+                                            <Package className="w-5 h-5" />
+                                            Print Editions
+                                            {artwork.editions && artwork.editions.length > 0 && (
+                                                <Badge variant="secondary" className="ml-2 bg-orange-100 text-orange-700">
+                                                    {artwork.editions.length}
+                                                </Badge>
+                                            )}
+                                        </CardTitle>
+                                        <Link href={route('admin.editions.create') + `?artwork_id=${artwork.id}`}>
+                                            <Button size="sm" className="bg-orange-600 hover:bg-orange-700">
+                                                <Plus className="w-4 h-4 mr-1" />
+                                                Add Edition
+                                            </Button>
+                                        </Link>
+                                    </div>
+                                </CardHeader>
+                                <CardContent className="p-6">
+                                    {artwork.editions && artwork.editions.length > 0 ? (
+                                        <div className="space-y-3">
+                                            {artwork.editions.map((edition) => (
+                                                <div 
+                                                    key={edition.id}
+                                                    className="flex items-center justify-between p-4 bg-gradient-to-r from-gray-50 to-white rounded-lg border border-gray-200 hover:border-orange-200 transition-colors"
+                                                >
+                                                    <div className="flex items-center gap-4">
+                                                        <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                                                            edition.is_limited 
+                                                                ? 'bg-orange-100 text-orange-600' 
+                                                                : 'bg-green-100 text-green-600'
+                                                        }`}>
+                                                            <Package className="w-5 h-5" />
+                                                        </div>
+                                                        <div>
+                                                            <div className="flex items-center gap-2">
+                                                                <span className="font-mono font-medium text-gray-900">{edition.sku}</span>
+                                                                {edition.is_limited ? (
+                                                                    <Badge className="bg-orange-100 text-orange-700 border-orange-200 text-xs">
+                                                                        Limited ({edition.edition_total})
+                                                                    </Badge>
+                                                                ) : (
+                                                                    <Badge className="bg-green-100 text-green-700 border-green-200 text-xs">
+                                                                        Open Edition
+                                                                    </Badge>
+                                                                )}
+                                                            </div>
+                                                            <div className="flex items-center gap-3 text-sm text-gray-500 mt-1">
+                                                                <span className="flex items-center gap-1">
+                                                                    <DollarSign className="w-3 h-3" />
+                                                                    {currency?.symbol || '$'}{Number(edition.price).toLocaleString()}
+                                                                </span>
+                                                                <span>•</span>
+                                                                <span className={edition.stock > 0 ? 'text-green-600' : 'text-red-600'}>
+                                                                    {edition.stock} in stock
+                                                                </span>
+                                                                {edition.created_at && (
+                                                                    <>
+                                                                        <span>•</span>
+                                                                        <span>{edition.created_at}</span>
+                                                                    </>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex items-center gap-2">
+                                                        <Link href={route('admin.editions.edit', edition.id)}>
+                                                            <Button variant="outline" size="sm" title="Edit Edition">
+                                                                <Edit className="w-4 h-4" />
+                                                            </Button>
+                                                        </Link>
+                                                        <Link href={route('admin.editions.show', edition.id)}>
+                                                            <Button variant="outline" size="sm" title="View Edition">
+                                                                <Eye className="w-4 h-4" />
+                                                            </Button>
+                                                        </Link>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <div className="text-center py-8">
+                                            <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                                <Package className="w-8 h-8 text-orange-400" />
+                                            </div>
+                                            <h4 className="text-lg font-medium text-gray-700 mb-2">No Editions Yet</h4>
+                                            <p className="text-sm text-gray-500 mb-4">
+                                                Create print editions to sell reproductions of this artwork.
+                                            </p>
+                                            <Link href={route('admin.editions.create') + `?artwork_id=${artwork.id}`}>
+                                                <Button className="bg-orange-600 hover:bg-orange-700">
+                                                    <Plus className="w-4 h-4 mr-2" />
+                                                    Create First Edition
+                                                </Button>
+                                            </Link>
+                                        </div>
+                                    )}
                                 </CardContent>
                             </Card>
                         </div>

@@ -1,25 +1,25 @@
 import { Link } from '@inertiajs/react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ChevronDown, ChevronRight, Settings, Home, Image, User, Phone, Globe, ImageIcon } from 'lucide-react';
+import { 
+    ChevronDown, ChevronRight, Settings, Home, Image, User, Phone, 
+    Globe, ImageIcon, Sparkles, Layers
+} from 'lucide-react';
 import { useState, useEffect } from 'react';
 
 export default function CmsSidebar({ currentPage, currentSection = null, onSectionChange = null }) {
     const [expandedPages, setExpandedPages] = useState(() => ({
-        [currentPage]: true // Auto-expand current page on initial load
+        [currentPage]: true
     }));
 
-    // Ensure current page is expanded on initial load or page change
     useEffect(() => {
         setExpandedPages(prev => {
             const newState = { ...prev };
             
-            // Auto-expand current page
             if (currentPage) {
                 newState[currentPage] = true;
             }
             
-            // Auto-expand Global Settings if any of its sections are selected
             if (currentSection && ['site', 'contact', 'social', 'images'].includes(currentSection)) {
                 newState['global_tools'] = true;
             }
@@ -35,45 +35,19 @@ export default function CmsSidebar({ currentPage, currentSection = null, onSecti
         }));
     };
 
-    // Handle page navigation and ensure proper expansion
-    const handlePageNavigation = (pageName) => {
-        // If navigating to a different page, expand it and collapse others
-        if (currentPage !== pageName) {
-            setExpandedPages(prev => {
-                const newState = { ...prev };
-                // Collapse all other pages
-                Object.keys(newState).forEach(key => {
-                    if (key !== pageName && key !== 'global_tools') {
-                        newState[key] = false;
-                    }
-                });
-                // Expand the target page
-                newState[pageName] = true;
-                return newState;
-            });
-        }
-    };
-
-    // Helper function to generate section URLs
     const getSectionUrl = (pageName, sectionKey) => {
         if (pageName === 'global') {
-            // Use query parameter approach for Global Settings to be consistent with other CMS pages
             try {
                 return route('admin.cms.global') + `?section=${sectionKey}`;
             } catch (error) {
-                // Fallback: generate URL manually if route helper fails
-                console.warn('Route helper failed, using manual URL generation:', error);
                 return `/admin/cms/global?section=${sectionKey}`;
             }
         } else if (pageName === 'images') {
             return route('admin.cms.images');
         } else {
-            // For regular pages - use query parameter approach
             try {
                 return route('admin.cms.page', { page: pageName }) + `?section=${sectionKey}`;
             } catch (error) {
-                // Fallback: generate URL manually if route helper fails
-                console.warn('Route helper failed, using manual URL generation:', error);
                 return `/admin/cms/${pageName}?section=${sectionKey}`;
             }
         }
@@ -84,6 +58,10 @@ export default function CmsSidebar({ currentPage, currentSection = null, onSecti
             name: 'home',
             title: 'Home Page',
             icon: Home,
+            gradient: 'from-blue-500 to-indigo-600',
+            bgColor: 'bg-blue-50',
+            borderColor: 'border-blue-200',
+            textColor: 'text-blue-700',
             route: 'admin.cms.page',
             param: 'home',
             sections: [
@@ -98,21 +76,27 @@ export default function CmsSidebar({ currentPage, currentSection = null, onSecti
             name: 'gallery',
             title: 'Gallery Page',
             icon: Image,
+            gradient: 'from-purple-500 to-pink-600',
+            bgColor: 'bg-purple-50',
+            borderColor: 'border-purple-200',
+            textColor: 'text-purple-700',
             route: 'admin.cms.page',
             param: 'gallery',
             sections: [
                 { key: 'header', title: 'Page Header', count: 2 },
                 { key: 'controls', title: 'Gallery Controls', count: 4 },
                 { key: 'empty_state', title: 'Empty State', count: 4 },
-                { key: 'cta', title: 'Call to Action', count: 3 },
-                { key: 'features', title: 'Feature Cards', count: 6 },
-                { key: 'footer_info', title: 'Footer Info', count: 3 }
+                { key: 'cta', title: 'Call to Action', count: 13 }
             ]
         },
         {
             name: 'about',
             title: 'About Page',
             icon: User,
+            gradient: 'from-emerald-500 to-teal-600',
+            bgColor: 'bg-emerald-50',
+            borderColor: 'border-emerald-200',
+            textColor: 'text-emerald-700',
             route: 'admin.cms.page',
             param: 'about',
             sections: [
@@ -127,130 +111,135 @@ export default function CmsSidebar({ currentPage, currentSection = null, onSecti
             name: 'contact',
             title: 'Contact Page',
             icon: Phone,
+            gradient: 'from-orange-500 to-amber-600',
+            bgColor: 'bg-orange-50',
+            borderColor: 'border-orange-200',
+            textColor: 'text-orange-700',
             route: 'admin.cms.page',
             param: 'contact',
             sections: [
                 { key: 'hero', title: 'Hero Section', count: 2 },
                 { key: 'form', title: 'Contact Form', count: 4 },
-                { key: 'info', title: 'Contact Info', count: 13 },
+                { key: 'info', title: 'Contact Info', count: 7 },
                 { key: 'faq', title: 'FAQ Section', count: 10 },
                 { key: 'cta', title: 'Call to Action', count: 4 }
             ]
-        },
-        {
-            name: 'global',
-            title: 'Global Settings',
-            icon: Globe,
-            route: 'admin.cms.global',
-            param: null,
-            sections: [
-                { key: 'site', title: 'Website Info', count: 2 },
-                { key: 'contact', title: 'Contact Details', count: 3 },
-                { key: 'social', title: 'Social Media', count: 6 },
-                { key: 'images', title: 'Image Management', count: 5 }
-            ]
-        },
-        {
-            name: 'images',
-            title: 'Image Management',
-            icon: ImageIcon,
-            route: 'admin.cms.images',
-            param: null,
-            sections: []
         }
     ];
 
-    const getPageIcon = (pageName) => {
-        const page = cmsPages.find(p => p.name === pageName);
-        if (!page) return Settings;
-        
-        const IconComponent = page.icon;
-        return <IconComponent className="w-4 h-4" />;
-    };
-
-    const getPageColor = (pageName) => {
-        const colors = {
-            home: 'bg-blue-50 border-blue-200 text-blue-700',
-            gallery: 'bg-purple-50 border-purple-200 text-purple-700',
-            about: 'bg-green-50 border-green-200 text-green-700',
-            contact: 'bg-orange-50 border-orange-200 text-orange-700',
-            global: 'bg-gray-50 border-gray-200 text-gray-700',
-            images: 'bg-blue-50 border-blue-200 text-blue-700'
-        };
-        return colors[pageName] || 'bg-gray-50 border-gray-200 text-gray-700';
-    };
+    const globalSections = [
+        { key: 'site', title: 'Website Info', count: 2, icon: Globe },
+        { key: 'contact', title: 'Contact Details', count: 3, icon: Phone },
+        { key: 'social', title: 'Social Media', count: 6, icon: Layers }
+    ];
 
     return (
-        <div className="space-y-4">
+        <div className="space-y-4 min-w-[200px]">
             {/* Page Navigation */}
-            <Card className="bg-white border-0 shadow-sm">
-                <CardHeader className="pb-4">
-                    <CardTitle className="text-sm font-semibold text-gray-900">Page Navigation</CardTitle>
+            <Card className="bg-white border-0 shadow-lg overflow-hidden">
+                <CardHeader className="pb-3 bg-gradient-to-r from-gray-50 to-white border-b border-gray-100">
+                    <CardTitle className="text-sm font-bold text-gray-900 flex items-center gap-2">
+                        <Sparkles className="w-4 h-4 text-purple-500" />
+                        Page Navigation
+                    </CardTitle>
                 </CardHeader>
-                <CardContent className="p-0">
+                <CardContent className="p-2">
                     <div className="space-y-1">
-                        {cmsPages.filter(page => page.name !== 'global' && page.name !== 'images').map((page) => {
+                        {cmsPages.map((page) => {
                             const isCurrentPage = currentPage === page.name;
                             const isExpanded = expandedPages[page.name];
+                            const IconComponent = page.icon;
+                            const totalSettings = page.sections.reduce((sum, s) => sum + s.count, 0);
                             
                             return (
-                                <div key={page.name} className="border-b border-gray-100 last:border-b-0">
-                                    <div
-                                        className={`flex items-center justify-between p-3 hover:bg-gray-50 transition-colors duration-200 cursor-pointer ${isCurrentPage && !isExpanded ? 'bg-blue-50 text-blue-700' : ''}`}
+                                <div key={page.name} className="rounded-xl overflow-hidden">
+                                    {/* Page Header */}
+                                    <button
+                                        type="button"
                                         onClick={() => togglePage(page.name)}
+                                        className={`w-full flex items-center justify-between p-3 transition-all duration-300 rounded-xl ${
+                                            isCurrentPage 
+                                                ? `bg-gradient-to-r ${page.bgColor} ${page.borderColor} border-2` 
+                                                : 'hover:bg-gray-50 border-2 border-transparent'
+                                        }`}
                                     >
-                                        <div className="flex items-center space-x-3">
-                                            <div className={`w-6 h-6 flex items-center justify-center rounded-md ${getPageColor(page.name)}`}>
-                                                {getPageIcon(page.name)}
+                                        <div className="flex items-center gap-3">
+                                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center shadow-md transition-all duration-300 ${
+                                                isCurrentPage 
+                                                    ? `bg-gradient-to-br ${page.gradient}` 
+                                                    : 'bg-gray-100'
+                                            }`}>
+                                                <IconComponent className={`w-5 h-5 ${isCurrentPage ? 'text-white' : 'text-gray-500'}`} />
                                             </div>
-                                            <span className={`text-sm font-medium ${isCurrentPage && !isExpanded ? 'text-blue-700' : 'text-gray-700'}`}>
-                                                {page.title}
-                                            </span>
+                                            <div className="text-left min-w-0">
+                                                <span className={`text-sm font-semibold block whitespace-nowrap ${isCurrentPage ? page.textColor : 'text-gray-700'}`}>
+                                                    {page.title}
+                                                </span>
+                                                <span className="text-xs text-gray-400 whitespace-nowrap">
+                                                    {page.sections.length} sections
+                                                </span>
+                                            </div>
                                         </div>
-                                        <div className="flex items-center space-x-2">
-                                            {page.sections && page.sections.reduce((total, section) => total + section.count, 0) > 0 && (
-                                                <Badge variant="secondary" className="bg-gray-200 text-gray-700">
-                                                    {page.sections.reduce((total, section) => total + section.count, 0)}
-                                                </Badge>
-                                            )}
-                                            {isExpanded ? (
-                                                <ChevronDown className="w-4 h-4 text-gray-500" />
-                                            ) : (
-                                                <ChevronRight className="w-4 h-4 text-gray-500" />
-                                            )}
+                                        <div className="flex items-center gap-2">
+                                            <Badge 
+                                                variant="secondary" 
+                                                className={`text-xs transition-colors ${
+                                                    isCurrentPage 
+                                                        ? `${page.bgColor} ${page.textColor}` 
+                                                        : 'bg-gray-100 text-gray-600'
+                                                }`}
+                                            >
+                                                {totalSettings}
+                                            </Badge>
+                                            <div className={`transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`}>
+                                                <ChevronDown className="w-4 h-4 text-gray-400" />
+                                            </div>
                                         </div>
-                                    </div>
+                                    </button>
 
-                                    {/* Page Sections */}
-                                    {isExpanded && page.sections.length > 0 && (
-                                        <div className="bg-gray-50 border-t border-gray-100">
-                                            {page.sections.map((section) => {
-                                                const isCurrentSection = currentSection === section.key;
+                                    {/* Page Sections - Animated */}
+                                    <div className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                                        isExpanded ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+                                    }`}>
+                                        <div className="ml-4 mr-2 mb-2 mt-1 space-y-0.5 border-l-2 border-gray-200 pl-2">
+                                            {page.sections.map((section, index) => {
+                                                const isCurrentSection = currentPage === page.name && currentSection === section.key;
                                                 const sectionUrl = getSectionUrl(page.name, section.key);
                                                 
                                                 return (
                                                     <Link
                                                         key={section.key}
                                                         href={sectionUrl}
-                                                        className={`flex items-center p-3 pl-10 text-sm text-gray-600 hover:bg-gray-100 transition-colors duration-200 relative ${isCurrentSection ? 'font-semibold text-blue-600 bg-blue-100' : ''}`}
-
+                                                        className={`flex items-center justify-between py-2.5 px-3 text-sm rounded-lg transition-all duration-200 relative group ${
+                                                            isCurrentSection 
+                                                                ? `bg-gradient-to-r ${page.bgColor} ${page.textColor} font-semibold shadow-sm` 
+                                                                : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                                                        }`}
                                                     >
-                                                        {/* Blue left border for selected section */}
-                                                        {isCurrentSection && (
-                                                            <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-600 rounded-r-sm"></div>
-                                                        )}
-                                                        
-                                                        {section.title}
-                                                        {section.count > 0 && (
-                                                            <Badge variant="secondary" className="ml-auto bg-gray-200 text-gray-700">
-                                                                {section.count}
-                                                            </Badge>
-                                                        )}
+                                                        {/* Active indicator dot */}
+                                                        <div className="flex items-center gap-2">
+                                                            <div className={`w-1.5 h-1.5 rounded-full transition-all duration-200 ${
+                                                                isCurrentSection 
+                                                                    ? `bg-gradient-to-r ${page.gradient}` 
+                                                                    : 'bg-gray-300 group-hover:bg-gray-400'
+                                                            }`}></div>
+                                                            <span>{section.title}</span>
+                                                        </div>
+                                                        <Badge 
+                                                            variant="secondary" 
+                                                            className={`text-xs transition-colors ${
+                                                                isCurrentSection 
+                                                                    ? 'bg-white/70' 
+                                                                    : 'bg-gray-100 text-gray-500'
+                                                            }`}
+                                                        >
+                                                            {section.count}
+                                                        </Badge>
                                                     </Link>
                                                 );
                                             })}
                                         </div>
-                                    )}
+                                    </div>
                                 </div>
                             );
                         })}
@@ -258,116 +247,138 @@ export default function CmsSidebar({ currentPage, currentSection = null, onSecti
                 </CardContent>
             </Card>
 
-            {/* Global Settings and Image Management - Separated at bottom */}
-            <Card className="bg-white border-0 shadow-sm">
-                <CardHeader className="pb-4">
-                    <CardTitle className="text-sm font-semibold text-gray-900">Additional Tools</CardTitle>
+            {/* Additional Tools */}
+            <Card className="bg-white border-0 shadow-lg overflow-hidden">
+                <CardHeader className="pb-3 bg-gradient-to-r from-gray-50 to-white border-b border-gray-100">
+                    <CardTitle className="text-sm font-bold text-gray-900 flex items-center gap-2">
+                        <Settings className="w-4 h-4 text-blue-500" />
+                        Additional Tools
+                    </CardTitle>
                 </CardHeader>
-                <CardContent className="p-0">
+                <CardContent className="p-2">
                     <div className="space-y-1">
-                        {/* Global Settings - Expandable with sub-sections */}
-                        <div className="border-b border-gray-100 last:border-b-0">
-                            <div className={`flex items-center justify-between p-3 hover:bg-gray-50 transition-colors duration-200 relative ${currentPage === 'global' ? 'bg-blue-50 text-blue-700' : ''}`}>
-
-                                <button
-                                    onClick={() => togglePage('global_tools')}
-                                    className="flex items-center gap-3 flex-1 text-left"
-                                >
-                                    <div className="w-8 h-8 rounded-md border-2 border-gray-200 bg-gray-50 flex items-center justify-center">
-                                        <Globe className="w-4 h-4 text-gray-700" />
+                        {/* Global Settings - Expandable */}
+                        <div className="rounded-xl overflow-hidden">
+                            <button
+                                type="button"
+                                onClick={() => togglePage('global_tools')}
+                                className={`w-full flex items-center justify-between p-3 transition-all duration-300 rounded-xl ${
+                                    currentPage === 'global' 
+                                        ? 'bg-gradient-to-r from-gray-100 to-slate-100 border-2 border-gray-300' 
+                                        : 'hover:bg-gray-50 border-2 border-transparent'
+                                }`}
+                            >
+                                <div className="flex items-center gap-3">
+                                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center shadow-md transition-all duration-300 ${
+                                        currentPage === 'global' 
+                                            ? 'bg-gradient-to-br from-gray-600 to-slate-700' 
+                                            : 'bg-gray-100'
+                                    }`}>
+                                        <Globe className={`w-5 h-5 ${currentPage === 'global' ? 'text-white' : 'text-gray-500'}`} />
                                     </div>
-                                    <span className={`text-sm font-medium ${currentPage === 'global' ? 'text-blue-700' : 'text-gray-700'}`}>
-                                        Global Settings
-                                    </span>
-                                    <div className="flex items-center space-x-2 ml-auto">
-                                        {/* Total settings count badge */}
-                                        <Badge variant="outline" className="text-xs">
-                                            {cmsPages.find(p => p.name === 'global')?.sections.reduce((total, section) => total + section.count, 0) || 0}
-                                        </Badge>
+                                    <div className="text-left min-w-0">
+                                        <span className={`text-sm font-semibold block whitespace-nowrap ${currentPage === 'global' ? 'text-gray-900' : 'text-gray-700'}`}>
+                                            Global Settings
+                                        </span>
+                                        <span className="text-xs text-gray-400 whitespace-nowrap">
+                                            {globalSections.length} sections
+                                        </span>
                                     </div>
-                                </button>
-                                
-                                <button
-                                    onClick={() => togglePage('global_tools')}
-                                    className="p-1 hover:bg-gray-200 rounded transition-colors duration-200"
-                                >
-                                    {expandedPages['global_tools'] ? (
-                                        <ChevronDown className="w-4 h-4 text-gray-500" />
-                                    ) : (
-                                        <ChevronRight className="w-4 h-4 text-gray-500" />
-                                    )}
-                                </button>
-                            </div>
-
-                            {/* Global Settings Sub-sections */}
-                            {expandedPages['global_tools'] && (
-                                <div className="bg-gray-50 border-t border-gray-100">
-                                    <Link
-                                        href={route('admin.cms.global') + '?section=site'}
-                                        className={`flex items-center justify-between p-3 pl-11 text-sm transition-colors duration-200 relative ${currentSection === 'site' ? 'font-semibold text-blue-600 bg-blue-100' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'}`}
-                                    >
-                                        {/* Blue left border for selected Website Info section */}
-                                        {currentSection === 'site' && (
-                                            <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-600 rounded-r-sm"></div>
-                                        )}
-                                        
-                                        <span className="text-sm capitalize">Website Info</span>
-                                        <Badge variant="secondary" className="text-xs bg-gray-200 text-gray-700">2</Badge>
-                                    </Link>
-                                    <Link
-                                        href={route('admin.cms.global') + '?section=contact'}
-                                        className={`flex items-center justify-between p-3 pl-11 text-sm transition-colors duration-200 relative ${currentSection === 'contact' ? 'font-semibold text-blue-600 bg-blue-100' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'}`}
-                                    >
-                                        {/* Blue left border for selected Contact Details section */}
-                                        {currentSection === 'contact' && (
-                                            <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-600 rounded-r-sm"></div>
-                                        )}
-                                        
-                                        <span className="text-sm capitalize">Contact Details</span>
-                                        <Badge variant="secondary" className="text-xs bg-gray-200 text-gray-700">3</Badge>
-                                    </Link>
-                                    <Link
-                                        href={route('admin.cms.global') + '?section=social'}
-                                        className={`flex items-center justify-between p-3 pl-11 text-sm transition-colors duration-200 relative ${currentSection === 'social' ? 'font-semibold text-blue-600 bg-blue-100' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'}`}
-                                    >
-                                        {/* Blue left border for selected Social Media section */}
-                                        {currentSection === 'social' && (
-                                            <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-600 rounded-r-sm"></div>
-                                        )}
-                                        
-                                        <span className="text-sm capitalize">Social Media</span>
-                                        <Badge variant="secondary" className="text-xs bg-gray-200 text-gray-700">6</Badge>
-                                    </Link>
-                                    <Link
-                                        href={route('admin.cms.global') + '?section=images'}
-                                        className={`flex items-center justify-between p-3 pl-11 text-sm transition-colors duration-200 relative ${currentSection === 'images' ? 'font-semibold text-blue-600 bg-blue-100' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'}`}
-                                    >
-                                        {/* Blue left border for selected Image Management section */}
-                                        {currentSection === 'images' && (
-                                            <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-600 rounded-r-sm"></div>
-                                        )}
-                                        
-                                        <span className="text-sm capitalize">Image Settings</span>
-                                        <Badge variant="secondary" className="text-xs bg-gray-200 text-gray-700">5</Badge>
-                                    </Link>
                                 </div>
-                            )}
+                                <div className="flex items-center gap-2">
+                                    <Badge variant="secondary" className="text-xs bg-gray-100 text-gray-600">
+                                        {globalSections.reduce((sum, s) => sum + s.count, 0)}
+                                    </Badge>
+                                    <div className={`transition-transform duration-300 ${expandedPages['global_tools'] ? 'rotate-180' : ''}`}>
+                                        <ChevronDown className="w-4 h-4 text-gray-400" />
+                                    </div>
+                                </div>
+                            </button>
+
+                            {/* Global Settings Sections */}
+                            <div className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                                expandedPages['global_tools'] ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+                            }`}>
+                                <div className="ml-4 mr-2 mb-2 mt-1 space-y-0.5 border-l-2 border-gray-200 pl-2">
+                                    {globalSections.map((section) => {
+                                        const isCurrentSection = currentPage === 'global' && currentSection === section.key;
+                                        const SectionIcon = section.icon;
+                                        
+                                        return (
+                                            <Link
+                                                key={section.key}
+                                                href={route('admin.cms.global') + `?section=${section.key}`}
+                                                className={`flex items-center justify-between py-2.5 px-3 text-sm rounded-lg transition-all duration-200 relative group ${
+                                                    isCurrentSection 
+                                                        ? 'bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-700 font-semibold shadow-sm' 
+                                                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                                                }`}
+                                            >
+                                                <div className="flex items-center gap-2">
+                                                    <SectionIcon className={`w-3.5 h-3.5 ${isCurrentSection ? 'text-blue-600' : 'text-gray-400'}`} />
+                                                    <span>{section.title}</span>
+                                                </div>
+                                                <Badge 
+                                                    variant="secondary" 
+                                                    className={`text-xs transition-colors ${
+                                                        isCurrentSection 
+                                                            ? 'bg-blue-100 text-blue-700' 
+                                                            : 'bg-gray-100 text-gray-500'
+                                                    }`}
+                                                >
+                                                    {section.count}
+                                                </Badge>
+                                            </Link>
+                                        );
+                                    })}
+                                </div>
+                            </div>
                         </div>
 
-                        {/* Image Management */}
+                        {/* Image Management - Direct Link */}
                         <Link 
                             href={route('admin.cms.images')}
-                            className="flex items-center gap-3 p-3 hover:bg-gray-50 transition-colors duration-200 relative"
+                            className={`flex items-center gap-3 p-3 rounded-xl transition-all duration-300 ${
+                                currentPage === 'images' 
+                                    ? 'bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-200' 
+                                    : 'hover:bg-gray-50 border-2 border-transparent'
+                            }`}
                         >
-                            {/* Blue left border for selected Image Management */}
-                            {currentPage === 'images' && (
-                                <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-600 rounded-r-sm"></div>
-                            )}
-                            <div className="w-8 h-8 rounded-md border-2 border-blue-200 bg-blue-50 flex items-center justify-center">
-                                <ImageIcon className="w-4 h-4 text-blue-700" />
+                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center shadow-md transition-all duration-300 ${
+                                currentPage === 'images' 
+                                    ? 'bg-gradient-to-br from-blue-500 to-indigo-600' 
+                                    : 'bg-gray-100'
+                            }`}>
+                                <ImageIcon className={`w-5 h-5 ${currentPage === 'images' ? 'text-white' : 'text-gray-500'}`} />
                             </div>
-                            <span className="text-sm font-medium text-gray-700">Image Management</span>
+                            <div className="flex-1 min-w-0">
+                                <span className={`text-sm font-semibold block whitespace-nowrap ${currentPage === 'images' ? 'text-blue-700' : 'text-gray-700'}`}>
+                                    Image Library
+                                </span>
+                                <span className="text-xs text-gray-400 whitespace-nowrap">
+                                    Upload & manage media
+                                </span>
+                            </div>
+                            <ChevronRight className={`w-4 h-4 ${currentPage === 'images' ? 'text-blue-500' : 'text-gray-400'}`} />
                         </Link>
+                    </div>
+                </CardContent>
+            </Card>
+
+            {/* Help Card */}
+            <Card className="bg-gradient-to-br from-purple-50 to-indigo-50 border-2 border-purple-100 shadow-lg">
+                <CardContent className="p-4">
+                    <div className="flex items-start gap-3">
+                        <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-md flex-shrink-0">
+                            <Sparkles className="w-5 h-5 text-white" />
+                        </div>
+                        <div>
+                            <h4 className="text-sm font-bold text-gray-900 mb-1">Quick Tip</h4>
+                            <p className="text-xs text-gray-600 leading-relaxed">
+                                Use <kbd className="px-1 py-0.5 bg-white rounded text-xs font-mono shadow-sm">Ctrl+S</kbd> to 
+                                quickly save your changes on any page.
+                            </p>
+                        </div>
                     </div>
                 </CardContent>
             </Card>

@@ -1,4 +1,4 @@
-﻿import { Head, router, Link } from '@inertiajs/react';
+import { Head, router, Link, usePage } from '@inertiajs/react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -8,6 +8,7 @@ import { useState, useEffect } from 'react';
 import { useCart } from '@/Contexts/CartContext';
 
 export default function GalleryShow({ artwork, isFavorite: initialIsFavorite }) {
+    const { currency } = usePage().props;
     const [selectedImage, setSelectedImage] = useState(0);
     const [selectedOption, setSelectedOption] = useState(null); // null = original, edition.id = selected edition
     const [isFavorite, setIsFavorite] = useState(initialIsFavorite || false);
@@ -126,18 +127,10 @@ export default function GalleryShow({ artwork, isFavorite: initialIsFavorite }) 
 
     const canPurchase = artwork.price || (artwork.editions && artwork.editions.length > 0);
     
-    // Ensure images array exists and has at least one image
-    const images = Array.isArray(artwork.images) && artwork.images.length > 0 ? artwork.images : [
-        {
-            id: 0,
-            is_primary: true,
-            thumb: `https://picsum.photos/400/400?random=${artwork.id}`,
-            medium: `https://picsum.photos/1000/1000?random=${artwork.id}`,
-            xl: `https://picsum.photos/2000/2000?random=${artwork.id}`,
-            original: `https://picsum.photos/2000/2000?random=${artwork.id}`,
-        }
-    ];
-    const currentImage = images[selectedImage] || images[0] || null;
+    // Get images array - don't add fake placeholder images
+    const images = Array.isArray(artwork.images) ? artwork.images : [];
+    const hasImages = images.length > 0;
+    const currentImage = hasImages ? (images[selectedImage] || images[0]) : null;
 
     // If no artwork data, show loading or error
     if (!artwork) {
@@ -189,24 +182,26 @@ export default function GalleryShow({ artwork, isFavorite: initialIsFavorite }) 
                         {/* Main Image */}
                         <div className="relative group">
                             <div className="aspect-square overflow-hidden rounded-2xl shadow-2xl bg-gradient-to-br from-purple-100 to-blue-100 border border-purple-200">
-                                {currentImage ? (
+                                {hasImages && currentImage ? (
                                     <img
                                         src={currentImage.xl || currentImage.medium || currentImage.thumb}
                                         alt={artwork.title}
                                         className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                                         onError={(e) => {
                                             e.target.style.display = 'none';
-                                            e.target.nextSibling.style.display = 'flex';
+                                            if (e.target.nextSibling) {
+                                                e.target.nextSibling.style.display = 'flex';
+                                            }
                                         }}
                                     />
                                 ) : null}
                                 
-                                {/* Fallback when no image or image fails to load */}
-                                <div className={`w-full h-full flex items-center justify-center ${currentImage ? 'hidden' : 'flex'}`}>
+                                {/* Fallback when no image */}
+                                <div className={`w-full h-full flex items-center justify-center ${hasImages && currentImage ? 'hidden' : 'flex'}`}>
                                     <div className="text-center p-8">
                                         <div className="text-8xl mb-6 opacity-60">🎨</div>
                                         <div className="text-2xl font-bold text-gray-700 mb-2">{artwork.title}</div>
-                                        <div className="text-gray-500">{artwork.medium} • {artwork.year}</div>
+                                        <div className="text-gray-500">{artwork.medium}{artwork.year ? ` • ${artwork.year}` : ''}</div>
                                     </div>
                                 </div>
                                 
@@ -214,6 +209,7 @@ export default function GalleryShow({ artwork, isFavorite: initialIsFavorite }) 
                                 {images.length > 1 && (
                                     <div className="absolute inset-0 flex items-center justify-between p-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                                         <button
+                                            type="button"
                                             onClick={() => setSelectedImage(selectedImage > 0 ? selectedImage - 1 : images.length - 1)}
                                             className="w-12 h-12 bg-black/50 backdrop-blur-sm text-white rounded-full flex items-center justify-center hover:bg-black/70 transition-colors"
                                         >
@@ -222,6 +218,7 @@ export default function GalleryShow({ artwork, isFavorite: initialIsFavorite }) 
                                             </svg>
                                         </button>
                                         <button
+                                            type="button"
                                             onClick={() => setSelectedImage(selectedImage < images.length - 1 ? selectedImage + 1 : 0)}
                                             className="w-12 h-12 bg-black/50 backdrop-blur-sm text-white rounded-full flex items-center justify-center hover:bg-black/70 transition-colors"
                                         >
@@ -252,6 +249,7 @@ export default function GalleryShow({ artwork, isFavorite: initialIsFavorite }) 
                                 <div className="grid grid-cols-4 gap-3">
                                     {images.map((image, index) => (
                                         <button
+                                            type="button"
                                             key={image.id}
                                             onClick={() => setSelectedImage(index)}
                                             className={`group aspect-square overflow-hidden rounded-xl border-2 transition-all duration-300 ${
@@ -261,21 +259,10 @@ export default function GalleryShow({ artwork, isFavorite: initialIsFavorite }) 
                                             }`}
                                         >
                                             <img
-                                                src={image.thumb}
+                                                src={image.thumb || image.medium || image.xl}
                                                 alt={`${artwork.title} - Image ${index + 1}`}
                                                 className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
-                                                onError={(e) => {
-                                                    e.target.style.display = 'none';
-                                                    e.target.nextSibling.style.display = 'flex';
-                                                }}
                                             />
-                                            {/* Fallback for thumbnails */}
-                                            <div className={`w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 ${image.thumb ? 'hidden' : 'flex'}`}>
-                                                <div className="text-center p-2">
-                                                    <div className="text-2xl mb-1">🎨</div>
-                                                    <div className="text-xs text-gray-500 font-medium">{index + 1}</div>
-                                                </div>
-                                            </div>
                                         </button>
                                     ))}
                                 </div>
@@ -331,8 +318,8 @@ export default function GalleryShow({ artwork, isFavorite: initialIsFavorite }) 
                                         <div>
                                             <div className="text-sm font-medium text-green-700 mb-1">Starting Price</div>
                                             <div className="text-4xl font-bold text-green-600">
-                                                ${artwork.price.toLocaleString()}
-                                                <span className="text-lg font-normal text-green-500 ml-2">USD</span>
+                                                {currency?.symbol || '$'}{artwork.price.toLocaleString()}
+                                                <span className="text-lg font-normal text-green-500 ml-2">{currency?.code || 'USD'}</span>
                                             </div>
                                         </div>
                                         <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center">
@@ -401,9 +388,9 @@ export default function GalleryShow({ artwork, isFavorite: initialIsFavorite }) 
                                                     </div>
                                                     <div className="text-center sm:text-right">
                                                         <div className="text-2xl font-bold text-purple-600">
-                                                            ${artwork.price.toLocaleString()}
+                                                            {currency?.symbol || '$'}{artwork.price.toLocaleString()}
                                                         </div>
-                                                        <div className="text-sm text-gray-500">USD</div>
+                                                        <div className="text-sm text-gray-500">{currency?.code || 'USD'}</div>
                                                     </div>
                                                 </div>
                                             </div>
@@ -476,9 +463,9 @@ export default function GalleryShow({ artwork, isFavorite: initialIsFavorite }) 
                                                             </div>
                                                             <div className="text-center sm:text-right">
                                                                 <div className="text-2xl font-bold text-blue-600">
-                                                                    ${edition.price.toLocaleString()}
+                                                                    {currency?.symbol || '$'}{edition.price.toLocaleString()}
                                                                 </div>
-                                                                <div className="text-sm text-gray-500">USD</div>
+                                                                <div className="text-sm text-gray-500">{currency?.code || 'USD'}</div>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -503,7 +490,7 @@ export default function GalleryShow({ artwork, isFavorite: initialIsFavorite }) 
                                                             {selectedOption === null ? 'Authentic original artwork' : 'High-quality print reproduction'}
                                                         </div>
                                                         <div className="text-2xl font-bold text-green-600 mt-1">
-                                                            ${getSelectedPrice()?.toLocaleString() || '0'}
+                                                            {currency?.symbol || '$'}{getSelectedPrice()?.toLocaleString() || '0'}
                                                         </div>
                                                     </div>
                                                 </div>
@@ -558,9 +545,10 @@ export default function GalleryShow({ artwork, isFavorite: initialIsFavorite }) 
                                 <div className="relative">
                                     <div className="absolute left-0 top-0 w-1 h-full bg-gradient-to-b from-purple-500 to-blue-500 rounded-full"></div>
                                     <div className="pl-6 prose prose-lg max-w-none text-gray-700 leading-relaxed">
-                                        <p className="text-lg font-medium text-gray-800 mb-4">
-                                            {artwork.story.content}
-                                        </p>
+                                        <div 
+                                            className="text-lg text-gray-800 mb-4 [&>h1]:text-2xl [&>h1]:font-bold [&>h1]:mb-3 [&>h2]:text-xl [&>h2]:font-semibold [&>h2]:mb-2 [&>p]:mb-3 [&>ul]:list-disc [&>ul]:pl-5 [&>ul]:mb-3 [&>ol]:list-decimal [&>ol]:pl-5 [&>ol]:mb-3 [&>blockquote]:border-l-4 [&>blockquote]:border-purple-300 [&>blockquote]:pl-4 [&>blockquote]:italic [&>blockquote]:text-gray-600 [&>a]:text-purple-600 [&>a]:underline"
+                                            dangerouslySetInnerHTML={{ __html: artwork.story.content }}
+                                        />
                                         <div className="mt-6 p-4 bg-purple-50 rounded-xl border border-purple-100">
                                             <div className="flex items-center gap-3 text-purple-700">
                                                 <div className="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center">

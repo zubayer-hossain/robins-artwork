@@ -10,20 +10,12 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Inertia\Response;
-use Illuminate\Routing\Controllers\HasMiddleware;
-use Illuminate\Routing\Controllers\Middleware;
 
-class FavoriteController extends Controller implements HasMiddleware
+class FavoriteController extends Controller
 {
-    public static function middleware(): array
-    {
-        return [
-            new Middleware('auth'),
-        ];
-    }
-
     /**
      * Display user's favorites
+     * Note: Authorization is handled by route-level 'customer' middleware
      */
     public function index(): Response
     {

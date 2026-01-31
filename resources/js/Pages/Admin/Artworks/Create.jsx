@@ -1,4 +1,4 @@
-import { Head, useForm, Link } from '@inertiajs/react';
+import { Head, useForm, Link, usePage } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
 import AdminLayout from '@/Layouts/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
@@ -9,9 +9,12 @@ import { Textarea } from '@/Components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import { Checkbox } from '@/Components/ui/checkbox';
 import { Badge } from '@/Components/ui/badge';
-import { ArrowLeft, Save, Palette, X } from 'lucide-react';
+import { ArrowLeft, Save, Palette, X, Image as ImageIcon, AlertCircle } from 'lucide-react';
+import ImageUploader from '@/Components/ImageUploader';
+import RichTextEditor from '@/Components/RichTextEditor';
 
 export default function AdminArtworkCreate({ auth, mediums, statuses, flash }) {
+    const { currency } = usePage().props;
     const [newTagInput, setNewTagInput] = useState('');
 
     const { data, setData, post, processing, errors, reset } = useForm({
@@ -74,10 +77,26 @@ export default function AdminArtworkCreate({ auth, mediums, statuses, flash }) {
     };
 
     const addTag = () => {
-        if (newTagInput.trim() && !data.tags.includes(newTagInput.trim())) {
-            setData('tags', [...data.tags, newTagInput.trim()]);
-            setNewTagInput('');
+        const input = newTagInput.trim();
+        if (!input) return;
+
+        // Check if input contains commas - split into multiple tags
+        if (input.includes(',')) {
+            const newTags = input
+                .split(',')
+                .map(tag => tag.trim())
+                .filter(tag => tag && !data.tags.includes(tag));
+            
+            if (newTags.length > 0) {
+                setData('tags', [...data.tags, ...newTags]);
+            }
+        } else {
+            // Single tag
+            if (!data.tags.includes(input)) {
+                setData('tags', [...data.tags, input]);
+            }
         }
+        setNewTagInput('');
     };
 
     const removeTag = (tagToRemove) => {
@@ -88,6 +107,22 @@ export default function AdminArtworkCreate({ auth, mediums, statuses, flash }) {
         if (e.key === 'Enter') {
             e.preventDefault();
             addTag();
+        }
+    };
+
+    const handleTagPaste = (e) => {
+        const pastedText = e.clipboardData.getData('text');
+        if (pastedText.includes(',')) {
+            e.preventDefault();
+            const newTags = pastedText
+                .split(',')
+                .map(tag => tag.trim())
+                .filter(tag => tag && !data.tags.includes(tag));
+            
+            if (newTags.length > 0) {
+                setData('tags', [...data.tags, ...newTags]);
+            }
+            setNewTagInput('');
         }
     };
 
@@ -178,7 +213,7 @@ export default function AdminArtworkCreate({ auth, mediums, statuses, flash }) {
                                             {errors.year && <p className="text-sm text-red-600 mt-1">{errors.year}</p>}
                                         </div>
                                         <div>
-                                            <Label htmlFor="price">Price ($)</Label>
+                                            <Label htmlFor="price">Price ({currency?.symbol || '$'})</Label>
                                             <Input
                                                 id="price"
                                                 type="number"
@@ -215,12 +250,11 @@ export default function AdminArtworkCreate({ auth, mediums, statuses, flash }) {
                                 <CardContent className="p-6 space-y-4">
                                     <div>
                                         <Label htmlFor="story">Story/Description</Label>
-                                        <Textarea
-                                            id="story"
-                                            value={data.story.content || ''}
-                                            onChange={(e) => setData('story', { ...data.story, content: e.target.value })}
+                                        <p className="text-xs text-gray-500 mb-2">Use the rich text editor to format your artwork's story</p>
+                                        <RichTextEditor
+                                            content={data.story.content || ''}
+                                            onChange={(content) => setData('story', { ...data.story, content })}
                                             placeholder="Tell the story behind this artwork..."
-                                            rows={4}
                                         />
                                         {errors.story && <p className="text-sm text-red-600 mt-1">{errors.story}</p>}
                                     </div>
@@ -241,12 +275,14 @@ export default function AdminArtworkCreate({ auth, mediums, statuses, flash }) {
                                                 </Badge>
                                             ))}
                                         </div>
+                                        <p className="text-xs text-gray-500 mb-2">Paste comma-separated tags or add one at a time</p>
                                         <div className="flex gap-2">
                                             <Input
                                                 value={newTagInput}
                                                 onChange={(e) => setNewTagInput(e.target.value)}
                                                 onKeyPress={handleKeyPress}
-                                                placeholder="Add a tag..."
+                                                onPaste={handleTagPaste}
+                                                placeholder="wildlife, nature, landscape..."
                                                 className="flex-1"
                                             />
                                             <Button type="button" onClick={addTag} variant="outline">
@@ -254,6 +290,28 @@ export default function AdminArtworkCreate({ auth, mediums, statuses, flash }) {
                                             </Button>
                                         </div>
                                         {errors.tags && <p className="text-sm text-red-600 mt-1">{errors.tags}</p>}
+                                    </div>
+                                </CardContent>
+                            </Card>
+
+                            {/* Images Section - Shows prompt to save first */}
+                            <Card className="border-0 shadow-sm">
+                                <CardHeader className="bg-gradient-to-r from-purple-50 to-pink-50 border-b">
+                                    <CardTitle className="flex items-center gap-2 text-purple-900">
+                                        <ImageIcon className="w-5 h-5" />
+                                        Artwork Images
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent className="p-6">
+                                    <div className="text-center py-8 bg-gray-50 rounded-xl border-2 border-dashed border-gray-200">
+                                        <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                            <AlertCircle className="w-8 h-8 text-gray-400" />
+                                        </div>
+                                        <h3 className="text-lg font-semibold text-gray-700 mb-2">Save Artwork First</h3>
+                                        <p className="text-gray-500 max-w-md mx-auto">
+                                            Create and save the artwork first, then you'll be able to upload images.
+                                            You'll be redirected to the edit page where you can add images.
+                                        </p>
                                     </div>
                                 </CardContent>
                             </Card>
