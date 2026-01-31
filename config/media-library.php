@@ -119,9 +119,9 @@ return [
      * The media library will try to optimize all converted images by removing
      * metadata and applying a little bit of compression. These are
      * the optimizers that will be used by default.
-     * Set IMAGE_OPTIMIZERS_ENABLED=false in .env when proc_open is disabled (e.g. on shared hosting).
+     * Set IMAGE_OPTIMIZERS_ENABLED=true in .env to enable (requires proc_open; disabled by default for shared hosting).
      */
-    'image_optimizers' => env('IMAGE_OPTIMIZERS_ENABLED', true) ? [
+    'image_optimizers' => env('IMAGE_OPTIMIZERS_ENABLED', false) ? [
         Spatie\ImageOptimizer\Optimizers\Jpegoptim::class => [
             '-m85', // set maximum quality to 85%
             '--force', // ensure that progressive generation is always done also if a little bigger
