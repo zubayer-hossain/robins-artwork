@@ -23,12 +23,18 @@ import {
     FolderOpen,
     Maximize2,
     Info,
-    AlertCircle
+    AlertCircle,
+    Tags,
+    Pencil,
+    Plus
 } from 'lucide-react';
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useMemo, useEffect } from 'react';
 import CmsSidebar from '@/Components/CmsSidebar';
+import ConfirmDialog from '@/Components/ConfirmDialog';
 
-export default function CmsImages({ auth, images, settings, breadcrumbs, pageTitle }) {
+const toTitleCase = (s) => !s ? '' : s.charAt(0).toUpperCase() + (s.slice(1) || '').toLowerCase();
+
+export default function CmsImages({ auth, images, settings, breadcrumbs, pageTitle, categories: backendCategories = [] }) {
     const [viewMode, setViewMode] = useState('grid');
     const [selectedImages, setSelectedImages] = useState([]);
     const [searchQuery, setSearchQuery] = useState('');
@@ -39,10 +45,36 @@ export default function CmsImages({ auth, images, settings, breadcrumbs, pageTit
     const [previewImage, setPreviewImage] = useState(null);
     const [showSuccessToast, setShowSuccessToast] = useState(false);
     const [successMessage, setSuccessMessage] = useState('');
+    const [deleteConfirm, setDeleteConfirm] = useState({ open: false, type: null, filename: null });
+    const [isDeleting, setIsDeleting] = useState(false);
+    const [uploadCategory, setUploadCategory] = useState('General');
+    const [bulkCategorySelect, setBulkCategorySelect] = useState('');
+    const [managedCategories, setManagedCategories] = useState(backendCategories);
+    const [newCategoryName, setNewCategoryName] = useState('');
+    const [editingCategory, setEditingCategory] = useState(null);
+    const [editCategoryName, setEditCategoryName] = useState('');
+    const [categoryDeleteConfirm, setCategoryDeleteConfirm] = useState(null);
+    const [isCategorySaving, setIsCategorySaving] = useState(false);
     const fileInputRef = useRef(null);
 
-    // Get unique categories from images
-    const categories = ['all', ...new Set(images.map(img => img.category).filter(Boolean))];
+    // Merge backend categories with any from images (title-case for display)
+    const categoriesForFilter = useMemo(() => {
+        const fromImages = [...new Set(images.map(img => img.category).filter(Boolean))].map(toTitleCase);
+        const fromBackend = managedCategories.map(toTitleCase);
+        const set = new Set([...fromBackend, ...fromImages]);
+        set.add('Uncategorized');
+        return ['all', ...set];
+    }, [images, managedCategories]);
+
+    const uploadCategoryOptions = useMemo(() => {
+        const fromImages = [...new Set(images.map(img => img.category).filter(Boolean))].map(toTitleCase);
+        const fromBackend = managedCategories.map(toTitleCase);
+        return [...new Set([...fromBackend, ...fromImages])].sort();
+    }, [images, managedCategories]);
+
+    useEffect(() => {
+        setManagedCategories(backendCategories || []);
+    }, [backendCategories]);
     
     // Helper to get display URL (handles relative/absolute URLs)
     const getDisplayUrl = (url) => {
@@ -64,7 +96,8 @@ export default function CmsImages({ auth, images, settings, breadcrumbs, pageTit
             image.original_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
             image.alt_text?.toLowerCase().includes(searchQuery.toLowerCase());
         
-        const matchesCategory = categoryFilter === 'all' || image.category === categoryFilter;
+        const matchesCategory = categoryFilter === 'all'
+            || (categoryFilter === 'Uncategorized' ? !image.category || image.category?.toLowerCase() === 'uncategorized' : image.category?.toLowerCase() === categoryFilter?.toLowerCase());
         
         return matchesSearch && matchesCategory;
     });
@@ -88,7 +121,7 @@ export default function CmsImages({ auth, images, settings, breadcrumbs, pageTit
             const formData = new FormData();
             formData.append('image', file);
             formData.append('alt_text', file.name.replace(/\.[^/.]+$/, ""));
-            formData.append('category', 'general');
+            formData.append('category', uploadCategory.toLowerCase());
 
             try {
                 const response = await fetch(route('admin.cms.images.upload'), {
@@ -160,11 +193,9 @@ export default function CmsImages({ auth, images, settings, breadcrumbs, pageTit
         );
     };
 
-    const handleDeleteSelected = async () => {
+    const performDeleteSelected = async () => {
         if (selectedImages.length === 0) return;
-        
-        if (!confirm(`Delete ${selectedImages.length} image(s)? This action cannot be undone.`)) return;
-
+        setIsDeleting(true);
         try {
             const response = await fetch(route('admin.cms.images.organize'), {
                 method: 'POST',
@@ -183,18 +214,21 @@ export default function CmsImages({ auth, images, settings, breadcrumbs, pageTit
             if (result.success) {
                 showToast('Images deleted successfully');
                 setSelectedImages([]);
+                setDeleteConfirm({ open: false, type: null, filename: null });
                 router.reload();
             } else {
                 window.toast?.error('Failed to delete images');
             }
         } catch (error) {
             window.toast?.error('Network error');
+        } finally {
+            setIsDeleting(false);
         }
     };
 
-    const handleDeleteSingle = async (filename) => {
-        if (!confirm('Delete this image? This action cannot be undone.')) return;
-
+    const performDeleteSingle = async (filename) => {
+        if (!filename) return;
+        setIsDeleting(true);
         try {
             const response = await fetch(route('admin.cms.images.organize'), {
                 method: 'POST',
@@ -212,12 +246,32 @@ export default function CmsImages({ auth, images, settings, breadcrumbs, pageTit
             
             if (result.success) {
                 showToast('Image deleted successfully');
+                setDeleteConfirm({ open: false, type: null, filename: null });
                 router.reload();
             } else {
                 window.toast?.error('Failed to delete image');
             }
         } catch (error) {
             window.toast?.error('Network error');
+        } finally {
+            setIsDeleting(false);
+        }
+    };
+
+    const handleDeleteSelected = () => {
+        if (selectedImages.length === 0) return;
+        setDeleteConfirm({ open: true, type: 'bulk', filename: null });
+    };
+
+    const handleDeleteSingle = (filename) => {
+        setDeleteConfirm({ open: true, type: 'single', filename });
+    };
+
+    const handleConfirmDelete = async () => {
+        if (deleteConfirm.type === 'bulk') {
+            await performDeleteSelected();
+        } else if (deleteConfirm.type === 'single' && deleteConfirm.filename) {
+            await performDeleteSingle(deleteConfirm.filename);
         }
     };
 
@@ -234,7 +288,7 @@ export default function CmsImages({ auth, images, settings, breadcrumbs, pageTit
                 body: JSON.stringify({
                     action: 'update_category',
                     image_filenames: selectedImages,
-                    category: newCategory
+                    category: newCategory.toLowerCase()
                 }),
             });
 
@@ -243,12 +297,116 @@ export default function CmsImages({ auth, images, settings, breadcrumbs, pageTit
             if (result.success) {
                 showToast('Category updated successfully');
                 setSelectedImages([]);
+                setBulkCategorySelect('');
                 router.reload();
             } else {
                 window.toast?.error('Failed to update category');
             }
         } catch (error) {
             window.toast?.error('Network error');
+        }
+    };
+
+    const handleAddCategory = async () => {
+        const name = newCategoryName.trim();
+        if (!name) return;
+        setIsCategorySaving(true);
+        try {
+            const response = await fetch(route('admin.cms.images.categories.store'), {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                },
+                body: JSON.stringify({ name: name.toLowerCase() }),
+            });
+            const result = await response.json();
+            if (result.success) {
+                setManagedCategories(result.categories || []);
+                setNewCategoryName('');
+                showToast(result.message || 'Category added.');
+            } else {
+                window.toast?.error(result.message || 'Failed to add category');
+            }
+        } catch (error) {
+            window.toast?.error('Network error');
+        } finally {
+            setIsCategorySaving(false);
+        }
+    };
+
+    const handleSaveEditCategory = async () => {
+        const newName = editCategoryName.trim().toLowerCase();
+        if (!editingCategory || !newName) return;
+        setIsCategorySaving(true);
+        try {
+            const response = await fetch(route('admin.cms.images.categories.update'), {
+                method: 'PUT',
+                credentials: 'same-origin',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                },
+                body: JSON.stringify({
+                    old_name: editingCategory.toLowerCase(),
+                    new_name: newName,
+                    update_images: true,
+                }),
+            });
+            const result = await response.json();
+            if (result.success) {
+                setManagedCategories(result.categories || []);
+                setEditingCategory(null);
+                setEditCategoryName('');
+                showToast(result.message || 'Category updated.');
+            } else {
+                window.toast?.error(result.message || 'Failed to update category');
+            }
+        } catch (error) {
+            window.toast?.error('Network error');
+        } finally {
+            setIsCategorySaving(false);
+        }
+    };
+
+    const handleCancelEditCategory = () => {
+        setEditingCategory(null);
+        setEditCategoryName('');
+    };
+
+    const performDeleteCategory = async () => {
+        if (!categoryDeleteConfirm?.name) return;
+        setIsCategorySaving(true);
+        try {
+            const response = await fetch(route('admin.cms.images.categories.destroy'), {
+                method: 'DELETE',
+                credentials: 'same-origin',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                },
+                body: JSON.stringify({
+                    name: categoryDeleteConfirm.name.toLowerCase(),
+                    reassign_uncategorized: true,
+                }),
+            });
+            const result = await response.json();
+            if (result.success) {
+                setManagedCategories(result.categories || []);
+                setCategoryDeleteConfirm(null);
+                showToast(result.message || 'Category deleted.');
+                router.reload();
+            } else {
+                window.toast?.error(result.message || 'Failed to delete category');
+            }
+        } catch (error) {
+            window.toast?.error('Network error');
+        } finally {
+            setIsCategorySaving(false);
         }
     };
 
@@ -278,18 +436,28 @@ export default function CmsImages({ auth, images, settings, breadcrumbs, pageTit
             
             <div className="min-h-screen bg-gradient-to-br from-slate-50 via-gray-50 to-blue-50">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                    {/* Breadcrumbs */}
-                    <nav className="flex items-center space-x-2 text-sm text-gray-600 mb-8">
-                        <Link href={route('admin.dashboard')} className="hover:text-blue-600 transition-colors font-medium">
-                            Admin
-                        </Link>
-                        <ChevronRight className="w-4 h-4 text-gray-400" />
-                        <Link href={route('admin.cms.index')} className="hover:text-blue-600 transition-colors font-medium">
-                            CMS
-                        </Link>
-                        <ChevronRight className="w-4 h-4 text-gray-400" />
-                        <span className="text-gray-900 font-semibold">Image Management</span>
-                    </nav>
+                    {/* Breadcrumbs + Manage Categories */}
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+                        <nav className="flex items-center space-x-2 text-sm text-gray-600">
+                            <Link href={route('admin.dashboard')} className="hover:text-blue-600 transition-colors font-medium">
+                                Admin
+                            </Link>
+                            <ChevronRight className="w-4 h-4 text-gray-400" />
+                            <Link href={route('admin.cms.index')} className="hover:text-blue-600 transition-colors font-medium">
+                                CMS
+                            </Link>
+                            <ChevronRight className="w-4 h-4 text-gray-400" />
+                            <span className="text-gray-900 font-semibold">Image Management</span>
+                        </nav>
+                        <Button
+                            variant="outline"
+                            className="bg-white border-emerald-200 text-emerald-700 hover:bg-emerald-50 hover:border-emerald-300 shrink-0"
+                            onClick={() => document.getElementById('manage-categories')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+                        >
+                            <Tags className="w-4 h-4 mr-2" />
+                            Manage Categories
+                        </Button>
+                    </div>
 
                     <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
                         {/* CMS Sidebar */}
@@ -330,6 +498,23 @@ export default function CmsImages({ auth, images, settings, breadcrumbs, pageTit
                                     </div>
                                 </CardHeader>
                                 <CardContent className="p-6">
+                                    {/* Category for new uploads */}
+                                    <div className="mb-4 flex flex-wrap items-center gap-3">
+                                        <Label className="text-sm font-medium text-gray-700">Category for new uploads</Label>
+                                        <Select value={uploadCategory} onValueChange={setUploadCategory}>
+                                            <SelectTrigger className="w-48 bg-white">
+                                                <SelectValue placeholder="Select category" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {uploadCategoryOptions.map(cat => (
+                                                    <SelectItem key={cat} value={cat}>
+                                                        {cat}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                        <p className="text-xs text-gray-500">Images you upload will be saved under this category.</p>
+                                    </div>
                                     <div
                                         onDrop={handleDrop}
                                         onDragOver={handleDragOver}
@@ -444,10 +629,10 @@ export default function CmsImages({ auth, images, settings, breadcrumbs, pageTit
                                             {/* Category Filter */}
                                             <Select value={categoryFilter} onValueChange={setCategoryFilter}>
                                                 <SelectTrigger className="w-36 bg-white">
-                                                    <SelectValue />
+                                                    <SelectValue placeholder="All Categories" />
                                                 </SelectTrigger>
                                                 <SelectContent>
-                                                    {categories.map(category => (
+                                                    {categoriesForFilter.map(category => (
                                                         <SelectItem key={category} value={category}>
                                                             {category === 'all' ? 'All Categories' : category}
                                                         </SelectItem>
@@ -497,17 +682,16 @@ export default function CmsImages({ auth, images, settings, breadcrumbs, pageTit
                                                 </Button>
                                             </div>
                                             <div className="flex items-center gap-2">
-                                                <Select onValueChange={handleBulkCategoryUpdate}>
+                                                <Select value={bulkCategorySelect} onValueChange={(v) => { setBulkCategorySelect(v); handleBulkCategoryUpdate(v); }}>
                                                     <SelectTrigger className="w-40 bg-white">
                                                         <SelectValue placeholder="Change Category" />
                                                     </SelectTrigger>
                                                     <SelectContent>
-                                                        {categories.filter(cat => cat !== 'all').map(category => (
+                                                        {categoriesForFilter.filter(cat => cat !== 'all').map(category => (
                                                             <SelectItem key={category} value={category}>
                                                                 {category}
                                                             </SelectItem>
                                                         ))}
-                                                        <SelectItem value="uncategorized">Uncategorized</SelectItem>
                                                     </SelectContent>
                                                 </Select>
                                                 <Button
@@ -594,10 +778,147 @@ export default function CmsImages({ auth, images, settings, breadcrumbs, pageTit
                                     )}
                                 </CardContent>
                             </Card>
+
+                            {/* Manage Categories — settings at bottom so Upload and Library flow first */}
+                            <Card id="manage-categories" className="border-0 shadow-xl overflow-hidden scroll-mt-6">
+                                <CardHeader className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white">
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center">
+                                            <Tags className="w-6 h-6 text-white" />
+                                        </div>
+                                        <div>
+                                            <CardTitle className="text-xl font-bold text-white">
+                                                Manage Categories
+                                            </CardTitle>
+                                            <p className="text-emerald-100 text-sm">
+                                                Add, rename, or remove image categories. Names are stored in lowercase; displayed in title case.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </CardHeader>
+                                <CardContent className="p-6">
+                                    <div className="flex flex-wrap items-end gap-3 mb-6">
+                                        <div className="flex-1 min-w-[200px]">
+                                            <Label htmlFor="new-category" className="text-sm font-medium text-gray-700">New category</Label>
+                                            <Input
+                                                id="new-category"
+                                                placeholder="e.g. Blog, Products"
+                                                value={newCategoryName}
+                                                onChange={(e) => setNewCategoryName(e.target.value)}
+                                                onKeyDown={(e) => e.key === 'Enter' && handleAddCategory()}
+                                                className="mt-1 bg-white"
+                                                disabled={isCategorySaving}
+                                            />
+                                        </div>
+                                        <Button
+                                            onClick={handleAddCategory}
+                                            disabled={!newCategoryName.trim() || isCategorySaving}
+                                            className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                                        >
+                                            <Plus className="w-4 h-4 mr-2" />
+                                            {isCategorySaving ? 'Adding…' : 'Add Category'}
+                                        </Button>
+                                    </div>
+                                    <div className="border-t border-gray-100 pt-4">
+                                        <Label className="text-sm font-medium text-gray-700 mb-3 block">Current categories</Label>
+                                        {managedCategories.length === 0 ? (
+                                            <p className="text-sm text-gray-500 py-2">No custom categories yet. Add one above or use categories when uploading.</p>
+                                        ) : (
+                                            <ul className="space-y-2">
+                                                {managedCategories.map((cat) => (
+                                                    <li
+                                                        key={cat}
+                                                        className="flex items-center gap-3 py-2 px-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors"
+                                                    >
+                                                        {editingCategory === cat ? (
+                                                            <>
+                                                                <Input
+                                                                    value={editCategoryName}
+                                                                    onChange={(e) => setEditCategoryName(e.target.value)}
+                                                                    onKeyDown={(e) => {
+                                                                        if (e.key === 'Enter') handleSaveEditCategory();
+                                                                        if (e.key === 'Escape') handleCancelEditCategory();
+                                                                    }}
+                                                                    className="flex-1 max-w-xs bg-white"
+                                                                    autoFocus
+                                                                    disabled={isCategorySaving}
+                                                                />
+                                                                <Button size="sm" onClick={handleSaveEditCategory} disabled={!editCategoryName.trim() || isCategorySaving}>
+                                                                    Save
+                                                                </Button>
+                                                                <Button size="sm" variant="ghost" onClick={handleCancelEditCategory} disabled={isCategorySaving}>
+                                                                    Cancel
+                                                                </Button>
+                                                            </>
+                                                        ) : (
+                                                            <>
+                                                                <span className="flex-1 font-medium text-gray-900">{toTitleCase(cat)}</span>
+                                                                <Button
+                                                                    variant="ghost"
+                                                                    size="sm"
+                                                                    onClick={() => {
+                                                                        setEditingCategory(cat);
+                                                                        setEditCategoryName(toTitleCase(cat));
+                                                                    }}
+                                                                    className="text-gray-500 hover:text-gray-700"
+                                                                    disabled={isCategorySaving}
+                                                                >
+                                                                    <Pencil className="w-4 h-4" />
+                                                                </Button>
+                                                                {cat.toLowerCase() !== 'uncategorized' && (
+                                                                    <Button
+                                                                        variant="ghost"
+                                                                        size="sm"
+                                                                        onClick={() => setCategoryDeleteConfirm({ open: true, name: cat })}
+                                                                        className="text-red-500 hover:text-red-600 hover:bg-red-50"
+                                                                        disabled={isCategorySaving}
+                                                                    >
+                                                                        <Trash2 className="w-4 h-4" />
+                                                                    </Button>
+                                                                )}
+                                                            </>
+                                                        )}
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        )}
+                                    </div>
+                                </CardContent>
+                            </Card>
                         </div>
                     </div>
                 </div>
             </div>
+
+            {/* Delete confirmation modal */}
+            <ConfirmDialog
+                isOpen={deleteConfirm.open}
+                onClose={() => !isDeleting && setDeleteConfirm({ open: false, type: null, filename: null })}
+                onConfirm={handleConfirmDelete}
+                title={deleteConfirm.type === 'bulk' ? 'Delete selected images?' : 'Delete this image?'}
+                message={deleteConfirm.type === 'bulk'
+                    ? `Delete ${selectedImages.length} image(s)? This action cannot be undone.`
+                    : 'Delete this image? This action cannot be undone.'}
+                confirmText="Delete"
+                cancelText="Cancel"
+                isLoading={isDeleting}
+                variant="danger"
+            />
+
+            {/* Category delete confirmation modal */}
+            <ConfirmDialog
+                isOpen={!!(categoryDeleteConfirm?.open && categoryDeleteConfirm?.name)}
+                onClose={() => !isCategorySaving && setCategoryDeleteConfirm(null)}
+                onConfirm={performDeleteCategory}
+                title="Delete this category?"
+                message={categoryDeleteConfirm?.name
+                    ? `Delete the category "${toTitleCase(categoryDeleteConfirm.name)}"? Images in this category will be set to Uncategorized.`
+                    : ''}
+                confirmText="Delete"
+                cancelText="Cancel"
+                isLoading={isCategorySaving}
+                variant="danger"
+            />
 
             {/* Image Preview Modal / Lightbox */}
             {previewImage && (

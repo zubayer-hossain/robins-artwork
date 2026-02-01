@@ -39,20 +39,26 @@ export default function GalleryShow({ artwork, isFavorite: initialIsFavorite }) 
                 
             const response = await fetch(route('cart.store'), {
                 method: 'POST',
+                credentials: 'same-origin',
                 headers: {
                     'Content-Type': 'application/json',
+                    'Accept': 'application/json',
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content'),
                     'X-Requested-With': 'XMLHttpRequest',
                 },
                 body: JSON.stringify(payload),
             });
 
-            const data = await response.json();
+            const data = await response.json().catch(() => ({}));
+
+            if (!response.ok) {
+                window.toast?.error(data.message || 'You do not have permission to perform this action.', 'Access denied');
+                return;
+            }
 
             if (data.success) {
                 const itemName = getSelectedName();
                 window.toast?.success(`${itemName} added to cart!`, 'Cart Updated');
-                console.log('Cart response data:', data); // Debug log
                 // Refresh cart count from server to get accurate count
                 refreshCartCount();
             } else if (data.already_in_cart) {
@@ -86,15 +92,22 @@ export default function GalleryShow({ artwork, isFavorite: initialIsFavorite }) 
         try {
             const response = await fetch(route('favorites.toggle'), {
                 method: 'POST',
+                credentials: 'same-origin',
                 headers: {
                     'Content-Type': 'application/json',
+                    'Accept': 'application/json',
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content'),
                     'X-Requested-With': 'XMLHttpRequest',
                 },
                 body: JSON.stringify({ artwork_id: artwork.id }),
             });
 
-            const data = await response.json();
+            const data = await response.json().catch(() => ({}));
+
+            if (!response.ok) {
+                window.toast?.error(data.message || 'You do not have permission to perform this action.', 'Access denied');
+                return;
+            }
 
             if (data.success) {
                 setIsFavorite(data.is_favorite);

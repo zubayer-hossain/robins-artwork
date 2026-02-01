@@ -38,13 +38,13 @@ class CustomRoleMiddleware
                 'referer' => $request->header('referer')
             ]);
             
-            // Handle pure AJAX requests (not Inertia) with JSON response
+            // Handle pure AJAX requests (not Inertia) with JSON response (no role details for security)
             if ($request->ajax() && !$request->header('X-Inertia') && $request->header('Accept') === 'application/json') {
                 return response()->json([
                     'error' => 'Access denied',
-                    'message' => 'You do not have permission to access this resource.',
-                    'required_role' => $role,
-                    'user_roles' => $user->getRoleNames()->toArray()
+                    'message' => $role === 'customer'
+                        ? 'This action is only available to customer accounts.'
+                        : 'You do not have permission to access this resource.',
                 ], 403);
             }
             

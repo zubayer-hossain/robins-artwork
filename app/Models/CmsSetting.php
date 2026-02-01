@@ -235,4 +235,78 @@ class CmsSetting extends Model
             'storage_disk' => self::getValue('global', 'images', 'storage_disk', 'public'),
         ];
     }
+
+    /**
+     * Get managed image categories (stored list; lowercase)
+     */
+    public static function getImageCategories(): array
+    {
+        $setting = self::where('page', 'global')
+            ->where('section', 'images')
+            ->where('key', 'image_categories')
+            ->where('is_active', true)
+            ->first();
+
+        if (!$setting || !$setting->value) {
+            return ['general', 'hero', 'gallery', 'blog', 'uncategorized'];
+        }
+
+        $categories = json_decode($setting->value, true);
+        return is_array($categories) ? array_map('strtolower', $categories) : ['general', 'hero', 'gallery', 'blog', 'uncategorized'];
+    }
+
+    /**
+     * Set managed image categories (store as lowercase)
+     */
+    public static function setImageCategories(array $categories): void
+    {
+        $categories = array_values(array_unique(array_map('strtolower', $categories)));
+        self::updateOrCreate(
+            [
+                'page' => 'global',
+                'section' => 'images',
+                'key' => 'image_categories'
+            ],
+            [
+                'value' => json_encode($categories),
+                'type' => 'json',
+                'description' => 'Managed image categories for CMS',
+                'sort_order' => 0,
+                'is_active' => true
+            ]
+        );
+        self::clearCache('global');
+    }
+
+    /**
+     * Rename category across all images
+     */
+    public static function renameImageCategory(string $oldName, string $newName): int
+    {
+        $images = self::getUploadedImages();
+        $count = 0;
+        $oldLower = strtolower($oldName);
+        $newLower = strtolower($newName);
+
+        foreach ($images as $index => $image) {
+            $cat = isset($image['category']) ? strtolower($image['category']) : '';
+            if ($cat === $oldLower) {
+                $images[$index]['category'] = $newLower;
+                $count++;
+            }
+        }
+
+        if ($count > 0) {
+            self::setUploadedImages($images);
+        }
+        return $count;
+    }
+
+    /**
+     * Reassign images in a category to uncategorized
+     */
+    public static function reassignImagesToUncategorized(string $categoryName): int
+    {
+        return self::renameImageCategory($categoryName, 'uncategorized');
+    }
 }

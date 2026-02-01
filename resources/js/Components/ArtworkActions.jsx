@@ -48,6 +48,9 @@ export function ArtworkCardActions({ artwork, edition = null, isFavorite = false
         } catch (error) {
             if (error.response?.status === 419) {
                 window.toast?.error('Session expired. Please refresh the page.', 'Session Error');
+            } else if (error.response?.status === 403 || error.response?.data?.message) {
+                const message = error.response?.data?.message || 'You do not have permission to perform this action.';
+                window.toast?.error(message, 'Access denied');
             } else {
                 window.toast?.error('Network error occurred', 'Connection Error');
             }
@@ -94,6 +97,9 @@ export function ArtworkCardActions({ artwork, edition = null, isFavorite = false
         } catch (error) {
             if (error.response?.status === 419) {
                 window.toast?.error('Session expired. Please refresh the page.', 'Session Error');
+            } else if (error.response?.status === 403 || error.response?.data?.message) {
+                const message = error.response?.data?.message || 'You do not have permission to perform this action.';
+                window.toast?.error(message, 'Access denied');
             } else {
                 window.toast?.error('Network error occurred', 'Connection Error');
             }
@@ -245,6 +251,9 @@ export function AddToCartButton({
         } catch (error) {
             if (error.response?.status === 419) {
                 window.toast?.error('Session expired. Please refresh the page.', 'Session Error');
+            } else if (error.response?.status === 403 || error.response?.data?.message) {
+                const message = error.response?.data?.message || 'You do not have permission to perform this action.';
+                window.toast?.error(message, 'Access denied');
             } else {
                 window.toast?.error('Network error occurred', 'Connection Error');
             }
@@ -346,6 +355,9 @@ export function FavoriteButton({
         } catch (error) {
             if (error.response?.status === 419) {
                 window.toast?.error('Session expired. Please refresh the page.', 'Session Error');
+            } else if (error.response?.status === 403 || error.response?.data?.message) {
+                const message = error.response?.data?.message || 'You do not have permission to perform this action.';
+                window.toast?.error(message, 'Access denied');
             } else {
                 window.toast?.error('Network error occurred', 'Connection Error');
             }

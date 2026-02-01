@@ -133,13 +133,16 @@ Route::prefix('admin')->name('admin.')->middleware('web')->group(function () {
         Route::get('/cms/global', [AdminCmsController::class, 'global'])->name('cms.global');
         Route::patch('/cms/global', [AdminCmsController::class, 'updateGlobal'])->name('cms.global.update');
         
-        // CMS Image Management
+        // CMS Image Management (literal /cms/images/categories must come before /cms/images/{filename})
         Route::get('/cms/images', [AdminCmsController::class, 'images'])->name('cms.images');
         Route::get('/cms/images/list', [AdminCmsController::class, 'listImages'])->name('cms.images.list');
         Route::post('/cms/images/upload', [AdminCmsController::class, 'uploadImage'])->name('cms.images.upload');
+        Route::post('/cms/images/organize', [AdminCmsController::class, 'organizeImages'])->name('cms.images.organize');
+        Route::post('/cms/images/categories', [AdminCmsController::class, 'storeCategory'])->name('cms.images.categories.store');
+        Route::put('/cms/images/categories', [AdminCmsController::class, 'updateCategory'])->name('cms.images.categories.update');
+        Route::delete('/cms/images/categories', [AdminCmsController::class, 'deleteCategory'])->name('cms.images.categories.destroy');
         Route::delete('/cms/images/{filename}', [AdminCmsController::class, 'deleteImage'])->name('cms.images.delete');
         Route::patch('/cms/images/{filename}', [AdminCmsController::class, 'updateImage'])->name('cms.images.update');
-        Route::post('/cms/images/organize', [AdminCmsController::class, 'organizeImages'])->name('cms.images.organize');
         
         // CMS Page Management - Single route with section as query parameter
         Route::get('/cms/{page}', [AdminCmsController::class, 'page'])->name('cms.page');

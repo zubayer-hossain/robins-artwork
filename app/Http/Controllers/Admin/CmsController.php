@@ -216,6 +216,7 @@ class CmsController extends Controller
     {
         $images = CmsSetting::getUploadedImages();
         $settings = CmsSetting::getImageSettings();
+        $categories = CmsSetting::getImageCategories();
         
         $breadcrumbs = [
             ['label' => 'CMS', 'url' => route('admin.cms.index')],
@@ -225,6 +226,7 @@ class CmsController extends Controller
         return Inertia::render('Admin/Cms/Images', [
             'images' => $images,
             'settings' => $settings,
+            'categories' => $categories,
             'breadcrumbs' => $breadcrumbs,
             'pageTitle' => 'Image Management'
         ]);
@@ -447,6 +449,116 @@ class CmsController extends Controller
                 'message' => 'Failed to organize images'
             ], 500);
         }
+    }
+
+    /**
+     * Store a new image category
+     */
+    public function storeCategory(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:100',
+        ]);
+
+        $name = strtolower(trim($request->name));
+        if (empty($name)) {
+            return response()->json(['success' => false, 'message' => 'Category name is required.'], 422);
+        }
+
+        $categories = CmsSetting::getImageCategories();
+        if (in_array($name, $categories)) {
+            return response()->json(['success' => false, 'message' => 'That category already exists.'], 422);
+        }
+
+        $categories[] = $name;
+        CmsSetting::setImageCategories($categories);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Category added.',
+            'categories' => CmsSetting::getImageCategories(),
+        ]);
+    }
+
+    /**
+     * Update (rename) an image category
+     */
+    public function updateCategory(Request $request)
+    {
+        $request->validate([
+            'old_name' => 'required|string|max:100',
+            'new_name' => 'required|string|max:100',
+            'update_images' => 'boolean',
+        ]);
+
+        $oldName = strtolower(trim($request->old_name));
+        $newName = strtolower(trim($request->new_name));
+        $updateImages = $request->boolean('update_images', true);
+
+        if (empty($oldName) || empty($newName)) {
+            return response()->json(['success' => false, 'message' => 'Both old and new names are required.'], 422);
+        }
+
+        $categories = CmsSetting::getImageCategories();
+        $index = array_search($oldName, $categories);
+        if ($index === false) {
+            return response()->json(['success' => false, 'message' => 'Category not found.'], 404);
+        }
+
+        if ($oldName !== $newName && in_array($newName, $categories)) {
+            return response()->json(['success' => false, 'message' => 'A category with that name already exists.'], 422);
+        }
+
+        $categories[$index] = $newName;
+        CmsSetting::setImageCategories($categories);
+
+        $imagesUpdated = 0;
+        if ($updateImages && $oldName !== $newName) {
+            $imagesUpdated = CmsSetting::renameImageCategory($oldName, $newName);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Category updated.' . ($imagesUpdated > 0 ? " {$imagesUpdated} image(s) reassigned." : ''),
+            'categories' => CmsSetting::getImageCategories(),
+        ]);
+    }
+
+    /**
+     * Delete an image category
+     */
+    public function deleteCategory(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:100',
+            'reassign_uncategorized' => 'boolean',
+        ]);
+
+        $name = strtolower(trim($request->name));
+        $reassign = $request->boolean('reassign_uncategorized', true);
+
+        if (empty($name)) {
+            return response()->json(['success' => false, 'message' => 'Category name is required.'], 422);
+        }
+
+        if ($name === 'uncategorized') {
+            return response()->json(['success' => false, 'message' => 'Cannot delete the Uncategorized category.'], 422);
+        }
+
+        $categories = CmsSetting::getImageCategories();
+        $categories = array_values(array_filter($categories, fn ($c) => $c !== $name));
+        CmsSetting::setImageCategories($categories);
+
+        $imagesReassigned = 0;
+        if ($reassign) {
+            $imagesReassigned = CmsSetting::reassignImagesToUncategorized($name);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Category deleted.' . ($imagesReassigned > 0 ? " {$imagesReassigned} image(s) set to Uncategorized." : ''),
+            'categories' => CmsSetting::getImageCategories(),
+        ]);
     }
 
     /**

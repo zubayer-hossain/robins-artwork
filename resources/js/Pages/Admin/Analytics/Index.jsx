@@ -17,7 +17,8 @@ import {
     Chrome,
     Link as LinkIcon,
     FileText,
-    CalendarDays
+    CalendarDays,
+    AlertCircle
 } from 'lucide-react';
 import {
     Chart as ChartJS,
@@ -44,7 +45,7 @@ ChartJS.register(
     Filler
 );
 
-export default function Analytics({ analytics, filters }) {
+export default function Analytics({ analytics, analyticsError, filters }) {
     const [dateRange, setDateRange] = useState(filters.date_range || 30);
     const [startDate, setStartDate] = useState(filters.start_date || '');
     const [endDate, setEndDate] = useState(filters.end_date || '');
@@ -77,6 +78,12 @@ export default function Analytics({ analytics, filters }) {
             headerDescription="Track your website performance and user insights"
         >
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                {analyticsError && (
+                    <div className="mb-6 flex items-center gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-amber-800">
+                        <AlertCircle className="h-5 w-5 shrink-0 text-amber-600" />
+                        <p className="text-sm font-medium">{analyticsError}</p>
+                    </div>
+                )}
                 {/* Filters */}
                 <Card className="mb-8 shadow-sm">
                     <CardContent className="pt-6">
