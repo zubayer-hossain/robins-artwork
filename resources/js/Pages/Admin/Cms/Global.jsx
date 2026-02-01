@@ -334,10 +334,10 @@ export default function CmsGlobal({ auth, settings, breadcrumbs, pageTitle, acti
                                 <span className="text-xs text-gray-500">{setting.description}</span>
                             </div>
                             <RichTextEditor
-                                value={value}
+                                key={setting.id}
+                                content={value}
                                 onChange={(newValue) => updateSettingValue(setting.id, newValue)}
                                 placeholder={setting.description || 'Write your content here...'}
-                                minHeight={150}
                             />
                         </div>
                     );
