@@ -105,6 +105,11 @@ class ContactController extends Controller
 
             return back()->with('success', 'Reply sent successfully to ' . $contactMessage->email);
         } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Failed to send contact reply', [
+                'to' => $contactMessage->email,
+                'error' => $e->getMessage(),
+                'exception' => $e,
+            ]);
             return back()->with('error', 'Failed to send reply: ' . $e->getMessage());
         }
     }
