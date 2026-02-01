@@ -19,6 +19,7 @@ use App\Http\Controllers\Admin\ContactController as AdminContactController;
 use App\Http\Controllers\Admin\CmsController as AdminCmsController;
 use App\Http\Controllers\Admin\AuthController as AdminAuthController;
 use App\Http\Controllers\Admin\AnalyticsController as AdminAnalyticsController;
+use App\Http\Controllers\Admin\LogsController as AdminLogsController;
 
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -154,6 +155,9 @@ Route::prefix('admin')->name('admin.')->middleware('web')->group(function () {
 
         // Analytics
         Route::get('/analytics', [AdminAnalyticsController::class, 'index'])->name('analytics.index');
+
+        // Server logs (admin only)
+        Route::get('/logs', [AdminLogsController::class, 'index'])->name('logs.index');
     });
 });
 
