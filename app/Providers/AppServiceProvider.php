@@ -6,9 +6,11 @@ use App\Models\Artwork;
 use App\Models\Order;
 use App\Policies\ArtworksPolicy;
 use App\Policies\OrdersPolicy;
+use App\Services\AnalyticsService as AppAnalyticsService;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\ServiceProvider;
+use MeShaon\RequestAnalytics\Services\AnalyticsService as PackageAnalyticsService;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -17,7 +19,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        // Use our AnalyticsService so unique visitor count is always int (package can return string from DB)
+        $this->app->bind(PackageAnalyticsService::class, AppAnalyticsService::class);
     }
 
     /**
