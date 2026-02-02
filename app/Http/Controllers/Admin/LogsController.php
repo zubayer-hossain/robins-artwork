@@ -25,10 +25,15 @@ class LogsController extends Controller
         $error = null;
         $selectedPath = null;
 
+        $selectedFileModified = null;
         if ($files->isNotEmpty()) {
             $validFile = $files->first(fn ($f) => $f['name'] === $selectedFile);
             if (!$validFile) {
                 $selectedFile = $files->first()['name'];
+                $validFile = $files->first();
+            }
+            if ($validFile && isset($validFile['modified'])) {
+                $selectedFileModified = date('M j, Y g:i A', (int) $validFile['modified']);
             }
             $selectedPath = $logDir . DIRECTORY_SEPARATOR . $selectedFile;
             if (is_file($selectedPath) && $this->pathIsInLogDir($selectedPath, $logDir)) {
@@ -47,6 +52,7 @@ class LogsController extends Controller
         return Inertia::render('Admin/Logs/Index', [
             'logFiles' => $files->values()->all(),
             'selectedFile' => $selectedFile,
+            'selectedFileModified' => $selectedFileModified,
             'lines' => $lines,
             'content' => $content,
             'error' => $error,

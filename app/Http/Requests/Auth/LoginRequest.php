@@ -49,6 +49,16 @@ class LoginRequest extends FormRequest
             ]);
         }
 
+        $user = Auth::user();
+        if ($user->is_shadow_banned ?? false) {
+            Auth::logout();
+            $this->session()->invalidate();
+            $this->session()->regenerateToken();
+            throw ValidationException::withMessages([
+                'email' => 'Your account has been banned. If you believe this is an error, please contact us via the contact page.',
+            ]);
+        }
+
         RateLimiter::clear($this->throttleKey());
     }
 

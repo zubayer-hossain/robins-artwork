@@ -20,6 +20,7 @@ use App\Http\Controllers\Admin\CmsController as AdminCmsController;
 use App\Http\Controllers\Admin\AuthController as AdminAuthController;
 use App\Http\Controllers\Admin\AnalyticsController as AdminAnalyticsController;
 use App\Http\Controllers\Admin\LogsController as AdminLogsController;
+use App\Http\Controllers\Admin\UserController as AdminUserController;
 
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -158,6 +159,11 @@ Route::prefix('admin')->name('admin.')->middleware('web')->group(function () {
 
         // Server logs (admin only)
         Route::get('/logs', [AdminLogsController::class, 'index'])->name('logs.index');
+
+        // User management (CRUD + shadow ban / unban)
+        Route::resource('users', AdminUserController::class);
+        Route::patch('/users/{user}/ban', [AdminUserController::class, 'ban'])->name('users.ban');
+        Route::patch('/users/{user}/unban', [AdminUserController::class, 'unban'])->name('users.unban');
     });
 });
 

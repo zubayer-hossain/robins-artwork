@@ -43,7 +43,17 @@ class AuthController extends Controller
 
         if (Auth::attempt($credentials, $remember)) {
             $user = Auth::user();
-            
+
+            // Block banned users
+            if ($user->is_shadow_banned ?? false) {
+                Auth::logout();
+                $request->session()->invalidate();
+                $request->session()->regenerateToken();
+                throw ValidationException::withMessages([
+                    'email' => 'Your account has been banned. If you believe this is an error, please contact us via the contact page.',
+                ]);
+            }
+
             // Laravel 12: Verify user has admin role
             if (!$user->hasRole('admin')) {
                 Log::warning('Non-admin user attempted admin login', [

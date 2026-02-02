@@ -18,7 +18,12 @@ import {
     Link as LinkIcon,
     FileText,
     CalendarDays,
-    AlertCircle
+    AlertCircle,
+    MapPin,
+    Languages,
+    Zap,
+    Activity,
+    Timer
 } from 'lucide-react';
 import {
     Chart as ChartJS,
@@ -153,7 +158,7 @@ export default function Analytics({ analytics, analyticsError, filters }) {
                 </Card>
 
                 {/* Key Metrics */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
                     <MetricCard 
                         label="Views" 
                         value={analytics.average?.views} 
@@ -176,10 +181,17 @@ export default function Analytics({ analytics, analyticsError, filters }) {
                         iconColor="text-white"
                     />
                     <MetricCard 
-                        label="Average Visit Time" 
+                        label="Avg Visit Time" 
                         value={analytics.average?.average_visit_time} 
                         icon={<Clock className="w-6 h-6" />}
                         iconBg="bg-purple-500"
+                        iconColor="text-white"
+                    />
+                    <MetricCard 
+                        label="Avg Response Time" 
+                        value={analytics.averageResponseTime ?? '—'} 
+                        icon={<Timer className="w-6 h-6" />}
+                        iconBg="bg-slate-600"
                         iconColor="text-white"
                     />
                 </div>
@@ -289,7 +301,7 @@ export default function Analytics({ analytics, analyticsError, filters }) {
                 </div>
 
                 {/* Browsers, OS, Devices, Countries */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                     <StatCard 
                         title="Browsers" 
                         icon={<Chrome className="w-4 h-4" />}
@@ -311,6 +323,72 @@ export default function Analytics({ analytics, analyticsError, filters }) {
                         items={analytics.countries?.map(c => ({ name: c.name || 'Unknown', count: c.count })) || []}
                     />
                 </div>
+
+                {/* Cities, Languages, HTTP Methods */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                    <StatCard 
+                        title="Top Cities" 
+                        icon={<MapPin className="w-4 h-4" />}
+                        items={analytics.cities?.map(c => ({ name: c.name || 'Unknown', count: c.count })) || []}
+                    />
+                    <StatCard 
+                        title="Languages" 
+                        icon={<Languages className="w-4 h-4" />}
+                        items={analytics.languages?.map(l => ({ name: l.name || 'Unknown', count: l.count })) || []}
+                    />
+                    <StatCard 
+                        title="HTTP Methods" 
+                        icon={<Zap className="w-4 h-4" />}
+                        items={analytics.httpMethods?.map(m => ({ name: m.name || '-', count: m.count })) || []}
+                    />
+                </div>
+
+                {/* Recent Visits */}
+                <Card className="shadow-sm">
+                    <CardHeader className="pb-3">
+                        <CardTitle className="text-lg font-semibold flex items-center gap-2">
+                            <Activity className="w-5 h-5" />
+                            Recent Visits
+                        </CardTitle>
+                        <CardDescription>Latest requests in the selected date range</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        {analytics.recentVisits?.length > 0 ? (
+                            <div className="overflow-x-auto -mx-2">
+                                <table className="w-full text-sm">
+                                    <thead>
+                                        <tr className="border-b border-gray-200 text-left text-gray-500 font-medium">
+                                            <th className="py-2 px-2">Path</th>
+                                            <th className="py-2 px-2">Page Title</th>
+                                            <th className="py-2 px-2">When</th>
+                                            <th className="py-2 px-2">Location</th>
+                                            <th className="py-2 px-2">Device</th>
+                                            <th className="py-2 px-2">Browser</th>
+                                            <th className="py-2 px-2">Type</th>
+                                            <th className="py-2 px-2 text-right">Response</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {analytics.recentVisits.map((visit, index) => (
+                                            <tr key={index} className="border-b border-gray-100 hover:bg-gray-50">
+                                                <td className="py-2 px-2 font-mono text-xs truncate max-w-[140px]" title={visit.path}>{visit.path}</td>
+                                                <td className="py-2 px-2 truncate max-w-[160px]" title={visit.page_title}>{visit.page_title}</td>
+                                                <td className="py-2 px-2 text-gray-600">{visit.visited_at}</td>
+                                                <td className="py-2 px-2 text-gray-600">{visit.city !== '-' ? `${visit.city}, ${visit.country}` : visit.country}</td>
+                                                <td className="py-2 px-2 text-gray-600">{visit.device}</td>
+                                                <td className="py-2 px-2 text-gray-600">{visit.browser}</td>
+                                                <td className="py-2 px-2"><span className="text-xs px-1.5 py-0.5 rounded bg-gray-100">{visit.request_category}</span></td>
+                                                <td className="py-2 px-2 text-right text-gray-600">{visit.response_time_ms != null ? `${visit.response_time_ms} ms` : '—'}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        ) : (
+                            <p className="text-sm text-gray-500 text-center py-8">No recent visits in this period</p>
+                        )}
+                    </CardContent>
+                </Card>
             </div>
         </AdminLayout>
     );

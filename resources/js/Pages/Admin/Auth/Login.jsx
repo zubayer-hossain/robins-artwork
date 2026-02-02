@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
-export default function AdminLogin({ status, canResetPassword }) {
+export default function AdminLogin({ status, canResetPassword, flash }) {
     const { data, setData, post, processing, errors } = useForm({
         email: '',
         password: '',
@@ -45,6 +45,19 @@ export default function AdminLogin({ status, canResetPassword }) {
                     </div>
                 )}
 
+                {flash?.error && (
+                    <div className="bg-red-50 border border-red-200 rounded-md p-4">
+                        <p className="text-sm font-medium text-red-800">{flash.error}</p>
+                        {flash.error.includes('banned') && (
+                            <p className="mt-2 text-sm">
+                                <Link href={route('contact')} className="font-medium text-purple-600 hover:text-purple-500 underline">
+                                    Contact us to request an unban
+                                </Link>
+                            </p>
+                        )}
+                    </div>
+                )}
+
                 <form className="mt-8 space-y-6" onSubmit={submit}>
                     <div className="space-y-4">
                         <div>
@@ -58,7 +71,18 @@ export default function AdminLogin({ status, canResetPassword }) {
                                     autoFocus
                                     onChange={(e) => setData('email', e.target.value)}
                             />
-                            {errors.email && <p className="mt-1 text-sm text-red-600">{errors.email}</p>}
+                            {errors.email && (
+                                <div className="mt-1">
+                                    <p className="text-sm text-red-600">{errors.email}</p>
+                                    {errors.email.includes('banned') && (
+                                        <p className="mt-2 text-sm">
+                                            <Link href={route('contact')} className="font-medium text-purple-600 hover:text-purple-500 underline">
+                                                Contact us to request an unban
+                                            </Link>
+                                        </p>
+                                    )}
+                                </div>
+                            )}
                         </div>
 
                         <div>

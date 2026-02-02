@@ -24,6 +24,9 @@ class User extends Authenticatable implements CanAccessAnalyticsDashboard
         'name',
         'email',
         'password',
+        'is_shadow_banned',
+        'shadow_banned_at',
+        'shadow_ban_reason',
     ];
 
     /**
@@ -46,7 +49,24 @@ class User extends Authenticatable implements CanAccessAnalyticsDashboard
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'is_shadow_banned' => 'boolean',
+            'shadow_banned_at' => 'datetime',
         ];
+    }
+
+    public function isShadowBanned(): bool
+    {
+        return (bool) $this->is_shadow_banned;
+    }
+
+    public function scopeShadowBanned($query)
+    {
+        return $query->where('is_shadow_banned', true);
+    }
+
+    public function scopeNotShadowBanned($query)
+    {
+        return $query->where('is_shadow_banned', false);
     }
 
     public function orders()

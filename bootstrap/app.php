@@ -22,6 +22,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'permission' => \Spatie\Permission\Middleware\PermissionMiddleware::class,
             'role_or_permission' => \Spatie\Permission\Middleware\RoleOrPermissionMiddleware::class,
             'ensure_single_role' => \App\Http\Middleware\EnsureSingleRole::class,
+            'ensure_not_banned' => \App\Http\Middleware\EnsureNotBanned::class,
             'guest' => \App\Http\Middleware\RedirectIfAuthenticated::class,
         ]);
 
@@ -29,13 +30,15 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->group('admin', [
             'auth',
             'verified',
+            'ensure_not_banned',
             'role:admin',
             'ensure_single_role:admin',
         ]);
 
         $middleware->group('customer', [
             'auth',
-            'verified', 
+            'verified',
+            'ensure_not_banned',
             'role:customer',
             'ensure_single_role:customer',
         ]);

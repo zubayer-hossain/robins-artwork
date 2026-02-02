@@ -3,7 +3,7 @@ import { Link, usePage, router } from '@inertiajs/react';
 import axios from 'axios';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Settings, Menu, X, Home, LayoutDashboard, Palette, ShoppingBag, Layers, Settings as SettingsIcon, User, LogOut, BarChart3, MessageSquare, FileText } from 'lucide-react';
+import { Settings, Menu, X, Home, LayoutDashboard, Palette, ShoppingBag, Layers, Settings as SettingsIcon, User, LogOut, BarChart3, MessageSquare, FileText, Users, ChevronDown } from 'lucide-react';
 
 export default function AdminLayout({ user, header, headerIcon, headerDescription, headerActions, children }) {
     const [showingNavigationDropdown, setShowingNavigationDropdown] = useState(false);
@@ -65,12 +65,11 @@ export default function AdminLayout({ user, header, headerIcon, headerDescriptio
                                 <NavLink href={route('admin.contact-messages.index')} active={route().current('admin.contact-messages.*')}>
                                     Messages
                                 </NavLink>
-                                <NavLink href={route('admin.analytics.index')} active={route().current('admin.analytics.*')}>
-                                    Analytics
+                                <NavLink href={route('admin.users.index')} active={route().current('admin.users.*')}>
+                                    Users
                                 </NavLink>
-                                <NavLink href={route('admin.logs.index')} active={route().current('admin.logs.*')}>
-                                    Server Logs
-                                </NavLink>
+                                {/* More dropdown: Analytics, Server Logs + room for future items */}
+                                <NavMoreDropdown />
                             </div>
                         </div>
 
@@ -154,6 +153,9 @@ export default function AdminLayout({ user, header, headerIcon, headerDescriptio
                                 <MobileNavLink href={route('admin.contact-messages.index')} active={route().current('admin.contact-messages.*')} icon={<MessageSquare className="w-4 h-4" />}>
                                     Messages
                                 </MobileNavLink>
+                                <MobileNavLink href={route('admin.users.index')} active={route().current('admin.users.*')} icon={<Users className="w-4 h-4" />}>
+                                    Users
+                                </MobileNavLink>
                                 <MobileNavLink href={route('admin.analytics.index')} active={route().current('admin.analytics.*')} icon={<BarChart3 className="w-4 h-4" />}>
                                     Analytics
                                 </MobileNavLink>
@@ -226,6 +228,50 @@ export default function AdminLayout({ user, header, headerIcon, headerDescriptio
                 </div>
             </footer>
         </div>
+    );
+}
+
+function NavMoreDropdown() {
+    const isAnalyticsActive = route().current('admin.analytics.*');
+    const isLogsActive = route().current('admin.logs.*');
+    const isActive = isAnalyticsActive || isLogsActive;
+
+    return (
+        <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+                <button
+                    type="button"
+                    className={`inline-flex items-center gap-0.5 px-1 pt-1 border-b-2 text-sm font-medium ${
+                        isActive
+                            ? 'border-purple-500 text-gray-900'
+                            : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
+                    }`}
+                >
+                    More
+                    <ChevronDown className="w-4 h-4 ml-0.5" />
+                </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="min-w-[160px]">
+                <DropdownMenuItem asChild>
+                    <Link
+                        href={route('admin.analytics.index')}
+                        className={`flex items-center gap-2 ${isAnalyticsActive ? 'bg-purple-50 text-purple-700' : ''}`}
+                    >
+                        <BarChart3 className="w-4 h-4" />
+                        Analytics
+                    </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                    <Link
+                        href={route('admin.logs.index')}
+                        className={`flex items-center gap-2 ${isLogsActive ? 'bg-purple-50 text-purple-700' : ''}`}
+                    >
+                        <FileText className="w-4 h-4" />
+                        Server Logs
+                    </Link>
+                </DropdownMenuItem>
+            </DropdownMenuContent>
+        </DropdownMenu>
     );
 }
 
